@@ -17,13 +17,13 @@ trap cleanup INT
 
 # Start localstack
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting Ory tunnel"
-ory tunnel http://127.0.0.1:8081 \
-  --dev \
-  --port 4001 \
-  --project competent-merkle-esamqi0owk \
-  --allowed-cors-origins http://127.0.0.1:8081 \
-  &
-
+#ory tunnel http://127.0.0.1:8081 \
+#  --dev \
+#  --port 4001 \
+#  --project competent-merkle-esamqi0owk \
+#  --allowed-cors-origins http://127.0.0.1:8081 \
+#  &
+#
 # Start app
 env $(cat env/dev.env | xargs) trunk serve --port 8081;
 

@@ -8,7 +8,7 @@ deploy:
 	aws --profile $(PROFILE) --region $(REGION) s3 rm s3://unnamed-admin-portal --recursive
 	aws --profile $(PROFILE) --region $(REGION) s3 sync dist/ s3://unnamed-admin-portal
 	aws --profile $(PROFILE) --region $(REGION) cloudfront create-invalidation \
-		--distribution-id <CLOUDFRONT_DISTRIBUTION_ID> \
+		--distribution-id E15K1GLG6C7XO1 \
 		--paths "/*" \
 		--no-cli-pager
 

@@ -19,6 +19,7 @@ pub fn OrdersTable(#[prop(into)] client_orders: RwSignal<Vec<Order>>) -> impl In
                                     "Quantity",
                                     "Unit Price",
                                     "Subtotal",
+                                    "",
                                 ]
                                     .into_iter()
                                     .enumerate()

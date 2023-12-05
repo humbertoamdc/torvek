@@ -3,7 +3,7 @@ use leptos::*;
 #[component]
 pub fn TolerancesDropdown(
     #[prop(into)] tolerance: RwSignal<String>,
-    #[prop(into)] update_order: Action<(),()>,
+    #[prop(into)] update_order: Action<(),()>
 ) -> impl IntoView {
     // -- data -- //
 
@@ -24,7 +24,6 @@ pub fn TolerancesDropdown(
                     is_focused.update(|f| *f = !*f);
                 }
 
-
                 on:blur=move |_| {
                     is_focused.update(|f| *f = false);
                 }
@@ -42,7 +41,6 @@ pub fn TolerancesDropdown(
             <Show when=move || is_focused.get() fallback=move || view! {}>
 
                 <div class="fixed w-52 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto">
-
                     {items
                         .iter()
                         .map(|item| {
@@ -51,11 +49,11 @@ pub fn TolerancesDropdown(
                                 <div
                                     class="flex items-center justify-between px-3 cursor-default py-2 duration-150 text-gray-600 hover:bg-indigo-50"
                                     on:mousedown=move |_| {
-                                        tolerance.update(|t| *t = item.to_string());
                                         update_order.dispatch(());
                                         is_focused.update(|f| *f = false);
                                     }
                                 >
+
                                     <span class="pr-4 line-clamp-1 flex items-center gap-2">
                                         {item}
                                     </span>
