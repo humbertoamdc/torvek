@@ -1,6 +1,6 @@
 use crate::api;
 use leptos::*;
-use reqwest::header::{ACCEPT, ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_ORIGIN, HeaderMap, HeaderValue, ORIGIN};
+use reqwest::header::{ACCEPT, ACCESS_CONTROL_ALLOW_CREDENTIALS, HeaderMap, HeaderValue, ORIGIN};
 use ory_kratos_client::apis::configuration::Configuration;
 use ory_kratos_client::apis::frontend_api::create_browser_login_flow;
 use ory_kratos_client::models::UiNodeAttributes;
@@ -67,7 +67,8 @@ pub fn Login(
             }
         }
     });
-    init_login_flow.dispatch(());
+    // TODO: Init ory login flow once CORS issues are solved.
+    // init_login_flow.dispatch(());
 
     let login_action = create_action(move |(email, password, flow_id, csrf_token): &(String, String, String, String)| {
         let email = email.to_string();

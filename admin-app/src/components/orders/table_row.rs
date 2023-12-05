@@ -1,7 +1,5 @@
 use crate::api::models::orders::{ReactiveOrder, UpdateOrderRequest};
 use crate::api::orders::OrdersApi;
-use crate::components::orders::materials_dropdown::MaterialsDropdown;
-use crate::components::orders::tolerances_dropdown::TolerancesDropdown;
 use leptos::*;
 
 #[component]
@@ -11,14 +9,14 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
     let update_order = create_action(move |_| {
         let order_id = reactive_order.id.clone();
         let client_id = reactive_order.client_id.clone();
+
         let update_orders_request = UpdateOrderRequest::new(
             order_id,
             client_id,
-            Some(reactive_order.process.get_untracked()),
-            Some(reactive_order.material.get_untracked()),
-            Some(reactive_order.tolerance.get_untracked()),
-            Some(reactive_order.quantity.get_untracked()),
+            reactive_order.unit_price.get_untracked(),
+            reactive_order.sub_total.get_untracked(),
         );
+
         async move {
             let response = orders_client.update_order(update_orders_request).await;
 
@@ -53,50 +51,42 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <MaterialsDropdown
-                        material=reactive_order.material
-                        update_order=update_order
-                    />
-
-                </div>
+                <div class="flex justify-center">{reactive_order.material}</div>
 
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap"></p>
-                    <TolerancesDropdown
-                        tolerance=reactive_order.tolerance
-                        update_order=update_order
-                    />
+                    <p class="text-gray-900 whitespace-no-wrap">{reactive_order.tolerance}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <input
-                        type="number"
-                        id="quantity"
-                        name="quantity"
-                        min=1
-                        class="w-20 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        value=reactive_order.quantity.get_untracked()
-                        on:change=move |ev| {
-                            let quantity = event_target_value(&ev).parse::<u64>().unwrap();
-                            reactive_order.quantity.update(|q| *q = quantity.clone());
-                            update_order.dispatch(())
-                        }
-                    />
-
+                    <p class="text-gray-900 whitespace-no-wrap">{reactive_order.quantity}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap">
-
-                        {match reactive_order.unit_price.get_untracked() {
-                            Some(unit_price) => format!("${unit_price}"),
-                            None => String::from("N/A"),
-                        }}
+                        <input
+                            type="number"
+                            id="quantity"
+                            name="quantity"
+                            min=1
+                            class="w-20 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="N/A"
+                            value=reactive_order.unit_price.get_untracked()
+                            on:change=move |ev| {
+                                let unit_price = event_target_value(&ev).parse::<f64>().unwrap();
+                                reactive_order.unit_price.update(|u| *u = Some(unit_price));
+                                reactive_order
+                                    .sub_total
+                                    .update(|s| {
+                                        *s = Some(
+                                            unit_price * reactive_order.quantity.get_untracked() as f64,
+                                        );
+                                    });
+                            }
+                        />
 
                     </p>
                 </div>
@@ -104,12 +94,25 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap">
-
-                        {match reactive_order.sub_total.get_untracked() {
-                            Some(sub_total) => format!("${sub_total}"),
-                            None => String::from("N/A"),
+                        {move || {
+                            match reactive_order.sub_total.get() {
+                                Some(sub_total) => format!("${sub_total}"),
+                                None => String::from("N/A"),
+                            }
                         }}
 
+                    </p>
+                </div>
+            </td>
+            <td class="px-2 py-3 border-b border-gray-200 bg-white text-sm">
+                <div class="flex justify-center">
+                    <p class="text-gray-900 whitespace-no-wrap">
+                        <button
+                            class="px-5 py-3 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg"
+                            on:click=move |_| update_order.dispatch(())
+                        >
+                            Submit
+                        </button>
                     </p>
                 </div>
             </td>

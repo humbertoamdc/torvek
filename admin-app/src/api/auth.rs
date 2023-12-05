@@ -33,7 +33,7 @@ impl UnauthorizedApi {
         }
     }
     pub async fn try_login_with_session_cookie(&self) -> Result<(AuthorizedApi, UserInfo)> {
-        let url = format!("{}/session", self.url);
+        let url = format!("{}/accounts/admins/session", self.url);
         let req = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()?;
@@ -55,7 +55,7 @@ impl AuthorizedApi {
     }
 
     pub async fn logout(&self) -> Result<UnauthorizedApi> {
-        let url = format!("{}/logout", self.url);
+        let url = format!("{}/account/admins/logout", self.url);
         Request::post(&url)
             .credentials(RequestCredentials::Include)
             .send()
@@ -63,7 +63,7 @@ impl AuthorizedApi {
         Ok(UnauthorizedApi::new())
     }
     pub async fn user_info(&self) -> Result<UserInfo> {
-        let url = format!("{}/session", self.url);
+        let url = format!("{}/accounts/admins/session", self.url);
         let req = Request::get(&url).credentials(RequestCredentials::Include);
         self.send(req).await
     }

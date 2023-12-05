@@ -2,7 +2,6 @@ use crate::api::auth::AuthorizedApi;
 use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::Order;
 use crate::api::orders::OrdersApi;
-use crate::components::dropzone_upload::DropzoneUpload;
 use crate::components::orders::table::OrdersTable;
 use crate::components::sidebar::Sidebar;
 use leptos::*;
@@ -24,7 +23,7 @@ pub fn Dashboard(
         let client_id = client_id.clone();
         async move {
             let orders_client = OrdersApi::new();
-            let result = orders_client.query_orders_for_client(client_id).await;
+            let result = orders_client.query_orders_by_status(String::from("pending_quotation")).await;
             match result {
                 Ok(response) => client_orders.update(|o| *o = response.orders),
                 Err(_) => (), // TODO: Handle error.
@@ -59,11 +58,6 @@ pub fn Dashboard(
                 </header>
 
                 <OrdersTable client_orders=client_orders/>
-
-                <div class="mt-8">
-                    <DropzoneUpload query_client_orders=query_client_orders/>
-
-                </div>
             </div>
         </div>
     }

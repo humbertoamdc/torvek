@@ -1,12 +1,9 @@
 use crate::api::common::{into_json, Result};
-use crate::api::models::orders::{
-    CreateOrdersRequest, CreateOrdersResponse, QueryOrdersForClientResponse, UpdateOrderRequest,
-};
+use crate::api::models::orders::{QueryOrdersResponse, UpdateOrderRequest};
 use crate::env;
 use gloo_net::http::Request;
-use leptos::wasm_bindgen::JsValue;
 use serde::de::DeserializeOwned;
-use web_sys::{File, RequestCredentials};
+use web_sys::{ RequestCredentials};
 
 #[derive(Clone, Copy)]
 pub struct OrdersApi {
@@ -19,37 +16,14 @@ impl OrdersApi {
         Self { url: env::API_URL }
     }
 
-    pub async fn create_orders(
+
+    pub async fn query_orders_by_status(
         &self,
-        body: CreateOrdersRequest,
-    ) -> Result<Vec<CreateOrdersResponse>> {
-        let url = format!("{}/orders", self.url);
-        let request = Request::post(&url)
-            .credentials(RequestCredentials::Include)
-            .json(&body)?;
-
-        self.send(request).await
-    }
-
-    pub async fn upload_file_with_presigned_url(
-        &self,
-        file: File,
-        presigned_url: String,
-    ) -> Result<()> {
-        Request::put(presigned_url.as_str())
-            .body(JsValue::from(file))?
-            .send()
-            .await?;
-
-        Ok(())
-    }
-
-    pub async fn query_orders_for_client(
-        &self,
-        client_id: String,
-    ) -> Result<QueryOrdersForClientResponse> {
-        let url = format!("{}/clients/{}/orders", self.url, client_id);
+        order_status: String,
+    ) -> Result<QueryOrdersResponse> {
+        let url = format!("{}/admin/orders", self.url);
         let request = Request::get(&url)
+            .query([("order_status", order_status)])
             .credentials(RequestCredentials::Include)
             .build()?;
 
@@ -57,7 +31,7 @@ impl OrdersApi {
     }
 
     pub async fn update_order(&self, body: UpdateOrderRequest) -> Result<()> {
-        let url = format!("{}/orders", self.url);
+        let url = format!("{}/admin/orders", self.url);
         let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)
             .json(&body)?;

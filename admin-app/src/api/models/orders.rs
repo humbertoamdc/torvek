@@ -21,28 +21,22 @@ impl CreateOrdersRequest {
 pub struct UpdateOrderRequest {
     pub order_id: String,
     pub client_id: String,
-    pub process: Option<String>,
-    pub material: Option<String>,
-    pub tolerance: Option<String>,
-    pub quantity: Option<u64>,
+    pub unit_price: Option<f64>,
+    pub sub_total: Option<f64>,
 }
 
 impl UpdateOrderRequest {
     pub const fn new(
         order_id: String,
         client_id: String,
-        process: Option<String>,
-        material: Option<String>,
-        tolerance: Option<String>,
-        quantity: Option<u64>,
+        unit_price: Option<f64>,
+        sub_total: Option<f64>,
     ) -> Self {
         Self {
             order_id,
             client_id,
-            process,
-            material,
-            tolerance,
-            quantity,
+            unit_price,
+            sub_total
         }
     }
 }
@@ -54,7 +48,7 @@ pub struct CreateOrdersResponse {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct QueryOrdersForClientResponse {
+pub struct QueryOrdersResponse {
     pub orders: Vec<Order>,
 }
 
@@ -68,8 +62,8 @@ pub struct Order {
     pub material: String,
     pub tolerance: String,
     pub quantity: u64,
-    pub unit_price: Option<u64>,
-    pub sub_total: Option<u64>,
+    pub unit_price: Option<f64>,
+    pub sub_total: Option<f64>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -84,8 +78,8 @@ pub struct ReactiveOrder {
     pub material: RwSignal<String>,
     pub tolerance: RwSignal<String>,
     pub quantity: RwSignal<u64>,
-    pub unit_price: RwSignal<Option<u64>>,
-    pub sub_total: RwSignal<Option<u64>>,
+    pub unit_price: RwSignal<Option<f64>>,
+    pub sub_total: RwSignal<Option<f64>>,
 }
 
 impl From<&Order> for ReactiveOrder {
