@@ -28,4 +28,3 @@ awslocal dynamodb create-table \
         }
       }
     ]'
-

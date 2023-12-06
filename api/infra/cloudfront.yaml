@@ -99,4 +99,3 @@ Outputs:
     Value: !Ref AdminPortalCloudFrontDistribution
     Export:
       Name: AdminPortalCloudFrontDistributionId
-
