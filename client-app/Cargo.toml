@@ -1,0 +1,22 @@
+[package]
+name = "client-app"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+console_log = { verions = "1.0.0", features = ["color"] }
+leptos = { version = "0.5.2", features = ["csr"] }
+leptos_router = { version = "0.5.2", features = ["csr"] }
+log = "0.4.20"
+serde_json = "1.0.108"
+serde = { version = "1.0.190", features = ["derive"] }
+wasm-bindgen-futures = "0.4.38"
+http = "0.2.9"
+gloo-net = "0.4.0"
+thiserror = "1.0.50"
+leptos_meta = { version = "0.5.2", features = ["csr"] }
+web-sys = { version = "0.3.65", features = ["FileList", "HtmlInputElement", "File"] }
+chrono = { version = "0.4.31", features = ["serde"] }
+serde_derive = "1.0.193"
