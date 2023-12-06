@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create S3 buckets.
+Resources:
+  ClientPortalBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: unnamed-client-portal
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  AdminPortalBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: unnamed-admin-portal
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  ClientFilesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: unnamed-client-files
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - POST
+              - PUT
+              - DELETE
+            AllowedOrigins:
+              - "*"
+            Id: CorsRule
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ConfigFilesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: unnamed-config-files
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - POST
+              - PUT
+              - DELETE
+            AllowedOrigins:
+              - "*"
+            Id: CorsRule
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+Outputs:
+  ClientPortalBucketName:
+    Description: Name of the client portal bucket.
+    Value: !Ref ClientPortalBucket
+    Export:
+      Name: ClientPortalBucketName
+  ClientPortalBucketArn:
+    Description: ARN of the client portal bucket.
+    Value: !GetAtt ClientPortalBucket.Arn
+    Export:
+      Name: ClientPortalBucketArn
+  ClientPortalBucketDomainName:
+    Description: Domain name of the client portal bucket.
+    Value: !GetAtt ClientPortalBucket.DomainName
+    Export:
+      Name: ClientPortalBucketDomainName
+  AdminPortalBucketName:
+    Description: Name of the admin portal bucket.
+    Value: !Ref AdminPortalBucket
+    Export:
+      Name: AdminPortalBucketName
+  AdminPortalBucketArn:
+    Description: ARN of the admin portal bucket.
+    Value: !GetAtt AdminPortalBucket.Arn
+    Export:
+      Name: AdminPortalBucketArn
+  AdminPortalBucketDomainName:
+    Description: Domain name of the admin portal bucket.
+    Value: !GetAtt AdminPortalBucket.DomainName
+    Export:
+      Name: AdminPortalBucketDomainName
+  ClientFilesBucketName:
+    Description: Name of bucket to store files from clients.
+    Value: !Ref ClientFilesBucket
+    Export:
+      Name: ClientFilesBucketName
+  ClientFilesBucketArn:
+    Description: ARN of bucket to store files from clients.
+    Value: !GetAtt ClientFilesBucket.Arn
+    Export:
+      Name: ClientFilesBucketArn
+  ConfigFilesBucketName:
+    Description: Name of bucket to store app config files.
+    Value: !Ref ConfigFilesBucket
+    Export:
+      Name: ConfigFilesBucketName
+  ConfigFilesBucketArn:
+    Description: ARN of bucket to store app config files.
+    Value: !GetAtt ConfigFilesBucket.Arn
+    Export:
+      Name: ConfigFilesBucketArn

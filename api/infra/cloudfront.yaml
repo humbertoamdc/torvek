@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create CloudFront distribution to serve websites hosted in S3.
+Resources:
+
+  ClientPortalCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Client Portal Origin Access Control
+        Name: ClientPortalOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  ClientPortalCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - www.rusticad.com
+        Comment: Distribution for client portal.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: ClientPortalOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !ImportValue ClientPortalBucketDomainName
+            Id: ClientPortalOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt ClientPortalCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue ClientPortalCertificateArn
+          SslSupportMethod: sni-only
+
+  AdminPortalCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Admin Portal Origin Access Control
+        Name: AdminPortalOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AdminPortalCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - admin.rusticad.com
+        Comment: Distribution for admin portal.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: AdminPortalOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !ImportValue AdminPortalBucketDomainName
+            Id: AdminPortalOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt AdminPortalCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue AdminPortalCertificateArn
+          SslSupportMethod: sni-only
+
+Outputs:
+  ClientPortalCloudFrontDistributionId:
+    Description: Id for the client portal CloudFront distribution
+    Value: !Ref ClientPortalCloudFrontDistribution
+    Export:
+      Name: ClientPortalCloudFrontDistributionId
+  AdminPortalCloudFrontDistributionId:
+    Description: Id for the admin portal CloudFront distribution
+    Value: !Ref AdminPortalCloudFrontDistribution
+    Export:
+      Name: AdminPortalCloudFrontDistributionId
+
