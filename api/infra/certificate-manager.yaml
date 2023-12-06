@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create TLS/SSL certificates.
+Resources:
+  ClientPortalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: www.rusticad.com
+      ValidationMethod: DNS
+
+  AdminPortalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: admin.rusticad.com
+      ValidationMethod: DNS
+
+Outputs:
+  ClientPortalCertificateArn:
+    Description: ARN for client portal certificate.
+    Value: !Ref ClientPortalCertificate
+    Export:
+      Name: ClientPortalCertificateArn
+  AdminPortalCertificateArn:
+    Description: ARN for admin portal certificate.
+    Value: !Ref AdminPortalCertificate
+    Export:
+      Name: AdminPortalCertificateArn

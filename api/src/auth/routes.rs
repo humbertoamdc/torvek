@@ -1,0 +1,19 @@
+use axum::routing::get;
+use axum::routing::post;
+use axum::Router;
+
+use crate::app_state::AppState;
+use crate::auth::adapters::api::controllers::{
+    admin_login, admin_logout, get_admin_session, get_session, login, logout, register_client,
+};
+
+pub fn create_router() -> Router<AppState> {
+    Router::new()
+        .route("/register", post(register_client))
+        .route("/login", post(login))
+        .route("/logout", post(logout))
+        .route("/session", get(get_session))
+        .route("/accounts/admins/login", post(admin_login))
+        .route("/accounts/admins/session", get(get_admin_session))
+        .route("/accounts/admins/logout", post(admin_logout))
+}
