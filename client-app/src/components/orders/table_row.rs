@@ -75,6 +75,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                             update_order.dispatch(());
                         }
                     />
+
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -92,6 +93,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                             update_order.dispatch(())
                         }
                     />
+
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
