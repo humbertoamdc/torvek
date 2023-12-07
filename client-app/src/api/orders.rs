@@ -3,9 +3,12 @@ use crate::api::models::orders::{
     CreateOrdersRequest, CreateOrdersResponse, QueryOrdersForClientResponse, UpdateOrderRequest,
 };
 use crate::env;
+use api_boundary::orders::requests::CreateDrawingUploadUrlRequest;
+use api_boundary::orders::responses::CreateDrawingUploadUrlResponse;
 use gloo_net::http::Request;
 use leptos::wasm_bindgen::JsValue;
 use serde::de::DeserializeOwned;
+use std::fmt::format;
 use web_sys::{File, RequestCredentials};
 
 #[derive(Clone, Copy)]
@@ -58,6 +61,18 @@ impl OrdersApi {
     pub async fn update_order(&self, body: UpdateOrderRequest) -> Result<()> {
         let url = format!("{}/orders", self.url);
         let request = Request::patch(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
+
+        self.send(request).await
+    }
+
+    pub async fn create_drawing_upload_url(
+        &self,
+        body: CreateDrawingUploadUrlRequest,
+    ) -> Result<CreateDrawingUploadUrlResponse> {
+        let url = format!("{}/orders/drawing_upload_url", self.url);
+        let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
             .json(&body)?;
 

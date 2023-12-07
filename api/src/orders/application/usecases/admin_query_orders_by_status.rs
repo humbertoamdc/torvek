@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::async_trait;
 
 use crate::orders::adapters::api::requests::AdminQueryOrdersByStatusRequest;
-use crate::orders::adapters::api::responses::QueryOrdersForClientResponse;
+use crate::orders::adapters::api::responses::AdminQueryOrderByStatusResponse;
 use crate::orders::application::repositories::orders::OrdersRepository;
 use crate::orders::application::usecases::interfaces::UseCase;
 use crate::orders::domain::errors::OrdersError;
@@ -19,17 +19,17 @@ impl AdminQueryOrdersByStatusUseCase {
 }
 
 #[async_trait]
-impl UseCase<AdminQueryOrdersByStatusRequest, QueryOrdersForClientResponse, OrdersError>
+impl UseCase<AdminQueryOrdersByStatusRequest, AdminQueryOrderByStatusResponse, OrdersError>
     for AdminQueryOrdersByStatusUseCase
 {
     async fn execute(
         &self,
         request: AdminQueryOrdersByStatusRequest,
-    ) -> Result<QueryOrdersForClientResponse, OrdersError> {
+    ) -> Result<AdminQueryOrderByStatusResponse, OrdersError> {
         let orders = self
             .orders_repository
             .query_orders_by_status(request.order_status)
             .await?;
-        Ok(QueryOrdersForClientResponse::new(orders))
+        Ok(AdminQueryOrderByStatusResponse::new(orders))
     }
 }

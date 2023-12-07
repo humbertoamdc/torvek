@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+api-boundary = { path = "../api-boundary" }
 console_log = { verions = "1.0.0", features = ["color"] }
 leptos = { version = "0.5.2", features = ["csr"] }
 leptos_router = { version = "0.5.2", features = ["csr"] }

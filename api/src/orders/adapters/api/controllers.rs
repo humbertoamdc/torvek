@@ -1,3 +1,4 @@
+use api_boundary::orders::requests::CreateDrawingUploadUrlRequest;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -11,6 +12,7 @@ use crate::orders::adapters::api::requests::{
 use crate::orders::application::usecases::admin_query_orders_by_status::AdminQueryOrdersByStatusUseCase;
 use crate::orders::application::usecases::admin_update_order::AdminUpdateOrderUseCase;
 use crate::orders::application::usecases::create_orders::CreateOrdersUseCase;
+use crate::orders::application::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::orders::application::usecases::interfaces::UseCase;
 use crate::orders::application::usecases::query_orders_for_client::QueryOrdersForClientUseCase;
 use crate::orders::application::usecases::update_order::UpdateOrderUseCase;
@@ -54,6 +56,19 @@ pub async fn update_order(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn create_drawing_upload_url(
+    State(app_state): State<AppState>,
+    Json(request): Json<CreateDrawingUploadUrlRequest>,
+) -> impl IntoResponse {
+    let usecase = CreateDrawingUploadUrlUseCase::new(app_state.orders.object_storage);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

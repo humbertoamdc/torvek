@@ -28,6 +28,8 @@ pub struct AdminQueryOrdersByStatusRequest {
 pub struct UpdateOrderRequest {
     pub order_id: String,
     pub client_id: String,
+    pub drawing_file_name: Option<String>,
+    pub drawing_file_url: Option<String>,
     pub process: Option<String>,
     pub material: Option<String>,
     pub tolerance: Option<String>,
