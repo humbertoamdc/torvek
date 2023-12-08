@@ -1,9 +1,8 @@
+use crate::orders::adapters::api::requests::{AdminUpdateOrderRequest, UpdateOrderRequest};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::Uuid;
-
-use crate::orders::adapters::api::requests::{AdminUpdateOrderRequest, UpdateOrderRequest};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Order {

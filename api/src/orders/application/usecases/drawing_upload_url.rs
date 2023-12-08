@@ -35,7 +35,6 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Orde
             Some(file_url) => {
                 let file_url_without_query_parameters =
                     file_url.split("?").nth(0).unwrap().to_string();
-                // TODO: Save path key in order.
                 let file_path = file_url_without_query_parameters
                     .split("/")
                     .collect::<Vec<&str>>()
@@ -46,8 +45,6 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Orde
                     .map(|s| s.to_string())
                     .collect::<Vec<String>>()
                     .join("/");
-
-                log::error!("{file_path}");
 
                 file_path
             }

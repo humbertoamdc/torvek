@@ -9,6 +9,8 @@ use web_sys::HtmlInputElement;
 
 #[component]
 pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
+    let order_id = reactive_order.id.clone();
+
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
@@ -49,6 +51,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
             file_name.clone(),
             reactive_order.drawing_file_url.get_untracked(),
         );
+
         async move {
             let orders_client = OrdersApi::new();
             match orders_client.create_drawing_upload_url(request).await {
@@ -89,12 +92,13 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                     </div>
                     <div class="ml-3">
                         <p class="text-gray-900 whitespace-no-wrap">{reactive_order.file_name}</p>
-                        <p class="text-gray-900 whitespace-no-wrap" for="drawing-file">
+                        <p class="text-gray-900 whitespace-no-wrap" for=format!("drawing-file-{}", order_id)>
                             <label
-                                for="drawing-file"
+                                for=format!("drawing-file-{}", order_id)
                             >
                                 <input
-                                    id="drawing-file"
+                                    id=format!("drawing-file-{}", order_id)
+
                                     type="file"
                                     class="hidden"
                                     accept=".pdf"
