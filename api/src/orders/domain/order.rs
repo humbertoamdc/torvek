@@ -1,9 +1,8 @@
+use crate::orders::adapters::api::requests::{AdminUpdateOrderRequest, UpdateOrderRequest};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::Uuid;
-
-use crate::orders::adapters::api::requests::{AdminUpdateOrderRequest, UpdateOrderRequest};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Order {
@@ -11,6 +10,8 @@ pub struct Order {
     pub client_id: String,
     pub file_name: String,
     pub file_url: String,
+    pub drawing_file_name: Option<String>,
+    pub drawing_file_url: Option<String>,
     pub order_status: OrderStatus,
     pub process: String,
     pub material: String,
@@ -30,6 +31,8 @@ impl Order {
             client_id,
             file_name,
             file_url,
+            drawing_file_name: None,
+            drawing_file_url: None,
             order_status: OrderStatus::PendingQuotation,
             process: String::from("CNC"),
             material: String::from("Aluminum 6061-T6"),
@@ -52,6 +55,8 @@ pub enum OrderStatus {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UpdatableOrder {
+    pub drawing_file_name: Option<String>,
+    pub drawing_file_url: Option<String>,
     pub process: Option<String>,
     pub material: Option<String>,
     pub tolerance: Option<String>,
@@ -63,6 +68,8 @@ pub struct UpdatableOrder {
 impl From<&UpdateOrderRequest> for UpdatableOrder {
     fn from(request: &UpdateOrderRequest) -> Self {
         Self {
+            drawing_file_name: request.drawing_file_name.clone(),
+            drawing_file_url: request.drawing_file_url.clone(),
             process: request.process.clone(),
             material: request.material.clone(),
             tolerance: request.tolerance.clone(),
@@ -76,6 +83,8 @@ impl From<&UpdateOrderRequest> for UpdatableOrder {
 impl From<&AdminUpdateOrderRequest> for UpdatableOrder {
     fn from(request: &AdminUpdateOrderRequest) -> Self {
         Self {
+            drawing_file_name: None,
+            drawing_file_url: None,
             process: None,
             material: None,
             tolerance: None,

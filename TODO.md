@@ -19,6 +19,7 @@
     - [ ] Controllers
 - [ ] Constraint imports. Each mod file should only include members required by other packages.
 - [ ] Add tests.
+- [ ] Use a commons struct for files instead of having `file_name`, `file_url`, etc.
 
 ### Infra
 

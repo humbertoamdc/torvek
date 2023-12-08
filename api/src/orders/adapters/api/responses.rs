@@ -24,3 +24,14 @@ impl QueryOrdersForClientResponse {
         Self { orders }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminQueryOrderByStatusResponse {
+    pub orders: Vec<Order>,
+}
+
+impl AdminQueryOrderByStatusResponse {
+    pub const fn new(orders: Vec<Order>) -> Self {
+        Self { orders }
+    }
+}

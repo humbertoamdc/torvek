@@ -127,6 +127,20 @@ impl OrdersRepository for DynamodbOrders {
             AttributeValue::S(Utc::now().to_string()),
         );
 
+        if let Some(drawing_file_name) = order.drawing_file_name {
+            update_expression.push_str("drawing_file_name = :drawing_file_name, ");
+            expression_attribute_values.insert(
+                ":drawing_file_name".to_string(),
+                AttributeValue::S(drawing_file_name),
+            );
+        }
+        if let Some(drawing_file_url) = order.drawing_file_url {
+            update_expression.push_str("drawing_file_url = :drawing_file_url, ");
+            expression_attribute_values.insert(
+                ":drawing_file_url".to_string(),
+                AttributeValue::S(drawing_file_url),
+            );
+        }
         if let Some(process) = order.process {
             update_expression.push_str("process = :process, ");
             expression_attribute_values.insert(":process".to_string(), AttributeValue::S(process));
