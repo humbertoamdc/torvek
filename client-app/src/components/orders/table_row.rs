@@ -82,7 +82,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
     view! {
         <tr>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex items-center justify-center">
+                <div class="flex items-center justify-left pl-6">
                     <div class="flex-shrink-0 w-10 h-10">
                         <img
                             class="w-full h-full rounded-full"

@@ -1,4 +1,5 @@
 use crate::api::auth::AuthorizedApi;
+use crate::pages::Page;
 use leptos::*;
 
 #[component]
@@ -31,9 +32,9 @@ pub fn Sidebar(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>
                 </div>
                 <div class="flex-1 flex flex-col h-full overflow-auto">
                     <ul class="px-4 text-md font-medium flex-1">
-                        <li key="1">
+                        <li key="home-page">
                             <a
-                                href="/"
+                                href=Page::Home.path()
                                 class="flex items-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150"
                             >
                                 <div class="text-gray-500">
@@ -55,10 +56,34 @@ pub fn Sidebar(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>
                                 Dashboard
                             </a>
                         </li>
+                        <li key="projects-page">
+                            <a
+                                href=Page::Projects.path()
+                                class="flex items-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150"
+                            >
+                                <div class="text-gray-500">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth=1.5
+                                        stroke="currentColor"
+                                        class="w-5 h-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-.98.626-1.813 1.5-2.122"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                Projects
+                            </a>
+                        </li>
                     </ul>
                     <div>
                         <ul class="px-4 pb-4 text-sm font-medium text-red-600">
-                            <li key=2>
+                            <li key="logout">
                                 <a
                                     class="flex items-center gap-x-2  p-2 rounded-lg cursor-pointer hover:bg-gray-50 active:bg-gray-100 duration-150"
                                     on:click=move |_| logout_action.dispatch(())

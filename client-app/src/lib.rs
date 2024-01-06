@@ -1,4 +1,6 @@
 use crate::api::auth::UnauthorizedApi;
+use crate::pages::home::Home;
+use crate::pages::projects::Projects;
 use api::auth::AuthorizedApi;
 use api::models::auth::UserInfo;
 use leptos::*;
@@ -73,14 +75,24 @@ pub fn App() -> impl IntoView {
                                     }
                                 >
 
-                                    <Dashboard
+                                    <Home
                                         auth_client=authorized_api_signal.get().unwrap()
                                         on_logout=on_logout
                                     />
                                 </Show>
                             }
                         }
-                    />
+                    >
+                        <Route path=Page::Projects.path() view=Projects/>
+                        <Route path=Page::Home.path() view=move || {
+                            view!{
+                                 <Dashboard
+                                        auth_client=authorized_api_signal.get().unwrap()
+                                        on_logout=on_logout
+                                    />
+            }
+        } />
+                    </Route>
 
                     <Route
                         path=Page::Register.path()
