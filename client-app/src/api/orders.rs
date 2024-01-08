@@ -8,15 +8,14 @@ use api_boundary::orders::responses::CreateDrawingUploadUrlResponse;
 use gloo_net::http::Request;
 use leptos::wasm_bindgen::JsValue;
 use serde::de::DeserializeOwned;
-use std::fmt::format;
 use web_sys::{File, RequestCredentials};
 
 #[derive(Clone, Copy)]
-pub struct OrdersApi {
+pub struct OrdersClient {
     url: &'static str,
 }
 
-impl OrdersApi {
+impl OrdersClient {
     pub const fn new() -> Self {
         Self { url: env::API_URL }
     }

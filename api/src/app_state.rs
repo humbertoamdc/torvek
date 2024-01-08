@@ -12,6 +12,8 @@ use crate::orders::adapters::spi::object_storage::s3::S3ObjectStorage;
 use crate::orders::adapters::spi::orders_repository::dynamodb::DynamodbOrders;
 use crate::orders::application::repositories::orders::OrdersRepository;
 use crate::orders::application::services::object_storage::ObjectStorage;
+use crate::projects::repositories::projects::ProjectsRepository;
+use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -19,6 +21,7 @@ pub struct AppState {
     pub domain: String,
     pub auth: Auth,
     pub orders: Orders,
+    pub projects: Projects,
 }
 
 #[derive(Clone)]
@@ -33,6 +36,11 @@ pub struct Orders {
     pub orders_repository: Arc<dyn OrdersRepository>,
 }
 
+#[derive(Clone)]
+pub struct Projects {
+    pub projects_repository: Arc<dyn ProjectsRepository>,
+}
+
 impl AppState {
     pub async fn from(config: &Config) -> Self {
         Self {
@@ -40,6 +48,7 @@ impl AppState {
             domain: config.app.domain.clone(),
             auth: Auth::from(config).await,
             orders: Orders::from(config).await,
+            projects: Projects::from(config).await,
         }
     }
 }
@@ -107,6 +116,32 @@ impl Orders {
         Self {
             object_storage,
             orders_repository,
+        }
+    }
+}
+
+impl Projects {
+    async fn from(config: &Config) -> Self {
+        // Configs
+        let mut shared_config = aws_config::from_env();
+        if config.app.env == Environment::Development {
+            shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
+        }
+        let shared_config = shared_config.load().await;
+
+        let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
+
+        // Clients
+        let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
+
+        // Services & Repositories
+        let projects_repository = Arc::new(DynamodbProjects::new(
+            dynamodb_client,
+            config.projects.projects_table.clone(),
+        ));
+
+        Self {
+            projects_repository,
         }
     }
 }

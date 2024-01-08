@@ -1,5 +1,5 @@
 use crate::api;
-use crate::api::auth::{AuthorizedApi, UnauthorizedApi};
+use crate::api::auth::{AuthorizedClient, UnauthorizedClient};
 use crate::api::models::auth::Credentials;
 use crate::pages::Page;
 
@@ -8,8 +8,8 @@ use leptos_router::*;
 
 #[component]
 pub fn Register(
-    api: UnauthorizedApi,
-    #[prop(into)] on_success: Callback<AuthorizedApi>,
+    api: UnauthorizedClient,
+    #[prop(into)] on_success: Callback<AuthorizedClient>,
 ) -> impl IntoView {
     // -- signals -- //
 

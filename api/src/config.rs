@@ -6,6 +6,7 @@ pub struct Config {
     pub app: App,
     pub auth: Auth,
     pub orders: Orders,
+    pub projects: Projects,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -26,6 +27,11 @@ pub struct Auth {
 pub struct Orders {
     pub s3_bucket: String,
     pub orders_table: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Projects {
+    pub projects_table: String,
 }
 
 impl From<&str> for Config {

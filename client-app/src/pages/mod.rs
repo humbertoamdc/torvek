@@ -1,7 +1,9 @@
 pub use self::{dashboard::*, login::*, register::*};
 
 pub mod dashboard;
+pub mod home;
 pub mod login;
+pub mod projects;
 pub mod register;
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -10,6 +12,7 @@ pub enum Page {
     Home,
     Login,
     Register,
+    Projects,
 }
 
 impl Page {
@@ -18,6 +21,7 @@ impl Page {
             Self::Home => "/",
             Self::Login => "/",
             Self::Register => "/register",
+            Self::Projects => "/projects",
         }
     }
 }
