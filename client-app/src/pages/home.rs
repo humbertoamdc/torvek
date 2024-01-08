@@ -1,4 +1,4 @@
-use crate::api::auth::AuthorizedApi;
+use crate::api::auth::AuthorizedClient;
 use crate::api::models::auth::UserInfo;
 use crate::components::loading::Loading;
 use crate::components::sidebar::Sidebar;
@@ -6,7 +6,7 @@ use leptos::*;
 use leptos_router::*;
 
 #[component]
-pub fn Home(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>) -> impl IntoView {
+pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>) -> impl IntoView {
     let user_info_signal = create_rw_signal(UserInfo::default());
 
     // Fetch user data

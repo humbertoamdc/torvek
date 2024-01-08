@@ -1,7 +1,7 @@
-use crate::api::auth::UnauthorizedApi;
+use crate::api::auth::UnauthorizedClient;
 use crate::pages::home::Home;
 use crate::pages::projects::Projects;
-use api::auth::AuthorizedApi;
+use api::auth::AuthorizedClient;
 use api::models::auth::UserInfo;
 use leptos::*;
 use leptos_router::*;
@@ -19,8 +19,8 @@ mod pages;
 pub fn App() -> impl IntoView {
     // -- signals -- //
 
-    let authorized_api_signal: RwSignal<Option<AuthorizedApi>> =
-        create_rw_signal(None::<AuthorizedApi>);
+    let authorized_api_signal: RwSignal<Option<AuthorizedClient>> =
+        create_rw_signal(None::<AuthorizedClient>);
     let user_info_signal: RwSignal<Option<UserInfo>> = create_rw_signal(None::<UserInfo>);
     let is_logged_in_signal = Signal::derive(move || authorized_api_signal.get().is_some());
 
@@ -36,7 +36,7 @@ pub fn App() -> impl IntoView {
     };
 
     // -- init API -- //
-    let unauthorized_api = UnauthorizedApi::new();
+    let unauthorized_api = UnauthorizedClient::new();
     let logging_in = create_action(move |_| async move {
         // Try to login. If there is a session id in the cookies we can skip the login page.
         if let Ok((authorized_api, user_info)) =

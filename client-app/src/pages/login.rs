@@ -2,14 +2,14 @@ use crate::api;
 use leptos::*;
 use leptos_router::*;
 
-use crate::api::auth::{AuthorizedApi, UnauthorizedApi};
+use crate::api::auth::{AuthorizedClient, UnauthorizedClient};
 use crate::api::models::auth::Credentials;
 use crate::pages::Page;
 
 #[component]
 pub fn Login(
-    api: UnauthorizedApi,
-    #[prop(into)] on_success: Callback<AuthorizedApi>,
+    api: UnauthorizedClient,
+    #[prop(into)] on_success: Callback<AuthorizedClient>,
 ) -> impl IntoView {
     // -- signals -- //
 

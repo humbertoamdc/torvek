@@ -1,12 +1,26 @@
+use crate::api::models::auth::UserInfo;
+use crate::api::projects::ProjectsClient;
+use api_boundary::projects::requests::CreateProjectRequest;
 use leptos::*;
 
 #[component]
 pub fn Projects() -> impl IntoView {
+    // -- context -- //
+
+    let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
+
     // -- actions -- //
 
     let create_project = create_action(move |_| {
-        log::debug!("Creating project");
-        async {}
+        let request = CreateProjectRequest::new(user_info.get_untracked().id);
+        async {
+            let projects_client = ProjectsClient::new();
+            let result = projects_client.create_project(request).await;
+            match result {
+                Ok(_) => (),
+                Err(_) => (), // TODO: Handle error.
+            }
+        }
     });
 
     view! {

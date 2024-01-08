@@ -1,6 +1,6 @@
 use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::{CreateOrdersRequest, ReactiveOrder, UpdateOrderRequest};
-use crate::api::orders::OrdersApi;
+use crate::api::orders::OrdersClient;
 use crate::components::orders::materials_dropdown::MaterialsDropdown;
 use crate::components::orders::tolerances_dropdown::TolerancesDropdown;
 use api_boundary::orders::requests::CreateDrawingUploadUrlRequest;
@@ -14,7 +14,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
-    let orders_client = use_context::<OrdersApi>().unwrap_or(OrdersApi::new());
+    let orders_client = use_context::<OrdersClient>().unwrap_or(OrdersClient::new());
 
     // -- actions -- //
 
@@ -53,7 +53,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
         );
 
         async move {
-            let orders_client = OrdersApi::new();
+            let orders_client = OrdersClient::new();
             match orders_client.create_drawing_upload_url(request).await {
                 Ok(response) => {
                     let upload_file_response = orders_client

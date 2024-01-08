@@ -1,6 +1,6 @@
 use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::CreateOrdersRequest;
-use crate::api::orders::OrdersApi;
+use crate::api::orders::OrdersClient;
 use leptos::*;
 use web_sys::HtmlInputElement;
 
@@ -23,7 +23,7 @@ pub fn DropzoneUpload(#[prop(into)] on_upload: Callback<()>) -> impl IntoView {
         let request =
             CreateOrdersRequest::new(String::from(user_info.get().id), file_names.to_owned());
         async move {
-            let orders_client = OrdersApi::new();
+            let orders_client = OrdersClient::new();
             match orders_client.create_orders(request).await {
                 Ok(response) => {
                     for i in 0..file_list.length() {

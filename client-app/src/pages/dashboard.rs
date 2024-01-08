@@ -1,29 +1,29 @@
-use crate::api::auth::AuthorizedApi;
+use crate::api::auth::AuthorizedClient;
 use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::Order;
-use crate::api::orders::OrdersApi;
+use crate::api::orders::OrdersClient;
 use crate::components::dropzone_upload::DropzoneUpload;
 use crate::components::orders::table::OrdersTable;
 use leptos::*;
 
 #[component]
 pub fn Dashboard(
-    auth_client: AuthorizedApi,
+    auth_client: AuthorizedClient,
     #[prop(into)] on_logout: Callback<()>,
 ) -> impl IntoView {
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
 
-    // -- api clients -- //
-    let orders_client = OrdersApi::new();
+    // -- clients -- //
+    let orders_client = OrdersClient::new();
     provide_context(orders_client);
 
     let client_orders = create_rw_signal(Vec::<Order>::default());
     let query_client_orders_action = create_action(move |client_id: &String| {
         let client_id = client_id.clone();
         async move {
-            let orders_client = OrdersApi::new();
+            let orders_client = OrdersClient::new();
             let result = orders_client.query_orders_for_client(client_id).await;
             match result {
                 Ok(response) => client_orders.update(|o| *o = response.orders),

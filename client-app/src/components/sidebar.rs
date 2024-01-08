@@ -1,9 +1,12 @@
-use crate::api::auth::AuthorizedApi;
+use crate::api::auth::AuthorizedClient;
 use crate::pages::Page;
 use leptos::*;
 
 #[component]
-pub fn Sidebar(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>) -> impl IntoView {
+pub fn Sidebar(
+    auth_client: AuthorizedClient,
+    #[prop(into)] on_logout: Callback<()>,
+) -> impl IntoView {
     let (wait_for_response, set_wait_for_response) = create_signal(false);
     let logout_is_disabled = Signal::derive(move || wait_for_response.get());
 
