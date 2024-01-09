@@ -7,18 +7,18 @@ edition = "2021"
 
 [dependencies]
 api-boundary = { path = "../api-boundary" }
-aws-config = "0.57.1"
-aws-sdk-dynamodb = "0.36.0"
-aws-sdk-s3 = "0.36.0"
-axum = { version = "0.6.20", features = ["json", "macros"] }
-axum-aws-lambda = "0.5.0"
-axum-extra = { version = "0.8.0", features = ["cookie", "cookie-private", "cookie-signed"] }
+aws-config = "1.1.1"
+aws-sdk-dynamodb = "1.9.0"
+aws-sdk-s3 = "1.11.0"
+axum = { version = "0.7.3", features = ["json", "macros"] }
+axum-aws-lambda = "0.6.0"
+axum-extra = { version = "0.9.1", features = ["cookie", "cookie-private", "cookie-signed"] }
 chrono = { version = "0.4.31", features = ["serde"] }
 cookie = { version = "0.18.0", features = ["secure"] }
 env_logger = { version = "0.10.0", features = ["color"] }
-http = "0.2.9"
-lambda_http = "0.8.3"
-lambda_runtime = { version = "0.8.3", features = ["simulated"] }
+http = "1.0.0"
+lambda_http = "0.9.0"
+lambda_runtime = { version = "0.9.0", features = ["simulated"] }
 log = "0.4.20"
 ory-kratos-client = { path = "../ory-kratos-client" }
 reqwest = { version = "0.11.22", features = ["json"] }
@@ -30,7 +30,7 @@ thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = ["full"] }
 toml = "0.8.6"
 tower = "0.4.13"
-tower-http = { version = "0.4.4", features = ["full"] }
+tower-http = { version = "0.5.0", features = ["full"] }
 tracing = { version = "0.1.40", features = [] }
 uuid = { version = "1.5.0", features = ["v4"] }
 serde-enum-str = "0.4.0"
