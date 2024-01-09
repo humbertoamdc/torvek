@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -5,12 +6,18 @@ use uuid::Uuid;
 pub struct Project {
     id: String,
     client_id: String,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
 }
 impl Project {
     pub fn new(client_id: String) -> Self {
+        let now = Utc::now();
+
         Self {
             id: Uuid::new_v4().to_string(),
             client_id,
+            created_at: now,
+            updated_at: now,
         }
     }
 }

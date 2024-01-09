@@ -30,6 +30,7 @@ impl UseCase<AdminQueryOrdersByStatusRequest, AdminQueryOrderByStatusResponse, O
             .orders_repository
             .query_orders_by_status(request.order_status)
             .await?;
+
         Ok(AdminQueryOrderByStatusResponse::new(orders))
     }
 }

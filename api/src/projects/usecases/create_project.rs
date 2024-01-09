@@ -1,4 +1,4 @@
-use crate::projects::domain::errors::ProjectError;
+use crate::projects::domain::errors::ProjectsError;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::projects::usecases::UseCase;
 use api_boundary::projects::models::Project;
@@ -19,8 +19,8 @@ impl CreateProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateProjectRequest, (), ProjectError> for CreateProjectUseCase {
-    async fn execute(&self, request: CreateProjectRequest) -> Result<(), ProjectError> {
+impl UseCase<CreateProjectRequest, (), ProjectsError> for CreateProjectUseCase {
+    async fn execute(&self, request: CreateProjectRequest) -> Result<(), ProjectsError> {
         let project = Project::new(request.client_id);
         self.projects_repository.create_project(project).await
     }
