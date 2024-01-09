@@ -65,4 +65,8 @@ Resources:
                   - !Sub
                     - "${ordersTableArn}/*"
                     - ordersTableArn: !ImportValue OrdersTableArn
+                  - !ImportValue ProjectsTableArn
+                  - !Sub
+                    - "${projectsTableArn}/*"
+                    - projectsTableArn: !ImportValue ProjectsTableArn
       RoleName: ApiLambdaRole
