@@ -1,8 +1,9 @@
+use aws_config::BehaviorVersion;
 use std::env;
 use std::sync::Arc;
 
-use http::header::ACCEPT;
-use http::HeaderMap;
+use reqwest::header::ACCEPT;
+use reqwest::header::{HeaderMap, HeaderValue};
 
 use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityManager;
 use crate::auth::adapters::spi::identity_manager::ory::OryIdentityManager;
@@ -78,7 +79,7 @@ impl Auth {
 
     fn reqwest_client() -> reqwest::Client {
         let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, "application/json".parse().unwrap());
+        headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         reqwest::Client::builder()
             .default_headers(headers)
             .https_only(true)
@@ -90,7 +91,7 @@ impl Auth {
 impl Orders {
     async fn from(config: &Config) -> Self {
         // Configs
-        let mut shared_config = aws_config::from_env();
+        let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
         if config.app.env == Environment::Development {
             shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
         }
@@ -123,7 +124,7 @@ impl Orders {
 impl Projects {
     async fn from(config: &Config) -> Self {
         // Configs
-        let mut shared_config = aws_config::from_env();
+        let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
         if config.app.env == Environment::Development {
             shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
         }

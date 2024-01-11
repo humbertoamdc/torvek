@@ -114,10 +114,10 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
 
     match result {
         Ok(_) => {
-            let cookie = Cookie::build(CLIENT_SESSION_TOKEN, "")
+            let cookie = Cookie::build((CLIENT_SESSION_TOKEN, ""))
                 .path("/")
                 .expires(OffsetDateTime::now_utc())
-                .finish();
+                .build();
 
             (StatusCode::NO_CONTENT, cookies.add(cookie))
         }
@@ -193,10 +193,10 @@ pub async fn admin_logout(
 
     match result {
         Ok(_) => {
-            let cookie = Cookie::build(ADMIN_SESSION_TOKEN, "")
+            let cookie = Cookie::build((ADMIN_SESSION_TOKEN, ""))
                 .path("/")
                 .expires(OffsetDateTime::now_utc())
-                .finish();
+                .build();
 
             (StatusCode::NO_CONTENT, cookies.add(cookie))
         }

@@ -24,8 +24,7 @@ create-stack:
 lambda:
 	make create-stack stack=lambda
 	cargo lambda build --release;
-	cargo lambda deploy --profile $(PROFILE) --region $(REGION) \
-		--binary-path ../target/lambda/api/bootstrap \
+	cargo lambda deploy --profile $(PROFILE) --region $(REGION) api \
 		--iam-role arn:aws:iam::120386585975:role/ApiLambdaRole
 	sleep 5
 	aws --profile $(PROFILE) --region $(REGION) lambda update-function-configuration \

@@ -1,4 +1,5 @@
 pub mod create_project;
+pub mod query_projects_for_client;
 
 use axum::async_trait;
 

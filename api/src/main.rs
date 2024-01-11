@@ -1,7 +1,7 @@
 #![feature(exclusive_range_pattern)]
 
+use aws_config::BehaviorVersion;
 use std::env;
-use std::net::SocketAddr;
 
 use axum::Router;
 use http::header::{CONTENT_TYPE, ORIGIN};
@@ -65,12 +65,10 @@ async fn run_local(app: Router<AppState>) {
     let app = app.layer(cors_layer).with_state(app_state);
 
     // Run
-    let addr = SocketAddr::from(([127, 0, 0, 1], app_config.app.port));
+    let addr = format!("127.0.0.1:{}", app_config.app.port);
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     log::info!("listening on {addr}");
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn run_lambda(app: Router<AppState>) {
@@ -79,7 +77,9 @@ async fn run_lambda(app: Router<AppState>) {
     let config_key = "prod.toml";
 
     // Retrieve config from S3
-    let shared_config = aws_config::from_env().load().await;
+    let shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09())
+        .load()
+        .await;
     let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
     let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
     let result = s3_client

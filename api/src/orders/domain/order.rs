@@ -26,6 +26,7 @@ pub struct Order {
 impl Order {
     pub fn new(client_id: String, file_name: String, file_url: String) -> Self {
         let now = Utc::now();
+
         Self {
             id: Uuid::new_v4().to_string(),
             client_id,

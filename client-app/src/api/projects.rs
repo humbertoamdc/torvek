@@ -1,6 +1,7 @@
 use crate::api::common::{into_json, Result};
 use crate::env;
 use api_boundary::projects::requests::CreateProjectRequest;
+use api_boundary::projects::responses::QueryProjectsForClientResponse;
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use web_sys::RequestCredentials;
@@ -20,6 +21,18 @@ impl ProjectsClient {
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
             .json(&body)?;
+
+        self.send(request).await
+    }
+
+    pub async fn query_projects_for_client(
+        &self,
+        client_id: String,
+    ) -> Result<QueryProjectsForClientResponse> {
+        let url = format!("{}/clients/{client_id}/projects", self.url);
+        let request = Request::get(&url)
+            .credentials(RequestCredentials::Include)
+            .build()?;
 
         self.send(request).await
     }

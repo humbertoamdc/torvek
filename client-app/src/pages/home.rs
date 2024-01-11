@@ -40,6 +40,5 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
                 </Show>
             </div>
         </div>
-
     }
 }

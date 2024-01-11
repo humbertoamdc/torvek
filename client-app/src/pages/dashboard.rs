@@ -15,11 +15,11 @@ pub fn Dashboard(
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
 
-    // -- clients -- //
-    let orders_client = OrdersClient::new();
-    provide_context(orders_client);
-
+    // -- signals -- //
     let client_orders = create_rw_signal(Vec::<Order>::default());
+
+    // -- action -- //
+
     let query_client_orders_action = create_action(move |client_id: &String| {
         let client_id = client_id.clone();
         async move {
