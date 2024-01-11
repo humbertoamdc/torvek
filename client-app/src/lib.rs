@@ -83,15 +83,20 @@ pub fn App() -> impl IntoView {
                             }
                         }
                     >
+
                         <Route path=Page::Projects.path() view=Projects/>
-                        <Route path=Page::Home.path() view=move || {
-                            view!{
-                                 <Dashboard
+                        <Route
+                            path=Page::Home.path()
+                            view=move || {
+                                view! {
+                                    <Dashboard
                                         auth_client=authorized_api_signal.get().unwrap()
                                         on_logout=on_logout
                                     />
-            }
-        } />
+                                }
+                            }
+                        />
+
                     </Route>
 
                     <Route

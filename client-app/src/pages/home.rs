@@ -36,10 +36,10 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
                         view! { <Loading/> }
                     }
                 >
+
                     <Outlet/>
                 </Show>
             </div>
         </div>
-
     }
 }

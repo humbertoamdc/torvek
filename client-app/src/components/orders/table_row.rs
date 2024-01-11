@@ -92,10 +92,11 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                     </div>
                     <div class="ml-3">
                         <p class="text-gray-900 whitespace-no-wrap">{reactive_order.file_name}</p>
-                        <p class="text-gray-900 whitespace-no-wrap" for=format!("drawing-file-{}", order_id)>
-                            <label
-                                for=format!("drawing-file-{}", order_id)
-                            >
+                        <p
+                            class="text-gray-900 whitespace-no-wrap"
+                            for=format!("drawing-file-{}", order_id)
+                        >
+                            <label for=format!("drawing-file-{}", order_id)>
                                 <input
                                     id=format!("drawing-file-{}", order_id)
 
