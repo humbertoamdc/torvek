@@ -15,7 +15,7 @@ pub fn Login(
 
     let (email, set_email) = create_signal(String::new());
     let (password, set_password) = create_signal(String::new());
-    let (login_error, set_login_error) = create_signal(None::<String>);
+    let (_, set_login_error) = create_signal(None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(false);
     let disabled = Signal::derive(move || wait_for_response.get());
     let button_is_disabled = Signal::derive(move || {

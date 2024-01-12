@@ -7,8 +7,8 @@ use api_boundary::orders::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::orders::responses::CreateDrawingUploadUrlResponse;
 use gloo_net::http::Request;
 use leptos::wasm_bindgen::JsValue;
+use leptos::web_sys::{File, RequestCredentials};
 use serde::de::DeserializeOwned;
-use web_sys::{File, RequestCredentials};
 
 #[derive(Clone, Copy)]
 pub struct OrdersClient {

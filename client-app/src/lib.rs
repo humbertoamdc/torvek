@@ -89,10 +89,7 @@ pub fn App() -> impl IntoView {
                             path=Page::Home.path()
                             view=move || {
                                 view! {
-                                    <Dashboard
-                                        auth_client=authorized_api_signal.get().unwrap()
-                                        on_logout=on_logout
-                                    />
+                                    <Dashboard/>
                                 }
                             }
                         />

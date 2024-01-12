@@ -1,5 +1,4 @@
 use crate::api::models::auth::UserInfo;
-use crate::api::models::orders::Order;
 use crate::api::projects::ProjectsClient;
 use crate::components::projects::project_button::ProjectButton;
 use api_boundary::projects::models::Project;
@@ -63,7 +62,6 @@ pub fn Projects() -> impl IntoView {
                 create_project.dispatch(());
             }
         >
-
             "New Project"
         </button>
 
@@ -71,7 +69,7 @@ pub fn Projects() -> impl IntoView {
             <For
                 each=move || projects.get().into_iter()
                 key=|project| project.id.clone()
-                children=move |project| {
+                children=move |_| {
                     view! { <ProjectButton/> }
                 }
             />

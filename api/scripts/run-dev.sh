@@ -19,6 +19,9 @@ trap cleanup INT
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting local AWS infra"
 docker compose up -d --wait
 
+# Kill anything running on port 3000
+lsof -i :3000 -t | xargs kill
+
 # Start server
 AWS_ACCESS_KEY_ID=test \
 AWS_SECRET_ACCESS_KEY=test \

@@ -1,8 +1,8 @@
+use crate::api::auth::UnauthorizedApi;
 use api::auth::AuthorizedApi;
 use api::models::auth::UserInfo;
 use leptos::*;
 use leptos_router::*;
-use crate::api::auth::UnauthorizedApi;
 
 use self::components::loading::Loading;
 use self::pages::*;

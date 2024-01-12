@@ -1,4 +1,3 @@
-use crate::api::auth::AuthorizedClient;
 use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::Order;
 use crate::api::orders::OrdersClient;
@@ -7,10 +6,7 @@ use crate::components::orders::table::OrdersTable;
 use leptos::*;
 
 #[component]
-pub fn Dashboard(
-    auth_client: AuthorizedClient,
-    #[prop(into)] on_logout: Callback<()>,
-) -> impl IntoView {
+pub fn Dashboard() -> impl IntoView {
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
