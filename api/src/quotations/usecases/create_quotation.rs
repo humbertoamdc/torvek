@@ -21,7 +21,7 @@ impl CreateQuotationUseCase {
 #[async_trait]
 impl UseCase<CreateQuotationRequest, (), QuotationsError> for CreateQuotationUseCase {
     async fn execute(&self, request: CreateQuotationRequest) -> Result<(), QuotationsError> {
-        let quotation = Quotation::new(request.project_id);
+        let quotation = Quotation::new(request.client_id, request.project_id);
         self.quotations_repository.create_quotation(quotation).await
     }
 }
