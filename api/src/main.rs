@@ -17,6 +17,7 @@ mod auth;
 mod config;
 mod orders;
 mod projects;
+mod quotations;
 
 #[tokio::main]
 async fn main() {
@@ -26,6 +27,7 @@ async fn main() {
         .nest("/api/v1", auth::routes::create_router())
         .nest("/api/v1", orders::routes::create_router())
         .nest("/api/v1", projects::routes::create_router())
+        .nest("/api/v1", quotations::routes::create_router())
         .layer(CompressionLayer::new().gzip(true).deflate(true));
 
     match env::var("RUN_MODE")

@@ -1,0 +1,27 @@
+use crate::quotations::domain::errors::QuotationsError;
+use crate::quotations::repositories::quotations::QuotationsRepository;
+use crate::quotations::usecases::UseCase;
+use api_boundary::quotations::models::Quotation;
+use api_boundary::quotations::requests::CreateQuotationRequest;
+use axum::async_trait;
+use std::sync::Arc;
+
+pub struct CreateQuotationUseCase {
+    quotations_repository: Arc<dyn QuotationsRepository>,
+}
+
+impl CreateQuotationUseCase {
+    pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
+        Self {
+            quotations_repository,
+        }
+    }
+}
+
+#[async_trait]
+impl UseCase<CreateQuotationRequest, (), QuotationsError> for CreateQuotationUseCase {
+    async fn execute(&self, request: CreateQuotationRequest) -> Result<(), QuotationsError> {
+        let quotation = Quotation::new(request.project_id);
+        self.quotations_repository.create_quotation(quotation).await
+    }
+}
