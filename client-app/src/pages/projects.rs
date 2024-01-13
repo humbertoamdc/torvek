@@ -4,6 +4,12 @@ use crate::components::projects::project_button::ProjectButton;
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::CreateProjectRequest;
 use leptos::*;
+use leptos_router::*;
+
+#[component]
+pub fn ProjectsContainer() -> impl IntoView {
+    view! { <Outlet/> }
+}
 
 #[component]
 pub fn Projects() -> impl IntoView {
@@ -62,6 +68,7 @@ pub fn Projects() -> impl IntoView {
                 create_project.dispatch(());
             }
         >
+
             "New Project"
         </button>
 
@@ -69,10 +76,11 @@ pub fn Projects() -> impl IntoView {
             <For
                 each=move || projects.get().into_iter()
                 key=|project| project.id.clone()
-                children=move |_| {
-                    view! { <ProjectButton/> }
+                children=move |project| {
+                    view! { <ProjectButton project=project/> }
                 }
             />
+
         </div>
     }
 }
