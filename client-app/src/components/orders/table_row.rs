@@ -1,5 +1,5 @@
 use crate::api::models::auth::UserInfo;
-use crate::api::models::orders::{CreateOrdersRequest, ReactiveOrder, UpdateOrderRequest};
+use crate::api::models::orders::{ReactiveOrder, UpdateOrderRequest};
 use crate::api::orders::OrdersClient;
 use crate::components::orders::materials_dropdown::MaterialsDropdown;
 use crate::components::orders::tolerances_dropdown::TolerancesDropdown;

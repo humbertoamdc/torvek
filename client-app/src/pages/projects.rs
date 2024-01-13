@@ -1,10 +1,15 @@
 use crate::api::models::auth::UserInfo;
-use crate::api::models::orders::Order;
 use crate::api::projects::ProjectsClient;
 use crate::components::projects::project_button::ProjectButton;
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::CreateProjectRequest;
 use leptos::*;
+use leptos_router::*;
+
+#[component]
+pub fn ProjectsContainer() -> impl IntoView {
+    view! { <Outlet/> }
+}
 
 #[component]
 pub fn Projects() -> impl IntoView {
@@ -72,9 +77,10 @@ pub fn Projects() -> impl IntoView {
                 each=move || projects.get().into_iter()
                 key=|project| project.id.clone()
                 children=move |project| {
-                    view! { <ProjectButton/> }
+                    view! { <ProjectButton project=project/> }
                 }
             />
+
         </div>
     }
 }

@@ -4,6 +4,7 @@ pub mod dashboard;
 pub mod home;
 pub mod login;
 pub mod projects;
+pub mod quotations;
 pub mod register;
 
 #[derive(Debug, Clone, Copy, Default)]
