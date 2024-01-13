@@ -51,7 +51,6 @@ pub fn Quotations() -> impl IntoView {
                 create_quotation.dispatch(());
             }
         >
-
             "New Quotation"
         </button>
     }
