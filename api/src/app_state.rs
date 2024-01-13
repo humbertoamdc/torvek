@@ -1,4 +1,4 @@
-use aws_config::BehaviorVersion;
+use aws_config::{BehaviorVersion, SdkConfig};
 use std::env;
 use std::sync::Arc;
 
@@ -15,6 +15,8 @@ use crate::orders::application::repositories::orders::OrdersRepository;
 use crate::orders::application::services::object_storage::ObjectStorage;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
+use crate::quotations::repositories::quotations::QuotationsRepository;
+use crate::quotations::repositories::quotations_dynamodb::DynamodbQuotations;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -23,6 +25,7 @@ pub struct AppState {
     pub auth: Auth,
     pub orders: Orders,
     pub projects: Projects,
+    pub quotations: Quotations,
 }
 
 #[derive(Clone)]
@@ -42,6 +45,11 @@ pub struct Projects {
     pub projects_repository: Arc<dyn ProjectsRepository>,
 }
 
+#[derive(Clone)]
+pub struct Quotations {
+    pub quotations_repository: Arc<dyn QuotationsRepository>,
+}
+
 impl AppState {
     pub async fn from(config: &Config) -> Self {
         Self {
@@ -50,6 +58,7 @@ impl AppState {
             auth: Auth::from(config).await,
             orders: Orders::from(config).await,
             projects: Projects::from(config).await,
+            quotations: Quotations::from(config).await,
         }
     }
 }
@@ -91,12 +100,7 @@ impl Auth {
 impl Orders {
     async fn from(config: &Config) -> Self {
         // Configs
-        let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
-        if config.app.env == Environment::Development {
-            shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
-        }
-        let shared_config = shared_config.load().await;
-
+        let shared_config = get_shared_config(config).await;
         let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
         let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
 
@@ -124,12 +128,7 @@ impl Orders {
 impl Projects {
     async fn from(config: &Config) -> Self {
         // Configs
-        let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
-        if config.app.env == Environment::Development {
-            shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
-        }
-        let shared_config = shared_config.load().await;
-
+        let shared_config = get_shared_config(config).await;
         let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
 
         // Clients
@@ -145,4 +144,33 @@ impl Projects {
             projects_repository,
         }
     }
+}
+
+impl Quotations {
+    async fn from(config: &Config) -> Self {
+        // Configs
+        let shared_config = get_shared_config(config).await;
+        let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
+
+        // Clients
+        let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
+
+        // Services & Repositories
+        let quotations_repository = Arc::new(DynamodbQuotations::new(
+            dynamodb_client,
+            config.quotations.quotations_table.clone(),
+        ));
+
+        Self {
+            quotations_repository,
+        }
+    }
+}
+
+async fn get_shared_config(config: &Config) -> SdkConfig {
+    let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
+    if config.app.env == Environment::Development {
+        shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
+    }
+    shared_config.load().await
 }
