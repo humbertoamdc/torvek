@@ -35,7 +35,7 @@ where
 {
     // ensure we've got 2xx status
     if response.ok() {
-        if response.status() != StatusCode::NO_CONTENT {
+        if response.status() != StatusCode::NO_CONTENT && response.status() != StatusCode::CREATED {
             Ok(response.json().await?)
         } else {
             let default_t: T = serde_json::from_value(Value::from(()))?;
