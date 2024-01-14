@@ -28,7 +28,7 @@ impl UseCase<QueryQuotationsForProjectRequest, QueryQuotationsForProjectResponse
     ) -> Result<QueryQuotationsForProjectResponse, QuotationsError> {
         let quotations = self
             .quotations_repository
-            .query_quotations_for_client(request.project_id)
+            .query_quotations_for_client(request.client_id, request.project_id)
             .await?;
 
         Ok(QueryQuotationsForProjectResponse::new(quotations))

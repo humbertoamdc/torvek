@@ -68,13 +68,13 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: project_id
+        - AttributeName: client_id#project_id
           AttributeType: S
         - AttributeName: id
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: project_id
+        - AttributeName: client_id#project_id
           KeyType: HASH
         - AttributeName: id
           KeyType: RANGE

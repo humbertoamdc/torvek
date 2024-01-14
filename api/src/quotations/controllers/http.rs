@@ -25,10 +25,10 @@ pub async fn create_quotation(
 
 pub async fn query_quotations_for_project(
     State(app_state): State<AppState>,
-    Path((_, project_id)): Path<(String, String)>,
+    Path((client_id, project_id)): Path<(String, String)>,
 ) -> impl IntoResponse {
     let usecase = QueryQuotationsForProjectUseCase::new(app_state.quotations.quotations_repository);
-    let request = QueryQuotationsForProjectRequest::new(project_id);
+    let request = QueryQuotationsForProjectRequest::new(client_id, project_id);
     let result = usecase.execute(request).await;
 
     match result {
