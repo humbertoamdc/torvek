@@ -16,7 +16,7 @@ pub async fn create_project(
     let result = usecase.execute(request).await;
 
     match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Ok(_) => Ok(StatusCode::CREATED),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

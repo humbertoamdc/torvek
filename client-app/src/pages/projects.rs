@@ -25,8 +25,8 @@ pub fn Projects() -> impl IntoView {
 
     let query_projects = create_action(move |_| {
         async move {
-            let project_client = ProjectsClient::new();
-            let result = project_client
+            let projects_client = ProjectsClient::new();
+            let result = projects_client
                 .query_projects_for_client(user_info.get_untracked().id)
                 .await;
 
