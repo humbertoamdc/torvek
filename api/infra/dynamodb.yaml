@@ -86,6 +86,30 @@ Resources:
       TableClass: STANDARD
       TableName: Quotations
 
+  PartsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: client_id#project_id#quotation_id
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: client_id#project_id#quotation_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      TableName: Parts
+
 Outputs:
   OrdersTableArn:
     Description: ARN of orders dynamodb table.
@@ -104,3 +128,9 @@ Outputs:
     Value: !GetAtt QuotationsTable.Arn
     Export:
       Name: QuotationsTableArn
+
+  PartsTableArn:
+    Description: ARN of parts dynamodb table.
+    Value: !GetAtt PartsTable.Arn
+    Export:
+      Name: PartsTableArn

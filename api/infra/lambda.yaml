@@ -73,4 +73,8 @@ Resources:
                   - !Sub
                     - "${quotationsTableArn}/*"
                     - quotationsTableArn: !ImportValue QuotationsTableArn
+                  - !ImportValue PartsTableArn
+                  - !Sub
+                    - "${partsTableArn}/*"
+                    - partsTableArn: !ImportValue PartsTableArn
       RoleName: ApiLambdaRole

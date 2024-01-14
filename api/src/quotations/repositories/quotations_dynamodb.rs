@@ -70,7 +70,7 @@ impl QuotationsRepository for DynamodbQuotations {
                     Err(_) => Err(QuotationsError::UnknownError),
                 }
             }
-            Err(err) => Err(QuotationsError::QueryQuotationsError),
+            Err(_) => Err(QuotationsError::QueryQuotationsError),
         }
     }
 }
