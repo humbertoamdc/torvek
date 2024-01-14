@@ -105,10 +105,7 @@ impl OrdersRepository for DynamodbOrders {
 
         match response {
             Ok(_) => Ok(()),
-            Err(err) => {
-                println!("{err:?}");
-                Err(OrdersError::OrdersBatchCreateError)
-            }
+            Err(_) => Err(OrdersError::OrdersBatchCreateError),
         }
     }
 
