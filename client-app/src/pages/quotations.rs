@@ -4,13 +4,16 @@ use crate::components::quotations::quotation_button::QuotationButton;
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::CreateQuotationRequest;
 use leptos::*;
-use leptos_router::use_params;
-use leptos_router::IntoParam;
-use leptos_router::Params;
+use leptos_router::*;
 
 #[derive(Params, PartialEq)]
 struct QuotationsParams {
     project_id: Option<String>,
+}
+
+#[component]
+pub fn QuotationsContainer() -> impl IntoView {
+    view! { <Outlet/> }
 }
 
 #[component]
@@ -27,7 +30,7 @@ pub fn Quotations() -> impl IntoView {
 
     let params = use_params::<QuotationsParams>();
     let project_id = move || {
-        params.with(|params| {
+        params.with_untracked(|params| {
             params
                 .as_ref()
                 .map(|params| params.project_id.clone())
