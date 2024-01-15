@@ -18,7 +18,7 @@ pub async fn create_quotation(
     let result = usecase.execute(request).await;
 
     match result {
-        Ok(_) => Ok(StatusCode::CREATED),
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

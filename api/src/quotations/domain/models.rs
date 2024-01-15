@@ -16,14 +16,15 @@ impl Into<Quotation> for DynamodbQuotationItem {
         let [client_id, project_id] = self
             .client_id_and_project_id
             .split("#")
-            .collect::<Vec<&str>>()
+            .map(|id| id.to_string())
+            .collect::<Vec<String>>()
             .try_into()
             .unwrap();
 
         Quotation {
             id: self.id,
-            client_id: client_id.to_string(),
-            project_id: project_id.to_string(),
+            client_id,
+            project_id,
             created_at: self.created_at,
             updated_at: self.updated_at,
         }

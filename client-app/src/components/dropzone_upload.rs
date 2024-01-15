@@ -20,8 +20,10 @@ pub fn DropzoneUpload(#[prop(into)] on_upload: Callback<()>) -> impl IntoView {
         }
 
         let input_element = input_element.clone();
-        let request =
-            CreateOrdersRequest::new(String::from(user_info.get().id), file_names.to_owned());
+        let request = CreateOrdersRequest::new(
+            String::from(user_info.get_untracked().id),
+            file_names.to_owned(),
+        );
         async move {
             let orders_client = OrdersClient::new();
             match orders_client.create_orders(request).await {

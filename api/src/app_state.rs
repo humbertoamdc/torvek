@@ -13,6 +13,9 @@ use crate::orders::adapters::spi::object_storage::s3::S3ObjectStorage;
 use crate::orders::adapters::spi::orders_repository::dynamodb::DynamodbOrders;
 use crate::orders::application::repositories::orders::OrdersRepository;
 use crate::orders::application::services::object_storage::ObjectStorage;
+use crate::parts;
+use crate::parts::repositories::parts::PartsRepository;
+use crate::parts::repositories::parts_dynamodb::DynamodbParts;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
 use crate::quotations::repositories::quotations::QuotationsRepository;
@@ -26,6 +29,7 @@ pub struct AppState {
     pub orders: Orders,
     pub projects: Projects,
     pub quotations: Quotations,
+    pub parts: Parts,
 }
 
 #[derive(Clone)]
@@ -50,6 +54,12 @@ pub struct Quotations {
     pub quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
+#[derive(Clone)]
+pub struct Parts {
+    pub parts_repository: Arc<dyn PartsRepository>,
+    pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
+}
+
 impl AppState {
     pub async fn from(config: &Config) -> Self {
         Self {
@@ -59,6 +69,7 @@ impl AppState {
             orders: Orders::from(config).await,
             projects: Projects::from(config).await,
             quotations: Quotations::from(config).await,
+            parts: Parts::from(config).await,
         }
     }
 }
@@ -163,6 +174,34 @@ impl Quotations {
 
         Self {
             quotations_repository,
+        }
+    }
+}
+
+impl Parts {
+    async fn from(config: &Config) -> Self {
+        // Configs
+        let shared_config = get_shared_config(config).await;
+        let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
+        let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
+
+        // Clients
+        let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
+        let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
+
+        // Services & Repositories
+        let parts_repository = Arc::new(DynamodbParts::new(
+            dynamodb_client,
+            config.parts.parts_table.clone(),
+        ));
+        let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
+            s3_client,
+            config.parts.s3_bucket.clone(),
+        ));
+
+        Self {
+            parts_repository,
+            object_storage,
         }
     }
 }

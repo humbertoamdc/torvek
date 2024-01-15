@@ -1,7 +1,8 @@
 use crate::api::auth::UnauthorizedClient;
 use crate::pages::home::Home;
+use crate::pages::parts::{Parts, PartsContainer};
 use crate::pages::projects::{Projects, ProjectsContainer};
-use crate::pages::quotations::Quotations;
+use crate::pages::quotations::{Quotations, QuotationsContainer};
 use api::auth::AuthorizedClient;
 use api::models::auth::UserInfo;
 use leptos::*;
@@ -55,7 +56,7 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes>
                     <Route
-                        path=Page::Home.path()
+                        path="/"
                         view=move || {
                             view! {
                                 <Show
@@ -85,9 +86,14 @@ pub fn App() -> impl IntoView {
                         }
                     >
 
-                        <Route path=Page::Projects.path() view=ProjectsContainer>
-                            <Route path=":project_id/quotations" view=Quotations/>
-                            <Route path="/" view=Projects/>
+                        <Route path="projects" view=ProjectsContainer>
+                            <Route path="" view=Projects/>
+                            <Route path=":project_id/quotations" view=QuotationsContainer>
+                                <Route path="" view=Quotations/>
+                                <Route path=":quotation_id/parts" view=PartsContainer>
+                                    <Route path="" view=Parts/>
+                                </Route>
+                            </Route>
                         </Route>
                         <Route
                             path=Page::Home.path()

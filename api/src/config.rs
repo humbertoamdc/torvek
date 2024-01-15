@@ -8,6 +8,7 @@ pub struct Config {
     pub orders: Orders,
     pub projects: Projects,
     pub quotations: Quotations,
+    pub parts: Parts,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,6 +39,12 @@ pub struct Projects {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Quotations {
     pub quotations_table: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Parts {
+    pub s3_bucket: String,
+    pub parts_table: String,
 }
 
 impl From<&str> for Config {

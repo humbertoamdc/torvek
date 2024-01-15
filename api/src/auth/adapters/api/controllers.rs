@@ -34,7 +34,7 @@ pub async fn register_client(
 
     match result {
         Ok(auth_session) => (
-            StatusCode::CREATED,
+            StatusCode::NO_CONTENT,
             cookies.add(
                 auth_session
                     .session_cookie(
