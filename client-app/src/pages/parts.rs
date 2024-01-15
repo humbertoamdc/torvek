@@ -70,20 +70,19 @@ pub fn Parts() -> impl IntoView {
                     for i in 0..file_list.length() {
                         if let Some(file) = file_list.item(i) {
                             // TODO: Upload files using presigned urls.
-                            // orders_client
-                            //     .upload_file_with_presigned_url(
-                            //         file,
-                            //         response[i as usize].upload_url.clone(),
-                            //     )
-                            //     .await
-                            //     .expect("error while uploading file with presigned url");
+                            parts_client
+                                .upload_file_with_presigned_url(
+                                    file,
+                                    response.upload_urls[i as usize].clone(),
+                                )
+                                .await
+                                .expect("error while uploading file with presigned url");
                         }
                     }
                 }
                 Err(err) => log::error!("{err:?}"),
             }
             input_element.set_value("");
-            // on_upload.call(());
         }
     });
 

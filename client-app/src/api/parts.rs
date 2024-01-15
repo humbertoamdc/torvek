@@ -3,8 +3,9 @@ use crate::env;
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
 use gloo_net::http::Request;
+use leptos::wasm_bindgen::JsValue;
 use serde::de::DeserializeOwned;
-use web_sys::RequestCredentials;
+use web_sys::{File, RequestCredentials};
 
 #[derive(Clone, Copy)]
 pub struct PartsClient {
@@ -23,6 +24,19 @@ impl PartsClient {
             .json(&body)?;
 
         self.send(request).await
+    }
+
+    pub async fn upload_file_with_presigned_url(
+        &self,
+        file: File,
+        presigned_url: String,
+    ) -> Result<()> {
+        Request::put(presigned_url.as_str())
+            .body(JsValue::from(file))?
+            .send()
+            .await?;
+
+        Ok(())
     }
 
     async fn send<T: DeserializeOwned>(&self, req: Request) -> crate::api::common::Result<T> {
