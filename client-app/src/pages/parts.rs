@@ -69,7 +69,6 @@ pub fn Parts() -> impl IntoView {
                 Ok(response) => {
                     for i in 0..file_list.length() {
                         if let Some(file) = file_list.item(i) {
-                            // TODO: Upload files using presigned urls.
                             parts_client
                                 .upload_file_with_presigned_url(
                                     file,
