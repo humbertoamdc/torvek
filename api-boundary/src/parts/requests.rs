@@ -22,3 +22,19 @@ impl CreatePartsRequest {
         }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryPartsForQuotationRequest {
+    pub client_id: String,
+    pub project_id: String,
+    pub quotation_id: String,
+}
+impl QueryPartsForQuotationRequest {
+    pub const fn new(client_id: String, project_id: String, quotation_id: String) -> Self {
+        Self {
+            client_id,
+            project_id,
+            quotation_id,
+        }
+    }
+}

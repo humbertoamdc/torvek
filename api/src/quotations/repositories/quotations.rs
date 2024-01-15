@@ -5,7 +5,7 @@ use axum::async_trait;
 #[async_trait]
 pub trait QuotationsRepository: Send + Sync + 'static {
     async fn create_quotation(&self, quotation: Quotation) -> Result<(), QuotationsError>;
-    async fn query_quotations_for_client(
+    async fn query_quotations_for_project(
         &self,
         client_id: String,
         project_id: String,

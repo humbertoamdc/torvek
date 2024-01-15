@@ -37,7 +37,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn query_quotations_for_client(
+    async fn query_quotations_for_project(
         &self,
         client_id: String,
         project_id: String,
