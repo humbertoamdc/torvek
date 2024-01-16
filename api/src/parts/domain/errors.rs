@@ -4,4 +4,8 @@ pub enum PartsError {
     PresignedUrlGenerationError,
     #[error("error while writing parts to the database")]
     PartsBatchCreateError,
+    #[error("error while querying parts")]
+    QueryPartsError,
+    #[error("an unexpected error occurred")]
+    UnknownError,
 }

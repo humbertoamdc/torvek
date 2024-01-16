@@ -1,10 +1,8 @@
 use crate::api::models::auth::UserInfo;
-use crate::api::models::orders::CreateOrdersRequest;
-use crate::api::orders::OrdersClient;
 use crate::api::parts::PartsClient;
-use crate::api::quotations::QuotationsClient;
+use crate::components::parts::table::PartsTable;
+use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::CreatePartsRequest;
-use api_boundary::quotations::requests::CreateQuotationRequest;
 use leptos::*;
 use leptos_router::*;
 use web_sys::HtmlInputElement;
@@ -23,7 +21,12 @@ pub fn PartsContainer() -> impl IntoView {
 #[component]
 pub fn Parts() -> impl IntoView {
     // -- context -- //
+
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
+
+    // -- signals -- //
+
+    let parts = create_rw_signal(Vec::<Part>::default());
 
     // -- params -- //
 
@@ -47,6 +50,27 @@ pub fn Parts() -> impl IntoView {
     };
 
     // -- action -- //
+
+    let query_parts = create_action(move |_| async move {
+        let parts_client = PartsClient::new();
+        let result = parts_client
+            .query_parts_for_quotation(
+                user_info.get_untracked().id,
+                project_id().unwrap_or_default(),
+                quotation_id().unwrap_or_default(),
+            )
+            .await;
+
+        match result {
+            Ok(response) => parts.update(|p| *p = response.parts),
+            Err(_) => (), // TODO: Handle error.
+        }
+    });
+
+    let query_parts_callback = Callback::<()>::new(move |_| {
+        query_parts.dispatch(());
+    });
+
     let create_parts = create_action(move |input_element: &HtmlInputElement| {
         let file_list = input_element.clone().files().unwrap();
         let mut file_names: Vec<String> = Vec::with_capacity(file_list.length() as usize);
@@ -79,11 +103,14 @@ pub fn Parts() -> impl IntoView {
                         }
                     }
                 }
-                Err(err) => log::error!("{err:?}"),
+                Err(_) => (), // TODO: Handle error.
             }
             input_element.set_value("");
+            query_parts_callback.call(());
         }
     });
+
+    query_parts.dispatch(());
 
     view! {
         <header class="flex justify-between items-center py-4">
@@ -107,5 +134,8 @@ pub fn Parts() -> impl IntoView {
             />
             Create Parts
         </label>
+
+        <div class="mt-8"/>
+        <PartsTable parts=parts/>
     }
 }
