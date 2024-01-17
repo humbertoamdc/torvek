@@ -17,6 +17,8 @@ mod components;
 mod env;
 mod pages;
 
+mod models;
+
 #[component]
 pub fn App() -> impl IntoView {
     // -- signals -- //
