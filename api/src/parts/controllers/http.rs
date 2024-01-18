@@ -64,7 +64,7 @@ pub async fn create_drawing_upload_url(
     let result = usecase.execute(request).await;
 
     match result {
-        Ok(response) => Ok((StatusCode::NO_CONTENT, Json(response))),
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

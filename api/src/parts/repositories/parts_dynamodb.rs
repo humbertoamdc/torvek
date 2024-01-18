@@ -108,9 +108,9 @@ impl PartsRepository for DynamodbParts {
         );
 
         if let Some(drawing_file) = updatable_part.drawing_file {
-            update_expression.push_str("drawing_file_name = :drawing_file_name, ");
+            update_expression.push_str("drawing_file = :drawing_file, ");
             expression_attribute_values.insert(
-                ":drawing_file_name".to_string(),
+                ":drawing_file".to_string(),
                 AttributeValue::M(to_item(drawing_file).unwrap()),
             );
         }

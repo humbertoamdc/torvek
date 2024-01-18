@@ -47,7 +47,6 @@ pub struct UpdatePartRequest {
     pub project_id: String,
     pub quotation_id: String,
     pub drawing_file: Option<File>,
-    pub drawing_file_url: Option<String>,
     pub process: Option<String>,
     pub material: Option<String>,
     pub tolerance: Option<String>,

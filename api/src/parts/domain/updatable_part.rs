@@ -23,8 +23,8 @@ impl From<&UpdatePartRequest> for UpdatablePart {
         Self {
             id: request.id.clone(),
             client_id: request.client_id.clone(),
-            project_id: request.client_id.clone(),
-            quotation_id: request.client_id.clone(),
+            project_id: request.project_id.clone(),
+            quotation_id: request.quotation_id.clone(),
             drawing_file: request.drawing_file.clone(),
             process: request.process.clone(),
             material: request.material.clone(),
