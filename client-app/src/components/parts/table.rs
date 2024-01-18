@@ -1,4 +1,5 @@
 use crate::components::parts::table_row::PartsTableRow;
+use crate::models::reactive_part::ReactivePart;
 use api_boundary::parts::models::Part;
 use leptos::*;
 
@@ -41,7 +42,8 @@ pub fn PartsTable(#[prop(into)] parts: RwSignal<Vec<Part>>) -> impl IntoView {
                         each=move || parts.get().into_iter().enumerate()
                         key=|(_, part)| part.id.clone()
                         children=move |(_, part)| {
-                            view! { <PartsTableRow part=part/> }
+                            let reactive_part = ReactivePart::from(&part);
+                            view! { <PartsTableRow reactive_part=reactive_part/> }
                         }
                     />
 

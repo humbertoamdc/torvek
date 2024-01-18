@@ -9,7 +9,14 @@ pub struct Part {
     pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub file: File,
+    pub model_file: File,
+    pub drawing_file: Option<File>,
+    pub process: String,   // TODO: Extract to enum in api-boundary.
+    pub material: String,  // TODO: Extract to enum in api-boundary.
+    pub tolerance: String, // TODO: Extract to enum in api-boudnary.
+    pub quantity: u64,
+    pub unit_price: Option<f64>,
+    pub sub_total: Option<f64>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -22,7 +29,14 @@ impl Part {
             client_id,
             project_id,
             quotation_id,
-            file,
+            model_file: file,
+            drawing_file: None,
+            process: String::from("CNC"),
+            material: String::from("Aluminum 6061-T6"),
+            tolerance: String::from("ISO 2768 Medium"),
+            quantity: 1,
+            unit_price: None,
+            sub_total: None,
             created_at: now,
             updated_at: now,
         }
