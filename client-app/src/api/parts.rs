@@ -1,6 +1,8 @@
 use crate::api::common::{into_json, Result};
 use crate::env;
-use api_boundary::parts::requests::CreatePartsRequest;
+use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
+use api_boundary::parts::requests::{CreatePartsRequest, UpdatePartRequest};
+use api_boundary::parts::responses::CreateDrawingUploadUrlResponse;
 use api_boundary::parts::responses::{CreatePartsResponse, QueryPartsForQuotationResponse};
 use gloo_net::http::Request;
 use leptos::wasm_bindgen::JsValue;
@@ -52,6 +54,27 @@ impl PartsClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()?;
+
+        self.send(request).await
+    }
+
+    pub async fn update_part(&self, body: UpdatePartRequest) -> Result<()> {
+        let url = format!("{}/parts", self.url);
+        let request = Request::patch(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
+
+        self.send(request).await
+    }
+
+    pub async fn create_drawing_upload_url(
+        &self,
+        body: CreateDrawingUploadUrlRequest,
+    ) -> Result<CreateDrawingUploadUrlResponse> {
+        let url = format!("{}/parts/drawing_upload_url", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
 
         self.send(request).await
     }

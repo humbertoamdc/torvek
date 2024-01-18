@@ -20,3 +20,15 @@ impl QueryPartsForQuotationResponse {
         Self { parts }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateDrawingUploadUrlResponse {
+    pub url: String,
+    pub presigned_url: String,
+}
+
+impl CreateDrawingUploadUrlResponse {
+    pub const fn new(url: String, presigned_url: String) -> Self {
+        Self { url, presigned_url }
+    }
+}
