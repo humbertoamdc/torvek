@@ -1,6 +1,7 @@
 use crate::api::models::auth::UserInfo;
+use crate::components::parts::materials_dropdown::MaterialsDropdown;
+use crate::components::parts::tolerance_dropdown::TolerancesDropdown;
 use crate::models::reactive_part::ReactivePart;
-use api_boundary::parts::models::Part;
 use leptos::*;
 use web_sys::HtmlInputElement;
 
@@ -72,28 +73,26 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    {reactive_part.material}
-                    // <MaterialsDropdown
-                    //     material=reactive_order.material
-                    //     on_material_change=move |material| {
-                    //         reactive_order.material.update(|m| *m = material);
-                    //         update_order.dispatch(());
-                    //     }
-                    // />
+                    <MaterialsDropdown
+                        material=reactive_part.material
+                        on_material_change=move |material| {
+                            reactive_part.material.update(|m| *m = material);
+                            // update_order.dispatch(());
+                        }
+                    />
 
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap"></p>
-                    {reactive_part.tolerance}
-                    // <TolerancesDropdown
-                    //     tolerance=reactive_order.tolerance
-                    //     on_tolerance_change=move |tolerance| {
-                    //         reactive_order.tolerance.update(|t| *t = tolerance);
-                    //         update_order.dispatch(());
-                    //     }
-                    // />
+                    <TolerancesDropdown
+                        tolerance=reactive_part.tolerance
+                        on_tolerance_change=move |tolerance| {
+                            reactive_part.tolerance.update(|t| *t = tolerance);
+                            // update_order.dispatch(());
+                        }
+                    />
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
