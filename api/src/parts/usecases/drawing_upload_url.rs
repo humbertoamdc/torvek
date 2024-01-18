@@ -55,11 +55,11 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Part
             }
         };
 
-        let url = self
+        let presigned_url = self
             .object_storage
             .put_object_presigned_url(file_path, Duration::from_secs(300))
             .await?;
-
-        Ok(CreateDrawingUploadUrlResponse::new(url))
+        let url = presigned_url.split("?").nth(0).unwrap().to_string();
+        Ok(CreateDrawingUploadUrlResponse::new(url, presigned_url))
     }
 }

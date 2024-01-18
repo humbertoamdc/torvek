@@ -61,7 +61,7 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
             match parts_client.create_drawing_upload_url(request).await {
                 Ok(response) => {
                     let upload_file_response = parts_client
-                        .upload_file_with_presigned_url(file, response.url.clone())
+                        .upload_file_with_presigned_url(file, response.presigned_url.clone())
                         .await;
 
                     match upload_file_response {
