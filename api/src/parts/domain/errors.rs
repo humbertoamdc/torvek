@@ -6,6 +6,8 @@ pub enum PartsError {
     PartsBatchCreateError,
     #[error("error while querying parts")]
     QueryPartsError,
+    #[error("error while updating part")]
+    UpdatePartError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }

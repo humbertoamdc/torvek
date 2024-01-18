@@ -1,4 +1,5 @@
 use crate::parts::domain::errors::PartsError;
+use crate::parts::domain::updatable_part::UpdatablePart;
 use api_boundary::parts::models::Part;
 use axum::async_trait;
 
@@ -11,4 +12,6 @@ pub trait PartsRepository: Send + Sync + 'static {
         project_id: String,
         quotation_id: String,
     ) -> Result<Vec<Part>, PartsError>;
+
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<(), PartsError>;
 }
