@@ -2,11 +2,12 @@ use crate::parts::domain::dynamodb_part_item::DynamodbPartItem;
 use crate::parts::domain::errors::PartsError;
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{Part, PartStatus};
 use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::{from_items, to_item};
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct DynamodbParts {
@@ -97,15 +98,56 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<(), PartsError> {
+    async fn query_orders_by_status(&self, status: PartStatus) -> Result<Vec<Part>, PartsError> {
+        let response = self
+            .client
+            .query()
+            .table_name(&self.table)
+            .index_name("PartsByStatus")
+            .key_condition_expression("#status = :value")
+            .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
+            .expression_attribute_names("#status", "status")
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => {
+                let items = output.items().to_vec();
+                match from_items(items) {
+                    Ok(dynamodb_parts) => {
+                        let parts = dynamodb_parts
+                            .into_iter()
+                            .map(|p: DynamodbPartItem| p.into())
+                            .collect();
+
+                        Ok(parts)
+                    }
+                    Err(_) => Err(PartsError::UnknownError),
+                }
+            }
+            Err(_) => Err(PartsError::QueryPartsError),
+        }
+    }
+
+    async fn update_part(
+        &self,
+        updatable_part: UpdatablePart,
+        status: PartStatus,
+    ) -> Result<(), PartsError> {
         let mut update_expression = String::from("SET ");
-        let mut expression_attribute_values = std::collections::HashMap::new();
+        let mut expression_attribute_values = HashMap::new();
+        let mut expression_attribute_names = HashMap::new();
 
         update_expression.push_str("updated_at = :updated_at, ");
         expression_attribute_values.insert(
             ":updated_at".to_string(),
             AttributeValue::S(Utc::now().to_string()),
         );
+
+        update_expression.push_str("#status = :status, ");
+        expression_attribute_values
+            .insert(":status".to_string(), AttributeValue::S(status.to_string()));
+        expression_attribute_names.insert("#status".to_string(), "status".to_string());
 
         if let Some(drawing_file) = updatable_part.drawing_file {
             update_expression.push_str("drawing_file = :drawing_file, ");
@@ -171,6 +213,7 @@ impl PartsRepository for DynamodbParts {
             .key("id", AttributeValue::S(updatable_part.id))
             .update_expression(update_expression)
             .set_expression_attribute_values(Some(expression_attribute_values))
+            .set_expression_attribute_names(Some(expression_attribute_names))
             .send()
             .await;
 

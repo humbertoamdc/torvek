@@ -1,4 +1,3 @@
-use crate::orders::domain::order::UpdatableOrder;
 use api_boundary::common::file::File;
 use api_boundary::parts::requests::{AdminUpdatePartRequest, UpdatePartRequest};
 use serde_derive::{Deserialize, Serialize};
@@ -36,17 +35,20 @@ impl From<&UpdatePartRequest> for UpdatablePart {
     }
 }
 
-impl From<&AdminUpdatePartRequest> for UpdatableOrder {
+impl From<&AdminUpdatePartRequest> for UpdatablePart {
     fn from(request: &AdminUpdatePartRequest) -> Self {
         Self {
-            drawing_file_name: None,
-            drawing_file_url: None,
+            id: request.id.clone(),
+            client_id: request.client_id.clone(),
+            project_id: request.project_id.clone(),
+            quotation_id: request.quotation_id.clone(),
+            drawing_file: None,
             process: None,
             material: None,
             tolerance: None,
             quantity: None,
-            unit_price: request.unit_price,
-            sub_total: request.sub_total,
+            unit_price: Some(request.unit_price),
+            sub_total: Some(request.sub_total),
         }
     }
 }

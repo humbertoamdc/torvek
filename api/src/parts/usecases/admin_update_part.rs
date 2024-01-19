@@ -3,27 +3,27 @@ use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::usecases::UseCase;
 use api_boundary::parts::models::PartStatus;
-use api_boundary::parts::requests::UpdatePartRequest;
+use api_boundary::parts::requests::AdminUpdatePartRequest;
 use axum::async_trait;
 use std::sync::Arc;
 
-pub struct UpdatePartUseCase {
+pub struct AdminUpdatePartUseCase {
     parts_repository: Arc<dyn PartsRepository>,
 }
 
-impl UpdatePartUseCase {
-    pub const fn new(parts_repository: Arc<dyn PartsRepository>) -> Self {
+impl AdminUpdatePartUseCase {
+    pub fn new(parts_repository: Arc<dyn PartsRepository>) -> Self {
         Self { parts_repository }
     }
 }
 
 #[async_trait]
-impl UseCase<UpdatePartRequest, (), PartsError> for UpdatePartUseCase {
-    async fn execute(&self, request: UpdatePartRequest) -> Result<(), PartsError> {
+impl UseCase<AdminUpdatePartRequest, (), PartsError> for AdminUpdatePartUseCase {
+    async fn execute(&self, request: AdminUpdatePartRequest) -> Result<(), PartsError> {
         let updatable_part = UpdatablePart::from(&request);
 
         self.parts_repository
-            .update_part(updatable_part, PartStatus::AwaitingPricing)
+            .update_part(updatable_part, PartStatus::Ready)
             .await
     }
 }

@@ -1,4 +1,5 @@
 use crate::common::file::File;
+use crate::parts::models::PartStatus;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -54,18 +55,23 @@ pub struct UpdatePartRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct CreateDrawingUploadUrlRequest {
+    pub client_id: String,
+    pub file_name: String,
+    pub file_url: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminQueryPartsByStatusRequest {
+    pub status: PartStatus,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct AdminUpdatePartRequest {
     pub id: String,
     pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub unit_price: Option<f64>,
-    pub sub_total: Option<f64>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateDrawingUploadUrlRequest {
-    pub client_id: String,
-    pub file_name: String,
-    pub file_url: Option<String>,
+    pub unit_price: f64,
+    pub sub_total: f64,
 }

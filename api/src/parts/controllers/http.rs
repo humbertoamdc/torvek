@@ -1,14 +1,16 @@
 use crate::app_state::AppState;
+use crate::parts::usecases::admin_query_parts_by_status::AdminQueryPartsByStatusUseCase;
+use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
 use crate::parts::usecases::UseCase;
 use api_boundary::parts::requests::{
-    CreateDrawingUploadUrlRequest, CreatePartsRequest, QueryPartsForQuotationRequest,
-    UpdatePartRequest,
+    AdminQueryPartsByStatusRequest, AdminUpdatePartRequest, CreateDrawingUploadUrlRequest,
+    CreatePartsRequest, QueryPartsForQuotationRequest, UpdatePartRequest,
 };
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
@@ -65,6 +67,32 @@ pub async fn create_drawing_upload_url(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn admin_query_parts_by_status(
+    State(app_state): State<AppState>,
+    Query(request): Query<AdminQueryPartsByStatusRequest>,
+) -> impl IntoResponse {
+    let usecase = AdminQueryPartsByStatusUseCase::new(app_state.parts.parts_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn admin_update_part(
+    State(app_state): State<AppState>,
+    Json(request): Json<AdminUpdatePartRequest>,
+) -> impl IntoResponse {
+    let usecase = AdminUpdatePartUseCase::new(app_state.parts.parts_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

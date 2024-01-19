@@ -3,7 +3,7 @@ use leptos::*;
 
 #[component]
 pub fn Sidebar(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>) -> impl IntoView {
-    let (wait_for_response, set_wait_for_response) = create_signal(false);
+    let (_, set_wait_for_response) = create_signal(false);
 
     let logout_action = create_action(move |_| async move {
         set_wait_for_response.update(|waiting| *waiting = true);
