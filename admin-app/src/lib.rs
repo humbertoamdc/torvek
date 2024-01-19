@@ -10,6 +10,7 @@ use self::pages::*;
 mod api;
 mod components;
 mod env;
+mod models;
 mod pages;
 
 #[component]

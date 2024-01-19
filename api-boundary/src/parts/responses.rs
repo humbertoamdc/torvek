@@ -32,3 +32,13 @@ impl CreateDrawingUploadUrlResponse {
         Self { url, presigned_url }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminQueryPartsByStatusResponse {
+    pub parts: Vec<Part>,
+}
+impl AdminQueryPartsByStatusResponse {
+    pub fn new(parts: Vec<Part>) -> Self {
+        Self { parts }
+    }
+}

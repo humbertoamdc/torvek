@@ -1,9 +1,9 @@
 use crate::api;
 use leptos::*;
-use reqwest::header::{ACCEPT, ACCESS_CONTROL_ALLOW_CREDENTIALS, HeaderMap, HeaderValue, ORIGIN};
 use ory_kratos_client::apis::configuration::Configuration;
 use ory_kratos_client::apis::frontend_api::create_browser_login_flow;
 use ory_kratos_client::models::UiNodeAttributes;
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, ACCESS_CONTROL_ALLOW_CREDENTIALS, ORIGIN};
 
 use crate::api::auth::{AuthorizedApi, UnauthorizedApi};
 use crate::api::models::auth::Credentials;
@@ -18,7 +18,7 @@ pub fn Login(
 
     let (email, set_email) = create_signal(String::new());
     let (password, set_password) = create_signal(String::new());
-    let (login_error, set_login_error) = create_signal(None::<String>);
+    let (_, set_login_error) = create_signal(None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(false);
     let disabled = Signal::derive(move || wait_for_response.get());
     let button_is_disabled = Signal::derive(move || {
@@ -29,12 +29,18 @@ pub fn Login(
 
     // -- actions -- //
 
-    let init_login_flow = create_action(move |_: &()| {
+    let _init_login_flow = create_action(move |_: &()| {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
-        headers.insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, HeaderValue::from_static("true"));
+        headers.insert(
+            ACCESS_CONTROL_ALLOW_CREDENTIALS,
+            HeaderValue::from_static("true"),
+        );
         headers.insert(ORIGIN, HeaderValue::from_static("http://127.0.0.1:8081"));
-        let client = reqwest::Client::builder().default_headers(headers).build().unwrap();
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap();
         let config = Configuration {
             base_path: ORY_ADMIN_URL.to_string(),
             user_agent: None,
@@ -49,20 +55,25 @@ pub fn Login(
             match response {
                 Ok(login_flow) => {
                     set_flow_id(login_flow.id);
-                    let _csrf_token = login_flow.ui.nodes.iter().find(|node| {
-                        match *node.attributes.clone() {
-                            UiNodeAttributes::UiNodeInputAttributes { name,.. } => name == String::from("csrf_token"),
-                            _ => false
-
-                        }
-                    }).map(|node| {
-                        match *node.attributes.clone() {
-                            UiNodeAttributes::UiNodeInputAttributes { value, .. } => serde_json::from_str::<String>(&value.unwrap().to_string()).unwrap(),
+                    let _csrf_token = login_flow
+                        .ui
+                        .nodes
+                        .iter()
+                        .find(|node| match *node.attributes.clone() {
+                            UiNodeAttributes::UiNodeInputAttributes { name, .. } => {
+                                name == String::from("csrf_token")
+                            }
+                            _ => false,
+                        })
+                        .map(|node| match *node.attributes.clone() {
+                            UiNodeAttributes::UiNodeInputAttributes { value, .. } => {
+                                serde_json::from_str::<String>(&value.unwrap().to_string()).unwrap()
+                            }
                             _ => String::default(),
-                        }
-                    }).unwrap_or_default();
+                        })
+                        .unwrap_or_default();
                     set_csrf_token(_csrf_token);
-                },
+                }
                 Err(_) => log::error!("error creating login flow"),
             }
         }
@@ -70,40 +81,48 @@ pub fn Login(
     // TODO: Init ory login flow once CORS issues are solved.
     // init_login_flow.dispatch(());
 
-    let login_action = create_action(move |(email, password, flow_id, csrf_token): &(String, String, String, String)| {
-        let email = email.to_string();
-        let password = password.to_string();
-        let flow_id = flow_id.to_string();
-        let csrf_token = csrf_token.to_string();
-        let credentials = Credentials { email, password, flow_id, csrf_token };
+    let login_action = create_action(
+        move |(email, password, flow_id, csrf_token): &(String, String, String, String)| {
+            let email = email.to_string();
+            let password = password.to_string();
+            let flow_id = flow_id.to_string();
+            let csrf_token = csrf_token.to_string();
+            let credentials = Credentials {
+                email,
+                password,
+                flow_id,
+                csrf_token,
+            };
 
-
-        async move {
-            set_wait_for_response.update(|waiting| *waiting = true);
-            let result = api.admin_login(&credentials).await;
-            set_wait_for_response.update(|waiting| *waiting = false);
-            match result {
-                Ok(res) => {
-                    set_login_error.update(|error| *error = None);
-                    on_success(res);
-                }
-                Err(err) => {
-                    let msg = match err {
-                        api::common::Error::Fetch(js_err) => {
-                            format!("{js_err:?}")
-                        }
-                        api::common::Error::Api(err) => err.message,
-                        api::common::Error::UnknownError => String::from("unknown error"),
-                    };
-                    log::error!("Unable to login with {}: {msg}", credentials.email);
-                    set_login_error.update(|e| *e = Some(msg));
-                    // TODO: Display error message below textbox.
+            async move {
+                set_wait_for_response.update(|waiting| *waiting = true);
+                let result = api.admin_login(&credentials).await;
+                set_wait_for_response.update(|waiting| *waiting = false);
+                match result {
+                    Ok(res) => {
+                        set_login_error.update(|error| *error = None);
+                        on_success(res);
+                    }
+                    Err(err) => {
+                        let msg = match err {
+                            api::common::Error::Fetch(js_err) => {
+                                format!("{js_err:?}")
+                            }
+                            api::common::Error::Api(err) => err.message,
+                            api::common::Error::UnknownError => String::from("unknown error"),
+                        };
+                        log::error!("Unable to login with {}: {msg}", credentials.email);
+                        set_login_error.update(|e| *e = Some(msg));
+                        // TODO: Display error message below textbox.
+                    }
                 }
             }
-        }
-    });
+        },
+    );
 
-    let dispatch_action = move || login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()));
+    let dispatch_action = move || {
+        login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()))
+    };
 
     view! {
         <div class="grid grid-cols-1 h-screen place-content-center bg-stone-50">
