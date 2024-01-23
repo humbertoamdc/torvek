@@ -14,8 +14,8 @@ pub struct ReactivePart {
     pub material: String,
     pub tolerance: String,
     pub quantity: u64,
-    pub unit_price: RwSignal<Option<f64>>,
-    pub sub_total: RwSignal<Option<f64>>,
+    pub unit_price: RwSignal<Option<u64>>,
+    pub sub_total: RwSignal<Option<u64>>,
 }
 
 impl From<&Part> for ReactivePart {

@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue};
+use stripe::Client;
 
 use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityManager;
 use crate::auth::adapters::spi::identity_manager::ory::OryIdentityManager;
@@ -16,6 +17,7 @@ use crate::orders::application::services::object_storage::ObjectStorage;
 use crate::parts;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
+use crate::payments::services::stripe::StripePaymentsProcessor;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
 use crate::quotations::repositories::quotations::QuotationsRepository;
@@ -25,39 +27,45 @@ use crate::quotations::repositories::quotations_dynamodb::DynamodbQuotations;
 pub struct AppState {
     pub env: Environment,
     pub domain: String,
-    pub auth: Auth,
-    pub orders: Orders,
-    pub projects: Projects,
-    pub quotations: Quotations,
-    pub parts: Parts,
+    pub auth: AppStateAuth,
+    pub orders: AppStateOrders,
+    pub projects: AppStateProjects,
+    pub quotations: AppStateQuotations,
+    pub parts: AppStateParts,
+    pub payments: AppStatePayments,
 }
 
 #[derive(Clone)]
-pub struct Auth {
+pub struct AppStateAuth {
     pub identity_manager: Arc<dyn IdentityManager>,
     pub admin_identity_manager: Arc<dyn AdminIdentityManager>,
 }
 
 #[derive(Clone)]
-pub struct Orders {
+pub struct AppStateOrders {
     pub object_storage: Arc<dyn ObjectStorage>,
     pub orders_repository: Arc<dyn OrdersRepository>,
 }
 
 #[derive(Clone)]
-pub struct Projects {
+pub struct AppStateProjects {
     pub projects_repository: Arc<dyn ProjectsRepository>,
 }
 
 #[derive(Clone)]
-pub struct Quotations {
+pub struct AppStateQuotations {
     pub quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
 #[derive(Clone)]
-pub struct Parts {
+pub struct AppStateParts {
     pub parts_repository: Arc<dyn PartsRepository>,
     pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
+}
+
+#[derive(Clone)]
+pub struct AppStatePayments {
+    pub payments_processor: StripePaymentsProcessor,
 }
 
 impl AppState {
@@ -65,16 +73,17 @@ impl AppState {
         Self {
             env: config.app.env.clone(),
             domain: config.app.domain.clone(),
-            auth: Auth::from(config).await,
-            orders: Orders::from(config).await,
-            projects: Projects::from(config).await,
-            quotations: Quotations::from(config).await,
-            parts: Parts::from(config).await,
+            auth: AppStateAuth::from(config).await,
+            orders: AppStateOrders::from(config).await,
+            projects: AppStateProjects::from(config).await,
+            quotations: AppStateQuotations::from(config).await,
+            parts: AppStateParts::from(config).await,
+            payments: AppStatePayments::from(config),
         }
     }
 }
 
-impl Auth {
+impl AppStateAuth {
     async fn from(config: &Config) -> Self {
         // Clients
         let reqwest_client = Self::reqwest_client();
@@ -108,7 +117,7 @@ impl Auth {
     }
 }
 
-impl Orders {
+impl AppStateOrders {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
@@ -136,7 +145,7 @@ impl Orders {
     }
 }
 
-impl Projects {
+impl AppStateProjects {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
@@ -157,7 +166,7 @@ impl Projects {
     }
 }
 
-impl Quotations {
+impl AppStateQuotations {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
@@ -178,7 +187,7 @@ impl Quotations {
     }
 }
 
-impl Parts {
+impl AppStateParts {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
@@ -203,6 +212,19 @@ impl Parts {
             parts_repository,
             object_storage,
         }
+    }
+}
+
+impl AppStatePayments {
+    fn from(config: &Config) -> Self {
+        // Clients
+        let client = Client::new(&config.payments.secret_key);
+
+        // Services
+        let payments_processor =
+            StripePaymentsProcessor::new(client, config.payments.success_url.clone());
+
+        Self { payments_processor }
     }
 }
 

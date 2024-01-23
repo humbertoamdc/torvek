@@ -177,20 +177,24 @@ impl PartsRepository for DynamodbParts {
                 AttributeValue::N(quantity.to_string()),
             );
         }
-        if let Some(unit_price) = updatable_part.unit_price {
-            update_expression.push_str("unit_price = :unit_price, ");
-            expression_attribute_values.insert(
-                ":unit_price".to_string(),
-                AttributeValue::N(unit_price.to_string()),
-            );
-        }
-        if let Some(sub_total) = updatable_part.sub_total {
-            update_expression.push_str("sub_total = :sub_total, ");
-            expression_attribute_values.insert(
-                ":sub_total".to_string(),
-                AttributeValue::N(sub_total.to_string()),
-            );
-        }
+        update_expression.push_str("unit_price = :unit_price, ");
+        expression_attribute_values.insert(
+            ":unit_price".to_string(),
+            if updatable_part.unit_price.is_some() {
+                AttributeValue::N(updatable_part.unit_price.unwrap().to_string())
+            } else {
+                AttributeValue::Null(true)
+            },
+        );
+        update_expression.push_str("sub_total = :sub_total, ");
+        expression_attribute_values.insert(
+            ":sub_total".to_string(),
+            if updatable_part.sub_total.is_some() {
+                AttributeValue::N(updatable_part.sub_total.unwrap().to_string())
+            } else {
+                AttributeValue::Null(true)
+            },
+        );
 
         // Remove trailing comma and space
         if !update_expression.is_empty() {

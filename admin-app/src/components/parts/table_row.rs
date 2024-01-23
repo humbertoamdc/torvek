@@ -2,6 +2,7 @@ use crate::api::parts::PartsClient;
 use crate::models::ReactivePart;
 use api_boundary::parts::requests::AdminUpdatePartRequest;
 use leptos::*;
+use rusty_money::{iso, Money};
 
 #[component]
 pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
@@ -72,17 +73,17 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                             id="quantity"
                             name="quantity"
                             min=1
-                            class="w-20 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            class="w-32 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="N/A"
                             value=reactive_part.unit_price.get_untracked()
                             on:change=move |ev| {
-                                let unit_price = event_target_value(&ev).parse::<f64>().unwrap();
+                                let unit_price = (event_target_value(&ev).parse::<f64>().unwrap() * 100.0) as u64;
                                 reactive_part.unit_price.update(|u| *u = Some(unit_price));
                                 reactive_part
                                     .sub_total
                                     .update(|s| {
                                         *s = Some(
-                                            unit_price * reactive_part.quantity as f64,
+                                            unit_price * reactive_part.quantity
                                         );
                                     });
                             }
@@ -96,7 +97,7 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.sub_total.get() {
-                                Some(sub_total) => format!("${sub_total}"),
+                                Some(sub_total) => Money::from_minor(sub_total as i64, iso::MXN).to_string(),
                                 None => String::from("N/A"),
                             }
                         }}

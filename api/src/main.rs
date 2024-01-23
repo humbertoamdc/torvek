@@ -17,6 +17,7 @@ mod auth;
 mod config;
 mod orders;
 mod parts;
+mod payments;
 mod projects;
 mod quotations;
 
@@ -30,6 +31,7 @@ async fn main() {
         .nest("/api/v1", projects::routes::create_router())
         .nest("/api/v1", quotations::routes::create_router())
         .nest("/api/v1", parts::routes::create_router())
+        .nest("/api/v1", payments::routes::create_router())
         .layer(CompressionLayer::new().gzip(true).deflate(true));
 
     match env::var("RUN_MODE")

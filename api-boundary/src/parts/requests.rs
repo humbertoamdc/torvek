@@ -72,6 +72,6 @@ pub struct AdminUpdatePartRequest {
     pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub unit_price: f64,
-    pub sub_total: f64,
+    pub unit_price: u64,
+    pub sub_total: u64,
 }
