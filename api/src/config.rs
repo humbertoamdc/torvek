@@ -3,48 +3,55 @@ use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    pub app: App,
-    pub auth: Auth,
-    pub orders: Orders,
-    pub projects: Projects,
-    pub quotations: Quotations,
-    pub parts: Parts,
+    pub app: ConfigApp,
+    pub auth: ConfigAuth,
+    pub orders: ConfigOrders,
+    pub projects: ConfigProjects,
+    pub quotations: ConfigQuotations,
+    pub parts: ConfigParts,
+    pub payments: ConfigPayments,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct App {
+pub struct ConfigApp {
     pub env: Environment,
     pub port: u16,
     pub domain: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Auth {
+pub struct ConfigAuth {
     pub ory_clients_url: String,
     pub ory_clients_api_key: String,
     pub ory_admins_url: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Orders {
+pub struct ConfigOrders {
     pub s3_bucket: String,
     pub orders_table: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Projects {
+pub struct ConfigProjects {
     pub projects_table: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Quotations {
+pub struct ConfigQuotations {
     pub quotations_table: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Parts {
+pub struct ConfigParts {
     pub s3_bucket: String,
     pub parts_table: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConfigPayments {
+    pub secret_key: String,
+    pub success_url: String,
 }
 
 impl From<&str> for Config {

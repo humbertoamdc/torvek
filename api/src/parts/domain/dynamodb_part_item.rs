@@ -15,8 +15,8 @@ pub struct DynamodbPartItem {
     pub material: String,
     pub tolerance: String,
     pub quantity: u64,
-    pub unit_price: Option<f64>,
-    pub sub_total: Option<f64>,
+    pub unit_price: Option<u64>,
+    pub sub_total: Option<u64>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -44,7 +44,7 @@ impl Into<Part> for DynamodbPartItem {
             tolerance: self.tolerance,
             quantity: self.quantity,
             unit_price: self.unit_price,
-            sub_total: self.unit_price,
+            sub_total: self.sub_total,
             created_at: self.created_at,
             updated_at: self.updated_at,
         }

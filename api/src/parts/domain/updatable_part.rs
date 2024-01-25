@@ -13,8 +13,8 @@ pub struct UpdatablePart {
     pub material: Option<String>,
     pub tolerance: Option<String>,
     pub quantity: Option<u64>,
-    pub unit_price: Option<f64>,
-    pub sub_total: Option<f64>,
+    pub unit_price: Option<u64>,
+    pub sub_total: Option<u64>,
 }
 
 impl From<&UpdatePartRequest> for UpdatablePart {

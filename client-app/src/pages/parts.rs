@@ -1,8 +1,12 @@
 use crate::api::models::auth::UserInfo;
 use crate::api::parts::PartsClient;
+use crate::api::payments::PaymentsClient;
 use crate::components::parts::table::PartsTable;
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{Part, PartStatus};
 use api_boundary::parts::requests::CreatePartsRequest;
+use api_boundary::payments::requests::{
+    CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
+};
 use leptos::*;
 use leptos_router::*;
 use web_sys::HtmlInputElement;
@@ -27,6 +31,16 @@ pub fn Parts() -> impl IntoView {
     // -- signals -- //
 
     let parts = create_rw_signal(Vec::<Part>::default());
+    let checkout_button_disabled = Signal::derive(move || {
+        let parts_awaiting_pricing = parts
+            .get()
+            .iter()
+            .map(|part| part.status.clone())
+            .collect::<Vec<PartStatus>>()
+            .contains(&PartStatus::AwaitingPricing);
+
+        parts.get().is_empty() || parts_awaiting_pricing
+    });
 
     // -- params -- //
 
@@ -110,6 +124,25 @@ pub fn Parts() -> impl IntoView {
         }
     });
 
+    let create_checkout_session = create_action(move |_| async move {
+        let payments_client = PaymentsClient::new();
+        let request = CreateCheckoutSessionRequest {
+            parts_data: parts
+                .get_untracked()
+                .iter()
+                .map(|part| CreateCheckoutSessionPartData::from(part))
+                .collect(),
+        };
+
+        let response = payments_client.create_checkout_session(request).await;
+        match response {
+            Ok(response) => {
+                let _ = window().location().set_href(&response.url);
+            }
+            Err(_) => (), // TODO: Handle error.
+        }
+    });
+
     query_parts.dispatch(());
 
     view! {
@@ -117,6 +150,7 @@ pub fn Parts() -> impl IntoView {
             <h1 class="text-3xl font-bold text-gray-900">Parts</h1>
         </header>
 
+        <div class="flex justify-between">
         <label
             for="dropzone-file"
             class="justify-center rounded-md bg-indigo-600 d px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:cursor-pointer"
@@ -134,6 +168,17 @@ pub fn Parts() -> impl IntoView {
             />
             Create Parts
         </label>
+        <button
+            type="submit"
+            class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            disabled=checkout_button_disabled
+            on:click=move |_| {
+                create_checkout_session.dispatch(());
+            }
+        >
+            "Checkout"
+        </button>
+        </div>
 
         <div class="mt-8"/>
         <PartsTable parts=parts/>

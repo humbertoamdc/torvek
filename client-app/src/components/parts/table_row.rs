@@ -7,6 +7,7 @@ use api_boundary::common::file::File;
 use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::parts::requests::UpdatePartRequest;
 use leptos::*;
+use rusty_money::{iso, Money};
 use web_sys::HtmlInputElement;
 
 #[component]
@@ -184,7 +185,7 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.unit_price.get() {
-                                Some(unit_price) => format!("${unit_price}"),
+                                Some(unit_price) => Money::from_minor(unit_price as i64, iso::MXN).to_string(),
                                 None => String::from("N/A"),
                             }
                         }}
@@ -197,7 +198,7 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.sub_total.get() {
-                                Some(sub_total) => format!("${sub_total}"),
+                                Some(sub_total) => Money::from_minor(sub_total as i64, iso::MXN).to_string(),
                                 None => String::from("N/A"),
                             }
                         }}
