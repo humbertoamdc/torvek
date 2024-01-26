@@ -65,6 +65,7 @@ pub struct AppStateParts {
 
 #[derive(Clone)]
 pub struct AppStatePayments {
+    pub webhook_secret: String,
     pub payments_processor: StripePaymentsProcessor,
 }
 
@@ -159,7 +160,6 @@ impl AppStateProjects {
             dynamodb_client,
             config.projects.projects_table.clone(),
         ));
-
         Self {
             projects_repository,
         }
@@ -224,7 +224,10 @@ impl AppStatePayments {
         let payments_processor =
             StripePaymentsProcessor::new(client, config.payments.success_url.clone());
 
-        Self { payments_processor }
+        Self {
+            webhook_secret: config.payments.webhook_secret.clone(),
+            payments_processor,
+        }
     }
 }
 

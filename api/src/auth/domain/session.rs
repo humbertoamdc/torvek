@@ -37,13 +37,13 @@ pub struct MetadataPublic {
 
 impl SessionWithToken {
     pub fn session_cookie(&self, name: &'static str, secure: bool, domain: String) -> Cookie {
-        let cookie = Cookie::build((name, &self.session_token))
+        let cookie = Cookie::build(name, &self.session_token)
             .secure(secure)
             .http_only(true)
             .domain(domain)
             .same_site(SameSite::Strict)
             .path("/")
-            .build();
+            .finish();
 
         cookie
     }

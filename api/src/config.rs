@@ -51,6 +51,7 @@ pub struct ConfigParts {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConfigPayments {
     pub secret_key: String,
+    pub webhook_secret: String,
     pub success_url: String,
 }
 
