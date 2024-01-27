@@ -2,6 +2,7 @@ use crate::app_state::AppState;
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
 use crate::quotations::usecases::UseCase;
+use crate::shared::extractors::stripe_event::StripeEvent;
 use api_boundary::quotations::requests::{
     CreateQuotationRequest, QueryQuotationsForProjectRequest,
 };
@@ -35,4 +36,11 @@ pub async fn query_quotations_for_project(
         Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
+}
+
+pub async fn _pay_quotation_webhook(
+    State(_app_state): State<AppState>,
+    StripeEvent(_event): StripeEvent,
+) -> impl IntoResponse {
+    todo!("Implement me")
 }

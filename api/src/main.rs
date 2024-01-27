@@ -22,6 +22,8 @@ mod payments;
 mod projects;
 mod quotations;
 
+mod shared;
+
 #[tokio::main]
 async fn main() {
     env_logger::init();

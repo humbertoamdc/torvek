@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A CF template to create an IAM role for the api lambda.
+Resources:
+  ApiLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/api
+      RetentionInDays: 30
+
+  ApiLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: Observability
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ApiLambdaLogGroup.Arn
+        - PolicyName: S3ConfigFileAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                Resource:
+                  - !ImportValue ConfigFilesBucketArn
+                  - !Sub
+                    - "${configFilesBucketArn}/*"
+                    - configFilesBucketArn: !ImportValue ConfigFilesBucketArn
+        - PolicyName: S3ClientFilesAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                Resource:
+                  - !ImportValue ClientFilesBucketArn
+                  - !Sub
+                    - "${clientFilesBucketArn}/*"
+                    - clientFilesBucketArn: !ImportValue ClientFilesBucketArn
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !ImportValue OrdersTableArn
+                  - !Sub
+                    - "${ordersTableArn}/*"
+                    - ordersTableArn: !ImportValue OrdersTableArn
+                  - !ImportValue ProjectsTableArn
+                  - !Sub
+                    - "${projectsTableArn}/*"
+                    - projectsTableArn: !ImportValue ProjectsTableArn
+                  - !ImportValue QuotationsTableArn
+                  - !Sub
+                    - "${quotationsTableArn}/*"
+                    - quotationsTableArn: !ImportValue QuotationsTableArn
+                  - !ImportValue PartsTableArn
+                  - !Sub
+                    - "${partsTableArn}/*"
+                    - partsTableArn: !ImportValue PartsTableArn
+      RoleName: ApiLambdaRole

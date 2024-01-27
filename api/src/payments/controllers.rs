@@ -1,12 +1,13 @@
 use crate::app_state::AppState;
 use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
 use crate::quotations::usecases::UseCase;
+use crate::shared::extractors::stripe_event::StripeEvent;
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
-use axum::extract::{FromRequest, State};
-use axum::http::{Request, StatusCode};
-use axum::response::{IntoResponse, Response};
-use axum::{async_trait, Json};
-use stripe::{Event, EventObject, EventType, Webhook};
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::Json;
+use stripe::{EventObject, EventType};
 
 pub async fn create_checkout_session(
     State(app_state): State<AppState>,
@@ -18,49 +19,6 @@ pub async fn create_checkout_session(
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
-    }
-}
-
-pub struct StripeEvent(Event);
-
-#[async_trait]
-impl<B> FromRequest<AppState, B> for StripeEvent
-where
-    String: FromRequest<AppState, B>,
-    B: Send + 'static,
-{
-    type Rejection = Response;
-
-    // Since we are using the AppState directly, we need to call the State() extractor on the
-    // handlers using this extractor before calling the StripeEvent extractor.
-    /*
-        fn handler(State(app_state): State(AppState), StripeEvent(event): StripeEvent) {
-            ...
-        }
-    */
-    // Notice that the order matters.
-    async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
-        let signature = if let Some(sig) = req.headers().get("stripe-signature") {
-            sig.to_owned()
-        } else {
-            return Err(StatusCode::BAD_REQUEST.into_response());
-        };
-
-        let payload = String::from_request(req, state)
-            .await
-            .map_err(IntoResponse::into_response)?;
-
-        Ok(Self(
-            Webhook::construct_event(
-                &payload,
-                signature.to_str().unwrap(),
-                &state.payments.webhook_secret,
-            )
-            .map_err(|err| {
-                log::error!("stripe webhook error: {err:?}");
-                StatusCode::BAD_REQUEST.into_response()
-            })?,
-        ))
     }
 }
 
@@ -76,14 +34,6 @@ pub async fn handle_webhook(
                 println!(
                     "Received checkout session completed webhook with id: {:?}",
                     session.id
-                )
-            }
-        }
-        EventType::AccountUpdated => {
-            if let EventObject::Account(account) = event.data.object {
-                println!(
-                    "Received account updated webhook for account: {:?}",
-                    account.id
                 )
             }
         }
