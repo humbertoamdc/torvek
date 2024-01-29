@@ -1,5 +1,5 @@
 use crate::payments::services::stripe::StripePaymentsProcessor;
-use crate::quotations::usecases::UseCase;
+use crate::shared::usecase::UseCase;
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 use axum::async_trait;

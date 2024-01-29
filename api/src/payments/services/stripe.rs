@@ -5,6 +5,10 @@ use stripe::{
     CreateCheckoutSessionLineItemsPriceDataProductData, Currency, StripeError,
 };
 
+const CLIENT_ID: &'static str = "client_id";
+const PROJECT_ID: &'static str = "project_id";
+const QUOTATION_ID: &'static str = "quotation_id";
+
 #[derive(Clone)]
 pub struct StripePaymentsProcessor {
     client: Client,
@@ -24,11 +28,21 @@ impl StripePaymentsProcessor {
         request: CreateCheckoutSessionRequest,
     ) -> Result<String, StripeError> {
         let line_items = Self::line_items(&request);
+        let success_url = format!(
+            "{}/projects/{}/quotations/{}/parts",
+            self.success_url, request.project_id, request.quotation_id
+        );
 
         let mut params = CreateCheckoutSession::new();
         params.line_items = Some(line_items);
-        params.success_url = Some(&self.success_url);
+        params.success_url = Some(&success_url);
         params.mode = Some(CheckoutSessionMode::Payment);
+        let metadata = stripe::Metadata::from([
+            (String::from(CLIENT_ID), request.client_id),
+            (String::from(PROJECT_ID), request.project_id),
+            (String::from(QUOTATION_ID), request.quotation_id),
+        ]);
+        params.metadata = Some(metadata);
 
         let result = CheckoutSession::create(&self.client, params).await?;
 

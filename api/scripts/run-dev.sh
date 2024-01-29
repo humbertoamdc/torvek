@@ -8,12 +8,17 @@ NoColor='\033[0m'
 # Function to handle cleanup
 function cleanup() {
     echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Red}EXIT${NoColor}] Cleaning up..."
+    pgrep stripe | xargs kill
     docker compose down
     exit
 }
 
 # Trap CTRL+C and call cleanup function
 trap cleanup INT
+
+# Forward stripe webhooks to local environment
+echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Forwarding stripe webhooks to local environment"
+stripe listen --forward-to 127.0.0.1:3000/api/v1/quotations/webhooks/confirm_payment &
 
 # Start localstack
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting local AWS infra"

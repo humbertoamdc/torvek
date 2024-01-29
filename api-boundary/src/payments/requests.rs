@@ -3,6 +3,9 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateCheckoutSessionRequest {
+    pub client_id: String,
+    pub project_id: String,
+    pub quotation_id: String,
     pub parts_data: Vec<CreateCheckoutSessionPartData>,
 }
 

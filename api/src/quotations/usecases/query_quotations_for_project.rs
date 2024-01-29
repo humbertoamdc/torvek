@@ -1,6 +1,6 @@
 use crate::quotations::domain::errors::QuotationsError;
 use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::quotations::usecases::UseCase;
+use crate::shared::usecase::UseCase;
 use api_boundary::quotations::requests::QueryQuotationsForProjectRequest;
 use api_boundary::quotations::responses::QueryQuotationsForProjectResponse;
 use axum::async_trait;

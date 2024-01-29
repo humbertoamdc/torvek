@@ -1,4 +1,4 @@
-use api_boundary::quotations::models::Quotation;
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
@@ -7,6 +7,7 @@ pub struct DynamodbQuotationItem {
     pub id: String,
     #[serde(rename = "client_id#project_id")]
     pub client_id_and_project_id: String,
+    pub status: QuotationStatus,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -25,6 +26,7 @@ impl Into<Quotation> for DynamodbQuotationItem {
             id: self.id,
             client_id,
             project_id,
+            status: self.status,
             created_at: self.created_at,
             updated_at: self.updated_at,
         }
@@ -36,6 +38,7 @@ impl From<Quotation> for DynamodbQuotationItem {
         Self {
             id: quotation.id,
             client_id_and_project_id: format!("{}#{}", quotation.client_id, quotation.project_id),
+            status: quotation.status,
             created_at: quotation.created_at,
             updated_at: quotation.updated_at,
         }

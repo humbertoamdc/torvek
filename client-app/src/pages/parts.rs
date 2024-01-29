@@ -127,6 +127,9 @@ pub fn Parts() -> impl IntoView {
     let create_checkout_session = create_action(move |_| async move {
         let payments_client = PaymentsClient::new();
         let request = CreateCheckoutSessionRequest {
+            client_id: user_info.get_untracked().id,
+            project_id: project_id().unwrap(),
+            quotation_id: quotation_id().unwrap(),
             parts_data: parts
                 .get_untracked()
                 .iter()
