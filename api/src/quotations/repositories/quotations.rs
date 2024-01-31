@@ -10,6 +10,10 @@ pub trait QuotationsRepository: Send + Sync + 'static {
         client_id: String,
         project_id: String,
     ) -> Result<Vec<Quotation>, QuotationsError>;
+    async fn query_quotations_by_status(
+        &self,
+        status: QuotationStatus,
+    ) -> Result<Vec<Quotation>, QuotationsError>;
     async fn update_quotation_status(
         &self,
         client_id: String,
