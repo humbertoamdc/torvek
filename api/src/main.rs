@@ -2,6 +2,7 @@
 
 use aws_config::BehaviorVersion;
 use std::env;
+use std::net::SocketAddr;
 
 use axum::Router;
 use http::header::{CONTENT_TYPE, ORIGIN};
@@ -20,6 +21,8 @@ mod parts;
 mod payments;
 mod projects;
 mod quotations;
+
+mod shared;
 
 #[tokio::main]
 async fn main() {
@@ -62,7 +65,7 @@ async fn run_local(app: Router<AppState>) {
             .unwrap(),
     ];
     let cors_layer = CorsLayer::new()
-        .allow_headers(vec![CONTENT_TYPE, ORIGIN])
+        .allow_headers([CONTENT_TYPE, ORIGIN])
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::PUT])
         .allow_credentials(true)
         .allow_origin(origins);
@@ -71,10 +74,12 @@ async fn run_local(app: Router<AppState>) {
     let app = app.layer(cors_layer).with_state(app_state);
 
     // Run
-    let addr = format!("127.0.0.1:{}", app_config.app.port);
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    let addr = SocketAddr::from(([127, 0, 0, 1], app_config.app.port));
     log::info!("listening on {addr}");
-    axum::serve(listener, app).await.unwrap();
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 
 async fn run_lambda(app: Router<AppState>) {

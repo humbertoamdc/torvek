@@ -1,11 +1,11 @@
 use crate::app_state::AppState;
 use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
-use crate::quotations::usecases::UseCase;
+use crate::shared::usecase::UseCase;
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use http::StatusCode;
 
 pub async fn create_checkout_session(
     State(app_state): State<AppState>,

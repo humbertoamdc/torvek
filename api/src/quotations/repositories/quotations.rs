@@ -1,5 +1,5 @@
 use crate::quotations::domain::errors::QuotationsError;
-use api_boundary::quotations::models::Quotation;
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
 use axum::async_trait;
 
 #[async_trait]
@@ -10,4 +10,11 @@ pub trait QuotationsRepository: Send + Sync + 'static {
         client_id: String,
         project_id: String,
     ) -> Result<Vec<Quotation>, QuotationsError>;
+    async fn update_quotation_status(
+        &self,
+        client_id: String,
+        project_id: String,
+        quotation_id: String,
+        status: QuotationStatus,
+    ) -> Result<(), QuotationsError>;
 }

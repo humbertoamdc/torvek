@@ -18,7 +18,7 @@ create-stacks:
 create-stack:
 	aws --profile $(PROFILE) --region $(REGION) cloudformation deploy \
 		--capabilities CAPABILITY_NAMED_IAM \
-		--template-file infra/$$stack.yaml \
+		--template-file infra/aws/$$stack.yaml \
 		--stack-name $$stack \
 
 lambda:
