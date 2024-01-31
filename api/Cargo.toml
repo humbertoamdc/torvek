@@ -7,7 +7,13 @@ edition = "2021"
 
 [dependencies]
 api-boundary = { path = "../api-boundary" }
-async-stripe = { version = "*", default-features = false, features = ["runtime-tokio-hyper", "full", "webhook-endpoints", "webhook-events"] } # TODO: Update once https://github.com/arlyon/async-stripe/issues/473 is fixed.
+async-stripe = { version = "*", default-features = false, features = [
+    "runtime-tokio-hyper",
+    "checkout",
+    "connect",
+    "webhook-endpoints",
+    "webhook-events",
+] } # TODO: Update once https://github.com/arlyon/async-stripe/issues/473 is fixed.
 aws-config = "1.1.1"
 aws-sdk-dynamodb = "1.9.0"
 aws-sdk-s3 = "1.11.0"

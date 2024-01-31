@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use stripe::Metadata;
+use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationRequest {
@@ -41,10 +41,10 @@ pub struct ConfirmQuotationPaymentWebhookRequest {
     pub project_id: String,
     pub quotation_id: String,
 }
-impl TryFrom<Option<Metadata>> for ConfirmQuotationPaymentWebhookRequest {
+impl TryFrom<Option<HashMap<String, String>>> for ConfirmQuotationPaymentWebhookRequest {
     type Error = WebhookRequestError;
 
-    fn try_from(metadata: Option<Metadata>) -> Result<Self, Self::Error> {
+    fn try_from(metadata: Option<HashMap<String, String>>) -> Result<Self, Self::Error> {
         match metadata {
             Some(metadata) => {
                 let client_id = metadata

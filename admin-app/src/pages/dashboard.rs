@@ -3,7 +3,6 @@ use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::Order;
 use crate::api::orders::OrdersApi;
 use crate::api::parts::PartsClient;
-use crate::components::orders::table::OrdersTable;
 use crate::components::parts::table::PartsTable;
 use crate::components::sidebar::Sidebar;
 use api_boundary::parts::models::{Part, PartStatus};
