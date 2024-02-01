@@ -154,36 +154,38 @@ pub fn Parts() -> impl IntoView {
         </header>
 
         <div class="flex justify-between">
-        <label
-            for="dropzone-file"
-            class="justify-center rounded-md bg-indigo-600 d px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:cursor-pointer"
-        >
-            <input
-                id="dropzone-file"
-                type="file"
-                class="hidden"
-                accept=".stp,.step"
-                multiple
-                on:change=move |ev| {
-                    let input_element = event_target::<HtmlInputElement>(&ev);
-                    create_parts.dispatch(input_element);
+            <label
+                for="dropzone-file"
+                class="justify-center rounded-md bg-indigo-600 d px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:cursor-pointer"
+            >
+                <input
+                    id="dropzone-file"
+                    type="file"
+                    class="hidden"
+                    accept=".stp,.step"
+                    multiple
+                    on:change=move |ev| {
+                        let input_element = event_target::<HtmlInputElement>(&ev);
+                        create_parts.dispatch(input_element);
+                    }
+                />
+
+                Create Parts
+            </label>
+            <button
+                type="submit"
+                class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled=checkout_button_disabled
+                on:click=move |_| {
+                    create_checkout_session.dispatch(());
                 }
-            />
-            Create Parts
-        </label>
-        <button
-            type="submit"
-            class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            disabled=checkout_button_disabled
-            on:click=move |_| {
-                create_checkout_session.dispatch(());
-            }
-        >
-            "Checkout"
-        </button>
+            >
+
+                "Checkout"
+            </button>
         </div>
 
-        <div class="mt-8"/>
+        <div class="mt-8"></div>
         <PartsTable parts=parts/>
     }
 }

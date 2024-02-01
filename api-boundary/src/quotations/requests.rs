@@ -1,3 +1,4 @@
+use crate::quotations::models::QuotationStatus;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -27,6 +28,11 @@ impl QueryQuotationsForProjectRequest {
             project_id,
         }
     }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminQueryQuotationsByStatusRequest {
+    pub status: QuotationStatus,
 }
 
 #[derive(Debug)]

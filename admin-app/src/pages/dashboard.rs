@@ -3,9 +3,12 @@ use crate::api::models::auth::UserInfo;
 use crate::api::models::orders::Order;
 use crate::api::orders::OrdersApi;
 use crate::api::parts::PartsClient;
+use crate::api::quotations::QuotationsClient;
 use crate::components::parts::table::PartsTable;
+use crate::components::quotations::table::QuotationsTable;
 use crate::components::sidebar::Sidebar;
 use api_boundary::parts::models::{Part, PartStatus};
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
 use leptos::*;
 
 #[component]
@@ -19,9 +22,11 @@ pub fn Dashboard(
     // -- api clients -- //
     let orders_client = OrdersApi::new();
     let parts_client = PartsClient::new();
+    let quotations_client = QuotationsClient::new();
 
     provide_context(orders_client);
     provide_context(parts_client);
+    provide_context(quotations_client);
 
     let client_orders = create_rw_signal(Vec::<Order>::default());
     let query_client_orders = create_action(move |_| {
@@ -49,6 +54,18 @@ pub fn Dashboard(
         }
     });
 
+    let quotations = create_rw_signal(Vec::<Quotation>::default());
+    let query_quotations = create_action(move |_| async move {
+        let result = quotations_client
+            .query_quotations_by_status(QuotationStatus::Payed)
+            .await;
+
+        match result {
+            Ok(response) => quotations.update(|q| *q = response.quotations),
+            Err(_) => (), // TODO: Handle error.
+        }
+    });
+
     // Fetch user data
     create_action(move |_| async move {
         let result = auth_client.user_info().await;
@@ -57,6 +74,7 @@ pub fn Dashboard(
                 user_info_signal.update(|u| {
                     query_client_orders.dispatch(user_info.id.clone());
                     query_parts.dispatch(());
+                    query_quotations.dispatch(());
                     *u = user_info;
                 });
             }
@@ -77,7 +95,11 @@ pub fn Dashboard(
                 </header>
 
                 // <OrdersTable client_orders=client_orders/>
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Parts Awaiting Pricing</h2>
                 <PartsTable parts=parts/>
+
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Payed Quotations</h2>
+                <QuotationsTable quotations=quotations/>
             </div>
         </div>
     }

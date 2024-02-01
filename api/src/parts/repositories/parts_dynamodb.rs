@@ -9,6 +9,8 @@ use chrono::Utc;
 use serde_dynamo::{from_items, to_item};
 use std::collections::HashMap;
 
+static PARTS_BY_STATUS_INDEX: &'static str = "PartsByStatus";
+
 #[derive(Clone)]
 pub struct DynamodbParts {
     client: aws_sdk_dynamodb::Client,
@@ -103,7 +105,7 @@ impl PartsRepository for DynamodbParts {
             .client
             .query()
             .table_name(&self.table)
-            .index_name("PartsByStatus")
+            .index_name(PARTS_BY_STATUS_INDEX)
             .key_condition_expression("#status = :value")
             .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
             .expression_attribute_names("#status", "status")

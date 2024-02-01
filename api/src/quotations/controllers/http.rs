@@ -1,17 +1,18 @@
 use crate::app_state::AppState;
+use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatusUseCase;
 use crate::quotations::usecases::confirm_quotation_payment::ConfirmQuotationPaymentWebhookUseCase;
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
 use crate::shared::extractors::stripe_event::StripeEvent;
 use crate::shared::usecase::UseCase;
 use api_boundary::quotations::requests::{
-    ConfirmQuotationPaymentWebhookRequest, CreateQuotationRequest, QueryQuotationsForProjectRequest,
+    AdminQueryQuotationsByStatusRequest, ConfirmQuotationPaymentWebhookRequest,
+    CreateQuotationRequest, QueryQuotationsForProjectRequest,
 };
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
-use std::collections::HashMap;
 use stripe::{EventObject, EventType};
 
 pub async fn create_quotation(
@@ -38,6 +39,20 @@ pub async fn query_quotations_for_project(
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn admin_query_quotations_by_status(
+    State(app_state): State<AppState>,
+    Query(request): Query<AdminQueryQuotationsByStatusRequest>,
+) -> impl IntoResponse {
+    let usecase =
+        AdminQueryQuotationsByStatusUseCase::new(app_state.quotations.quotations_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 

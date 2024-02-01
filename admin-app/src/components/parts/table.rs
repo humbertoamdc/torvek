@@ -50,7 +50,6 @@ pub fn PartsTable(#[prop(into)] parts: RwSignal<Vec<Part>>) -> impl IntoView {
 
                 </tbody>
             </table>
-
         </div>
     }
 }
