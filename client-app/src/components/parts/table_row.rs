@@ -93,7 +93,9 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                         />
                     </div>
                     <div class="ml-3">
-                        <p class="text-gray-900 whitespace-no-wrap">{reactive_part.model_file.get_untracked().name}</p>
+                        <p class="text-gray-900 whitespace-no-wrap">
+                            {reactive_part.model_file.get_untracked().name}
+                        </p>
                         <p
                             class="text-gray-900 whitespace-no-wrap"
                             for=format!("drawing-file-{}", part_id)
@@ -148,6 +150,7 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                             update_part.dispatch(());
                         }
                     />
+
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -160,6 +163,7 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                             update_part.dispatch(());
                         }
                     />
+
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -185,7 +189,9 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.unit_price.get() {
-                                Some(unit_price) => Money::from_minor(unit_price as i64, iso::MXN).to_string(),
+                                Some(unit_price) => {
+                                    Money::from_minor(unit_price as i64, iso::MXN).to_string()
+                                }
                                 None => String::from("N/A"),
                             }
                         }}
@@ -198,7 +204,9 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.sub_total.get() {
-                                Some(sub_total) => Money::from_minor(sub_total as i64, iso::MXN).to_string(),
+                                Some(sub_total) => {
+                                    Money::from_minor(sub_total as i64, iso::MXN).to_string()
+                                }
                                 None => String::from("N/A"),
                             }
                         }}

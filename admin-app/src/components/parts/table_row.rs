@@ -40,15 +40,15 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                         />
                     </div>
                     <div class="ml-3">
-                        <p class="text-gray-900 whitespace-no-wrap">{reactive_part.model_file.name}</p>
+                        <p class="text-gray-900 whitespace-no-wrap">
+                            {reactive_part.model_file.name}
+                        </p>
                     </div>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">
-                        {reactive_part.process}
-                    </p>
+                    <p class="text-gray-900 whitespace-no-wrap">{reactive_part.process}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -77,14 +77,13 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                             placeholder="N/A"
                             value=reactive_part.unit_price.get_untracked()
                             on:change=move |ev| {
-                                let unit_price = (event_target_value(&ev).parse::<f64>().unwrap() * 100.0) as u64;
+                                let unit_price = (event_target_value(&ev).parse::<f64>().unwrap()
+                                    * 100.0) as u64;
                                 reactive_part.unit_price.update(|u| *u = Some(unit_price));
                                 reactive_part
                                     .sub_total
                                     .update(|s| {
-                                        *s = Some(
-                                            unit_price * reactive_part.quantity
-                                        );
+                                        *s = Some(unit_price * reactive_part.quantity);
                                     });
                             }
                         />
@@ -97,7 +96,9 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             match reactive_part.sub_total.get() {
-                                Some(sub_total) => Money::from_minor(sub_total as i64, iso::MXN).to_string(),
+                                Some(sub_total) => {
+                                    Money::from_minor(sub_total as i64, iso::MXN).to_string()
+                                }
                                 None => String::from("N/A"),
                             }
                         }}
