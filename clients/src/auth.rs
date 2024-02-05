@@ -1,8 +1,9 @@
 use crate::common::{send, Result};
 use gloo_net::http::Request;
 use http::header::ACCEPT;
+use http::Uri;
 use ory_kratos_client::models::{LoginFlow, LogoutFlow, Session};
-use web_sys::{window, RequestCredentials};
+use web_sys::{window, RequestCredentials, Url};
 
 #[derive(Clone, Copy)]
 pub struct AuthClient {
@@ -33,8 +34,11 @@ impl AuthClient {
         send(request).await
     }
 
-    pub async fn redirect_to_login_url(&self, id: String) {
-        let url = &format!("{}/self-service/login/browser?flow_id={}", self.url, id);
+    pub async fn redirect_to_login_url(&self, id: String, return_to_url: String) {
+        let url = &format!(
+            "{}/self-service/login/browser?flow_id={}&return_to={}",
+            self.url, id, return_to_url
+        );
         window()
             .unwrap()
             .location()

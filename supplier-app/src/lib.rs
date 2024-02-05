@@ -35,8 +35,11 @@ pub fn App() -> impl IntoView {
                 session.update(move |s| *s = Some(sess));
             }
             Err(_) => {
+                let return_to_url = window().location().href().unwrap();
                 if let Ok(response) = auth_client.create_browser_login_flow().await {
-                    auth_client.redirect_to_login_url(response.id).await;
+                    auth_client
+                        .redirect_to_login_url(response.id, return_to_url)
+                        .await;
                 }
             }
         }
