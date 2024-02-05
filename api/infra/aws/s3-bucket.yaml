@@ -51,6 +51,31 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
+  SupplierPortalBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: rusticad-supplier-portal
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
   ClientFilesBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -156,6 +181,21 @@ Outputs:
     Value: !GetAtt AdminPortalBucket.DomainName
     Export:
       Name: AdminPortalBucketDomainName
+  SupplierPortalBucketName:
+    Description: Name of the supplier portal bucket.
+    Value: !Ref SupplierPortalBucket
+    Export:
+      Name: SupplierPortalBucketName
+  SupplierPortalBucketArn:
+    Description: ARN of the supplier portal bucket.
+    Value: !GetAtt SupplierPortalBucket.Arn
+    Export:
+      Name: SupplierPortalBucketArn
+  SupplierPortalBucketDomainName:
+    Description: Domain name of the supplier portal bucket.
+    Value: !GetAtt SupplierPortalBucket.DomainName
+    Export:
+      Name: SupplierPortalBucketDomainName
   ClientFilesBucketName:
     Description: Name of bucket to store files from clients.
     Value: !Ref ClientFilesBucket

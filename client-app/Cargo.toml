@@ -22,3 +22,4 @@ web-sys = { version = "0.3.65", features = ["FileList", "HtmlInputElement", "Fil
 chrono = { version = "0.4.31", features = ["serde"] }
 serde_derive = "1.0.193"
 rusty-money = "0.4.1"
+console_error_panic_hook = "0.1.7"
