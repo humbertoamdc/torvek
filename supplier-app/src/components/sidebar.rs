@@ -1,5 +1,5 @@
-use crate::clients::auth::AuthClient;
 use crate::models::users::User;
+use clients::auth::AuthClient;
 use leptos::*;
 
 #[component]

@@ -1,11 +1,10 @@
-mod clients;
 mod components;
 mod models;
 mod pages;
 
-use crate::clients::auth::AuthClient;
 use crate::models::users::User;
 use crate::pages::home::Home;
+use ::clients::auth::AuthClient;
 use leptos::*;
 use leptos_router::*;
 use ory_kratos_client::models::Session;

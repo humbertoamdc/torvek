@@ -1,10 +1,8 @@
-use crate::clients::common::{into_json, Result};
+use crate::common::{send, Result};
 use gloo_net::http::Request;
 use http::header::ACCEPT;
-use leptos::web_sys::RequestCredentials;
-use leptos::window;
 use ory_kratos_client::models::{LoginFlow, LogoutFlow, Session};
-use serde::de::DeserializeOwned;
+use web_sys::{window, RequestCredentials};
 
 #[derive(Clone, Copy)]
 pub struct AuthClient {
@@ -22,7 +20,7 @@ impl AuthClient {
             .credentials(RequestCredentials::Include)
             .build()?;
 
-        self.send(request).await
+        send(request).await
     }
 
     pub async fn create_browser_login_flow(&self) -> Result<LoginFlow> {
@@ -32,12 +30,13 @@ impl AuthClient {
             .header(ACCEPT.as_str(), "application/json")
             .build()?;
 
-        self.send(request).await
+        send(request).await
     }
 
     pub async fn redirect_to_login_url(&self, id: String) {
         let url = &format!("{}/self-service/login/browser?flow_id={}", self.url, id);
         window()
+            .unwrap()
             .location()
             .replace(&url)
             .expect("fail to redirect to login url");
@@ -49,18 +48,14 @@ impl AuthClient {
             .credentials(RequestCredentials::Include)
             .build()?;
 
-        self.send(request).await
+        send(request).await
     }
 
     pub async fn redirect_to_logout_url(&self, url: String) {
         window()
+            .unwrap()
             .location()
             .replace(&url)
             .expect("fail to redirect to logout url");
-    }
-
-    async fn send<T: DeserializeOwned>(&self, req: Request) -> Result<T> {
-        let response = req.send().await?;
-        into_json(response).await
     }
 }

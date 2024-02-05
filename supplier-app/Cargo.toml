@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+api-boundary = { path = "../api-boundary" }
+clients = { path = "../clients" }
 console_error_panic_hook = "0.1.7"
 console_log = "1.0.0"
 ory-kratos-client = { path = "../ory-kratos-client" }

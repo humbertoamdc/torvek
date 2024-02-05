@@ -1,4 +1,4 @@
-use gloo_net::http::Response;
+use gloo_net::http::{Request, Response};
 use http::StatusCode;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -33,7 +33,12 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-pub async fn into_json<T>(response: Response) -> Result<T>
+pub async fn send<T: DeserializeOwned>(req: Request) -> Result<T> {
+    let response = req.send().await?;
+    into_json(response).await
+}
+
+async fn into_json<T>(response: Response) -> Result<T>
 where
     T: DeserializeOwned,
 {

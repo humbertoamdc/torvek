@@ -15,6 +15,5 @@ deploy:
 run:
 	./scripts/run-dev.sh
 
-
 open:
 	open -n -a "Google Chrome" --args --disable-web-security --user-data-dir="/tmp/chrome_dev_session" "http://localhost:8080"
