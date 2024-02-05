@@ -1,5 +1,5 @@
 use gloo_net::http::Response;
-use reqwest::StatusCode;
+use http::StatusCode;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

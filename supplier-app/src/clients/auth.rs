@@ -1,9 +1,9 @@
 use crate::clients::common::{into_json, Result};
 use gloo_net::http::Request;
+use http::header::ACCEPT;
 use leptos::web_sys::RequestCredentials;
 use leptos::window;
 use ory_kratos_client::models::{LoginFlow, LogoutFlow, Session};
-use reqwest::header::ACCEPT;
 use serde::de::DeserializeOwned;
 
 #[derive(Clone, Copy)]
