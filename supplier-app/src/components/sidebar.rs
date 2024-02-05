@@ -115,7 +115,7 @@ pub fn Sidebar(user: User) -> impl IntoView {
                                 />
                                 <div>
                                     <span class="block text-gray-700 text-sm font-semibold">
-                                        {user.name.first} {user.name.last}
+                                        {user.traits.name.first} {user.traits.name.last}
                                     </span>
                                     <a
                                         href="some other ref"

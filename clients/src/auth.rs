@@ -1,9 +1,8 @@
 use crate::common::{send, Result};
 use gloo_net::http::Request;
 use http::header::ACCEPT;
-use http::Uri;
 use ory_kratos_client::models::{LoginFlow, LogoutFlow, Session};
-use web_sys::{window, RequestCredentials, Url};
+use web_sys::{window, RequestCredentials};
 
 #[derive(Clone, Copy)]
 pub struct AuthClient {

@@ -29,8 +29,7 @@ pub fn App() -> impl IntoView {
 
         match result {
             Ok(sess) => {
-                let local_user =
-                    serde_json::from_value::<User>(sess.clone().identity.traits.unwrap()).unwrap();
+                let local_user = User::from(*sess.identity.clone());
                 user.update(move |u| *u = Some(local_user));
                 session.update(move |s| *s = Some(sess));
             }
