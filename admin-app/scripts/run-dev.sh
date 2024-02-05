@@ -30,4 +30,4 @@ env $(cat env/dev.env | xargs) trunk serve --port 8081;
 # If the server fails to start or CTRL+C is pressed, cleanup
 cleanup
 
-ory tunnel http://127.0.0.1:8081 --dev --port 4001 --project competent-merkle-esamqi0owk --allowed-cors-origins http://127.0.0.1:8081
+#ory tunnel http://127.0.0.1:8081 --dev --port 4001 --project competent-merkle-esamqi0owk --allowed-cors-origins http://127.0.0.1:8081

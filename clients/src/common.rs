@@ -1,24 +1,28 @@
-use crate::api::models;
-use gloo_net::http::Response;
-use reqwest::StatusCode;
+use gloo_net::http::{Request, Response};
+use http::StatusCode;
 use serde::de::DeserializeOwned;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ErrorModel {
+    pub message: String,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
     Fetch(#[from] gloo_net::Error),
     #[error("{0:?}")]
-    Api(models::common::Error),
+    Api(ErrorModel),
     #[error("unknown error")]
     UnknownError,
 }
 
-impl From<models::common::Error> for Error {
-    fn from(e: models::common::Error) -> Self {
+impl From<ErrorModel> for Error {
+    fn from(e: ErrorModel) -> Self {
         Self::Api(e)
     }
 }
@@ -29,7 +33,12 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-pub async fn into_json<T>(response: Response) -> Result<T>
+pub async fn send<T: DeserializeOwned>(req: Request) -> Result<T> {
+    let response = req.send().await?;
+    into_json(response).await
+}
+
+async fn into_json<T>(response: Response) -> Result<T>
 where
     T: DeserializeOwned,
 {
@@ -42,6 +51,6 @@ where
             Ok(default_t)
         }
     } else {
-        Err(response.json::<models::common::Error>().await?.into())
+        Err(response.json::<ErrorModel>().await?.into())
     }
 }

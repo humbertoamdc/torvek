@@ -13,6 +13,18 @@ Resources:
       DomainName: admin.rusticad.com
       ValidationMethod: DNS
 
+  SupplierPortalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: suppliers.rusticad.com
+      ValidationMethod: DNS
+
+  SuppliersAuthCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: auth.suppliers.rusticad.com
+      ValidationMethod: DNS
+
 Outputs:
   ClientPortalCertificateArn:
     Description: ARN for client portal certificate.
@@ -24,3 +36,8 @@ Outputs:
     Value: !Ref AdminPortalCertificate
     Export:
       Name: AdminPortalCertificateArn
+  SupplierPortalCertificateArn:
+    Description: ARN for supplier portal certificate.
+    Value: !Ref SupplierPortalCertificate
+    Export:
+      Name: SupplierPortalCertificateArn

@@ -88,6 +88,49 @@ Resources:
           AcmCertificateArn: !ImportValue AdminPortalCertificateArn
           SslSupportMethod: sni-only
 
+  SupplierPortalCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Supplier Portal Origin Access Control
+        Name: SupplierPortalOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  SupplierPortalCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - suppliers.rusticad.com
+        Comment: Distribution for supplier portal.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: SupplierPortalOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !ImportValue SupplierPortalBucketDomainName
+            Id: SupplierPortalOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt SupplierPortalCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue SupplierPortalCertificateArn
+          SslSupportMethod: sni-only
+
 Outputs:
   ClientPortalCloudFrontDistributionId:
     Description: Id for the client portal CloudFront distribution
@@ -99,3 +142,8 @@ Outputs:
     Value: !Ref AdminPortalCloudFrontDistribution
     Export:
       Name: AdminPortalCloudFrontDistributionId
+  SupplierPortalCloudFrontDistributionId:
+    Description: Id for the supplier portal CloudFront distribution
+    Value: !Ref SupplierPortalCloudFrontDistribution
+    Export:
+      Name: SupplierPortalCloudFrontDistributionId

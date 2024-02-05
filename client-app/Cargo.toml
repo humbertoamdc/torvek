@@ -18,7 +18,8 @@ http = "1.0.0"
 gloo-net = "0.5.0"
 thiserror = "1.0.50"
 leptos_meta = { version = "0.6.3", features = ["csr"] }
-web-sys = { version = "0.3.65", features = ["FileList", "HtmlInputElement", "File"] }
 chrono = { version = "0.4.31", features = ["serde"] }
 serde_derive = "1.0.193"
 rusty-money = "0.4.1"
+console_error_panic_hook = "0.1.7"
+web-sys = { version = "0.3.67", features = ["FileList", "HtmlInputElement", "File"] }
