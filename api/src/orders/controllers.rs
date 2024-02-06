@@ -1,17 +1,17 @@
 use crate::app_state::AppState;
-use crate::orders::usecases::create_order::CreateOrderUseCase;
+use crate::orders::usecases::create_order::AdminCreateOrderUseCase;
 use crate::shared::usecase::UseCase;
-use api_boundary::orders::requests::CreateOrderRequest;
+use api_boundary::orders::requests::AdminCreateOrderRequest;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
 
-pub async fn create_order(
+pub async fn admin_create_order(
     State(app_state): State<AppState>,
-    Json(request): Json<CreateOrderRequest>,
+    Json(request): Json<AdminCreateOrderRequest>,
 ) -> impl IntoResponse {
-    let usecase = CreateOrderUseCase::new(app_state.orders.orders_repository);
+    let usecase = AdminCreateOrderUseCase::new(app_state.orders.orders_repository);
     let result = usecase.execute(request).await;
 
     match result {
