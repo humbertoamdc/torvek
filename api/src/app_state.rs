@@ -10,10 +10,8 @@ use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityMan
 use crate::auth::adapters::spi::identity_manager::ory::OryIdentityManager;
 use crate::auth::application::services::identity_manager::{AdminIdentityManager, IdentityManager};
 use crate::config::{Config, Environment};
-use crate::orders::adapters::spi::object_storage::s3::S3ObjectStorage;
-use crate::orders::adapters::spi::orders_repository::dynamodb::DynamodbOrders;
-use crate::orders::application::repositories::orders::OrdersRepository;
-use crate::orders::application::services::object_storage::ObjectStorage;
+use crate::orders::repositories::orders::OrdersRepository;
+use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
 use crate::parts;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
@@ -43,7 +41,6 @@ pub struct AppStateAuth {
 
 #[derive(Clone)]
 pub struct AppStateOrders {
-    pub object_storage: Arc<dyn ObjectStorage>,
     pub orders_repository: Arc<dyn OrdersRepository>,
 }
 
@@ -122,27 +119,24 @@ impl AppStateOrders {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
-        let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
+        // let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
         let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
 
         // Clients
-        let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
+        // let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
         let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services & Repositories
-        let object_storage = Arc::new(S3ObjectStorage::new(
-            s3_client,
-            config.orders.s3_bucket.clone(),
-        ));
+        // let object_storage = Arc::new(S3ObjectStorage::new(
+        //     s3_client,
+        //     config.orders.s3_bucket.clone(),
+        // ));
         let orders_repository = Arc::new(DynamodbOrders::new(
             dynamodb_client,
             config.orders.orders_table.clone(),
         ));
 
-        Self {
-            object_storage,
-            orders_repository,
-        }
+        Self { orders_repository }
     }
 }
 
