@@ -10,4 +10,4 @@ Resources:
         SigningEnabled: true
       EmailIdentity: rusticad.com
       MailFromAttributes:
-        MailFromDomain: no-reply.rusticad.com
+        MailFromDomain: mail.rusticad.com
