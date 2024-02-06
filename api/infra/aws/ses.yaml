@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create a simple notification service (SES)
+Resources:
+  EmailNotificationService:
+    Type: AWS::SES::EmailIdentity
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      DkimAttributes:
+        SigningEnabled: true
+      EmailIdentity: rusticad.com
+      MailFromAttributes:
+        MailFromDomain: no-reply.rusticad.com
