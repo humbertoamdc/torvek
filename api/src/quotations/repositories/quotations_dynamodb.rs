@@ -1,12 +1,15 @@
-use crate::quotations::domain::errors::QuotationsError;
-use crate::quotations::domain::models::DynamodbQuotationItem;
-use crate::quotations::repositories::quotations::QuotationsRepository;
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
+use std::collections::HashMap;
+
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::{from_items, to_item};
-use std::collections::HashMap;
+
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
+
+use crate::quotations::domain::errors::QuotationsError;
+use crate::quotations::domain::models::DynamodbQuotationItem;
+use crate::quotations::repositories::quotations::QuotationsRepository;
 
 static QUOTATIONS_BY_STATUS_INDEX: &'static str = "QuotationsByStatus";
 

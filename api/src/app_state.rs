@@ -1,7 +1,7 @@
-use aws_config::{BehaviorVersion, SdkConfig};
 use std::env;
 use std::sync::Arc;
 
+use aws_config::{BehaviorVersion, SdkConfig};
 use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use stripe::Client;
@@ -12,6 +12,8 @@ use crate::auth::application::services::identity_manager::{AdminIdentityManager,
 use crate::config::{Config, Environment};
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
+use crate::orders::services::orders_creation::OrdersCreationService;
+use crate::orders::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
 use crate::parts;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
@@ -42,6 +44,7 @@ pub struct AppStateAuth {
 #[derive(Clone)]
 pub struct AppStateOrders {
     pub orders_repository: Arc<dyn OrdersRepository>,
+    pub orders_creation_service: Arc<dyn OrdersCreationService>,
 }
 
 #[derive(Clone)]
@@ -132,11 +135,19 @@ impl AppStateOrders {
         //     config.orders.s3_bucket.clone(),
         // ));
         let orders_repository = Arc::new(DynamodbOrders::new(
-            dynamodb_client,
+            dynamodb_client.clone(),
             config.orders.orders_table.clone(),
         ));
+        let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
+            dynamodb_client,
+            config.orders.orders_table.clone(),
+            config.quotations.quotations_table.clone(),
+        ));
 
-        Self { orders_repository }
+        Self {
+            orders_repository,
+            orders_creation_service,
+        }
     }
 }
 
