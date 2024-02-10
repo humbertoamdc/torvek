@@ -1,6 +1,7 @@
 use crate::orders::domain::errors::OrdersError;
 use crate::orders::repositories::orders::OrdersRepository;
 use api_boundary::orders::models::Order;
+use aws_sdk_dynamodb::types::{PutRequest, WriteRequest};
 use axum::async_trait;
 use serde_dynamo::to_item;
 
@@ -18,13 +19,27 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn create_order(&self, order: Order) -> Result<(), OrdersError> {
-        let item = to_item(order).expect("error converting to dynamodb item");
+    async fn create_orders(&self, orders: Vec<Order>) -> Result<(), OrdersError> {
+        let items = orders
+            .into_iter()
+            .map(|order| {
+                WriteRequest::builder()
+                    .put_request(
+                        PutRequest::builder()
+                            .set_item(Some(
+                                to_item(order).expect("error converting to dynamodb item"),
+                            ))
+                            .build()
+                            .unwrap(),
+                    )
+                    .build()
+            })
+            .collect();
+
         let response = self
             .client
-            .put_item()
-            .set_item(Some(item))
-            .table_name(&self.table)
+            .batch_write_item()
+            .request_items(&self.table, items)
             .send()
             .await;
 
@@ -32,7 +47,7 @@ impl OrdersRepository for DynamodbOrders {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(OrdersError::CreateOrderError)
+                Err(OrdersError::CreateOrdersError)
             }
         }
     }

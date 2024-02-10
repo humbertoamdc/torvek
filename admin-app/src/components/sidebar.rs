@@ -11,7 +11,7 @@ pub fn Sidebar(auth_client: AuthorizedApi, #[prop(into)] on_logout: Callback<()>
         set_wait_for_response.update(|waiting| *waiting = false);
 
         match result {
-            Ok(_) => on_logout(()),
+            Ok(_) => on_logout.call(()),
             Err(_) => (), // TODO: Handle error.
         };
     });

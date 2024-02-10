@@ -4,5 +4,5 @@ use axum::async_trait;
 
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {
-    async fn create_order(&self, order: Order) -> Result<(), OrdersError>;
+    async fn create_orders(&self, orders: Vec<Order>) -> Result<(), OrdersError>;
 }

@@ -7,13 +7,11 @@ awslocal s3 mb s3://unnamed-client-files
 awslocal dynamodb create-table \
     --table-name Orders \
     --attribute-definitions \
-        AttributeName=client_id,AttributeType=S \
-        AttributeName=id,AttributeType=S \
+        AttributeName=part_id,AttributeType=S \
         AttributeName=order_status,AttributeType=S \
         AttributeName=created_at,AttributeType=S \
     --key-schema \
-        AttributeName=client_id,KeyType=HASH \
-        AttributeName=id,KeyType=RANGE \
+        AttributeName=part_id,KeyType=HASH \
     --billing-mod PAY_PER_REQUEST \
     --global-secondary-indexes \
     '[

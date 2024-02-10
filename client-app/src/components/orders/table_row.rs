@@ -3,7 +3,6 @@ use crate::api::models::orders::{ReactiveOrder, UpdateOrderRequest};
 use crate::api::orders::OrdersClient;
 use crate::components::orders::materials_dropdown::MaterialsDropdown;
 use crate::components::orders::tolerances_dropdown::TolerancesDropdown;
-use api_boundary::orders::requests::CreateDrawingUploadUrlRequest;
 use leptos::*;
 use web_sys::HtmlInputElement;
 
@@ -41,43 +40,43 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
         }
     });
 
-    let upload_drawing_file = create_action(move |input_element: &HtmlInputElement| {
-        let file = input_element.clone().files().unwrap().item(0).unwrap();
-        let file_name = file.name();
-
-        let input_element = input_element.clone();
-        let request = CreateDrawingUploadUrlRequest::new(
-            user_info.get().id,
-            file_name.clone(),
-            reactive_order.drawing_file_url.get_untracked(),
-        );
-
-        async move {
-            let orders_client = OrdersClient::new();
-            match orders_client.create_drawing_upload_url(request).await {
-                Ok(response) => {
-                    let upload_file_response = orders_client
-                        .upload_file_with_presigned_url(file, response.url.clone())
-                        .await;
-
-                    match upload_file_response {
-                        Ok(_) => {
-                            reactive_order
-                                .drawing_file_name
-                                .update(|f| *f = Some(file_name));
-                            reactive_order
-                                .drawing_file_url
-                                .update(|f| *f = Some(response.url));
-                            update_order.dispatch(());
-                        }
-                        Err(err) => log::error!("{err:?}"),
-                    };
-                }
-                Err(err) => log::error!("{err:?}"),
-            }
-            input_element.set_value("");
-        }
-    });
+    // let upload_drawing_file = create_action(move |input_element: &HtmlInputElement| {
+    //     let file = input_element.clone().files().unwrap().item(0).unwrap();
+    //     let file_name = file.name();
+    //
+    //     let input_element = input_element.clone();
+    //     let request = CreateDrawingUploadUrlRequest::new(
+    //         user_info.get().id,
+    //         file_name.clone(),
+    //         reactive_order.drawing_file_url.get_untracked(),
+    //     );
+    //
+    //     async move {
+    //         let orders_client = OrdersClient::new();
+    //         match orders_client.create_drawing_upload_url(request).await {
+    //             Ok(response) => {
+    //                 let upload_file_response = orders_client
+    //                     .upload_file_with_presigned_url(file, response.url.clone())
+    //                     .await;
+    //
+    //                 match upload_file_response {
+    //                     Ok(_) => {
+    //                         reactive_order
+    //                             .drawing_file_name
+    //                             .update(|f| *f = Some(file_name));
+    //                         reactive_order
+    //                             .drawing_file_url
+    //                             .update(|f| *f = Some(response.url));
+    //                         update_order.dispatch(());
+    //                     }
+    //                     Err(err) => log::error!("{err:?}"),
+    //                 };
+    //             }
+    //             Err(err) => log::error!("{err:?}"),
+    //         }
+    //         input_element.set_value("");
+    //     }
+    // });
 
     view! {
         <tr>
@@ -105,7 +104,6 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                                     accept=".pdf"
                                     on:change=move |ev| {
                                         let input_element = event_target::<HtmlInputElement>(&ev);
-                                        upload_drawing_file.dispatch(input_element);
                                     }
                                 />
 

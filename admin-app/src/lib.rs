@@ -1,6 +1,7 @@
 use crate::api::auth::UnauthorizedApi;
 use api::auth::AuthorizedApi;
 use api::models::auth::UserInfo;
+use clients::admin_orders::AdminOrdersClient;
 use leptos::*;
 use leptos_router::*;
 
@@ -13,8 +14,13 @@ mod env;
 mod models;
 mod pages;
 
+static API_URL: &'static str = env!("API_URL");
+
 #[component]
 pub fn App() -> impl IntoView {
+    // -- clients -- //
+    provide_context(AdminOrdersClient::new(API_URL));
+
     // -- signals -- //
 
     let authorized_api_signal: RwSignal<Option<AuthorizedApi>> =

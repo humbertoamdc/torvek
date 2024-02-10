@@ -1,6 +1,6 @@
 use crate::common::file::File;
 use crate::common::money::Money;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::Uuid;
@@ -11,7 +11,7 @@ pub struct Order {
     pub part_id: String,
     pub model_file: File,
     pub payment: Money,
-    pub deadline: DateTime<Utc>,
+    pub deadline: NaiveDate,
     pub status: OrderStatus,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -22,7 +22,7 @@ impl Order {
         part_id: String,
         model_file: File,
         payment: Money,
-        deadline: DateTime<Utc>,
+        deadline: NaiveDate,
         status: OrderStatus,
     ) -> Self {
         let now = Utc::now();

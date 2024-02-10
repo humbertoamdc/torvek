@@ -2,7 +2,7 @@ use crate::orders::domain::errors::OrdersError;
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::shared::usecase::UseCase;
 use api_boundary::orders::models::{Order, OrderStatus};
-use api_boundary::orders::requests::AdminCreateOrderRequest;
+use api_boundary::orders::requests::AdminCreateOrdersRequest;
 use axum::async_trait;
 use std::sync::Arc;
 
@@ -17,15 +17,22 @@ impl AdminCreateOrderUseCase {
 }
 
 #[async_trait]
-impl UseCase<AdminCreateOrderRequest, (), OrdersError> for AdminCreateOrderUseCase {
-    async fn execute(&self, request: AdminCreateOrderRequest) -> Result<(), OrdersError> {
-        let order = Order::new(
-            request.part_id,
-            request.model_file,
-            request.payment,
-            request.deadline,
-            OrderStatus::Open,
-        );
-        self.orders_repository.create_order(order).await
+impl UseCase<AdminCreateOrdersRequest, (), OrdersError> for AdminCreateOrderUseCase {
+    async fn execute(&self, request: AdminCreateOrdersRequest) -> Result<(), OrdersError> {
+        let orders = request
+            .data
+            .into_iter()
+            .map(|order| {
+                Order::new(
+                    order.part_id,
+                    order.model_file,
+                    order.payment,
+                    order.deadline,
+                    OrderStatus::Open,
+                )
+            })
+            .collect();
+
+        self.orders_repository.create_orders(orders).await
     }
 }
