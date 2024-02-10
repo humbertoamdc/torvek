@@ -1,12 +1,14 @@
 use crate::components::parts::part_to_order_table_row::PartToOrderRow;
 use crate::components::quotations::table_row::PartToOrderData;
 use api_boundary::orders::requests::{AdminCreateOrdersRequest, AdminCreateOrdersRequestData};
+use api_boundary::quotations::models::Quotation;
 use chrono::NaiveDate;
 use clients::admin_orders::AdminOrdersClient;
 use leptos::*;
 
 #[component]
 pub fn PartToOrderTable(
+    #[prop(into)] quotation: Quotation,
     #[prop(into)] parts_to_orders_data: RwSignal<Vec<PartToOrderData>>,
     #[prop(into)] remove_quotation: Callback<()>,
 ) -> impl IntoView {
@@ -48,7 +50,13 @@ pub fn PartToOrderTable(
                 }
             })
             .collect();
-        let request = AdminCreateOrdersRequest { data };
+
+        let request = AdminCreateOrdersRequest {
+            client_id: quotation.client_id.clone(),
+            project_id: quotation.project_id.clone(),
+            quotation_id: quotation.id.clone(),
+            data,
+        };
 
         async move {
             match orders_client.create_order(request).await {

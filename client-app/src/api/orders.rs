@@ -3,7 +3,6 @@ use crate::api::models::orders::{
     CreateOrdersRequest, CreateOrdersResponse, QueryOrdersForClientResponse, UpdateOrderRequest,
 };
 use crate::env;
-use api_boundary::orders::responses::CreateDrawingUploadUrlResponse;
 use gloo_net::http::Request;
 use leptos::wasm_bindgen::JsValue;
 use leptos::web_sys::{File, RequestCredentials};

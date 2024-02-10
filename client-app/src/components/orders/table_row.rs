@@ -12,7 +12,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
 
     // -- context -- //
 
-    let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
+    let _user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
     let orders_client = use_context::<OrdersClient>().unwrap_or(OrdersClient::new());
 
     // -- actions -- //
@@ -103,7 +103,7 @@ pub fn OrdersRow(#[prop(into)] reactive_order: ReactiveOrder) -> impl IntoView {
                                     class="hidden"
                                     accept=".pdf"
                                     on:change=move |ev| {
-                                        let input_element = event_target::<HtmlInputElement>(&ev);
+                                        let _input_element = event_target::<HtmlInputElement>(&ev);
                                     }
                                 />
 

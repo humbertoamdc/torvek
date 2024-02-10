@@ -18,7 +18,7 @@ pub fn QuotationsRow(
     #[prop(into)] quotation: Quotation,
     #[prop(into)] remove_quotation: Callback<()>,
 ) -> impl IntoView {
-    let quotation_id = quotation.id.clone();
+    let (quotation, _) = create_signal(quotation);
 
     // -- clients -- //
 
@@ -30,17 +30,17 @@ pub fn QuotationsRow(
     let parts_to_orders_data_for_quotation = create_rw_signal(Vec::<PartToOrderData>::default());
 
     let query_parts_for_quotation = create_action(move |_| {
-        let client_id = quotation.client_id.clone();
-        let project_id = quotation.project_id.clone();
-        let quotation_id = quotation.id.clone();
-
         async move {
             if parts_to_orders_data_for_quotation
                 .get_untracked()
                 .is_empty()
             {
                 let result = parts_client
-                    .query_parts_for_quotation(client_id, project_id, quotation_id)
+                    .query_parts_for_quotation(
+                        quotation.get_untracked().client_id,
+                        quotation.get_untracked().project_id,
+                        quotation.get_untracked().id,
+                    )
                     .await;
 
                 match result {
@@ -74,7 +74,7 @@ pub fn QuotationsRow(
             >
 
                 <p class="ml-4 mx-2 my-5 text-gray-900 whitespace-no-wrap">
-                    "Quotation with ID: " {quotation_id}
+                    "Quotation with ID: " {quotation.get_untracked().id}
                 </p>
 
             </button>
@@ -86,6 +86,7 @@ pub fn QuotationsRow(
             >
 
                 <PartToOrderTable
+                    quotation=quotation.get_untracked()
                     parts_to_orders_data=parts_to_orders_data_for_quotation
                     remove_quotation
                 />

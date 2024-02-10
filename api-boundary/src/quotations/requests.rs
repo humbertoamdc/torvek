@@ -76,3 +76,11 @@ impl TryFrom<Option<HashMap<String, String>>> for ConfirmQuotationPaymentWebhook
         }
     }
 }
+
+#[derive(Debug)]
+pub struct UpdateQuotationStatusRequest {
+    pub client_id: String,
+    pub project_id: String,
+    pub quotation_id: String,
+    pub status: QuotationStatus,
+}
