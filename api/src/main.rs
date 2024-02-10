@@ -1,5 +1,3 @@
-#![feature(exclusive_range_pattern)]
-
 use aws_config::BehaviorVersion;
 use std::env;
 use std::net::SocketAddr;

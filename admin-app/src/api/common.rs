@@ -1,8 +1,7 @@
 use crate::api::models;
 use gloo_net::http::Response;
-use reqwest::StatusCode;
+use http::StatusCode;
 use serde::de::DeserializeOwned;
-use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -1,13 +1,16 @@
-use crate::parts::domain::dynamodb_part_item::DynamodbPartItem;
-use crate::parts::domain::errors::PartsError;
-use crate::parts::domain::updatable_part::UpdatablePart;
-use crate::parts::repositories::parts::PartsRepository;
-use api_boundary::parts::models::{Part, PartStatus};
+use std::collections::HashMap;
+
 use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::{from_items, to_item};
-use std::collections::HashMap;
+
+use api_boundary::parts::models::{Part, PartStatus};
+
+use crate::parts::domain::dynamodb_part_item::DynamodbPartItem;
+use crate::parts::domain::errors::PartsError;
+use crate::parts::domain::updatable_part::UpdatablePart;
+use crate::parts::repositories::parts::PartsRepository;
 
 static PARTS_BY_STATUS_INDEX: &'static str = "PartsByStatus";
 

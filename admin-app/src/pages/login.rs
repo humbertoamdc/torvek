@@ -1,13 +1,8 @@
 use crate::api;
 use leptos::*;
-use ory_kratos_client::apis::configuration::Configuration;
-use ory_kratos_client::apis::frontend_api::create_browser_login_flow;
-use ory_kratos_client::models::UiNodeAttributes;
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, ACCESS_CONTROL_ALLOW_CREDENTIALS, ORIGIN};
 
 use crate::api::auth::{AuthorizedApi, UnauthorizedApi};
 use crate::api::models::auth::Credentials;
-use crate::env::ORY_ADMIN_URL;
 
 #[component]
 pub fn Login(
@@ -24,64 +19,64 @@ pub fn Login(
     let button_is_disabled = Signal::derive(move || {
         disabled.get() || password.get().is_empty() || email.get().is_empty()
     });
-    let (flow_id, set_flow_id) = create_signal(String::new());
-    let (csrf_token, set_csrf_token) = create_signal(String::new());
+    // let (flow_id, set_flow_id) = create_signal(String::new());
+    // let (csrf_token, set_csrf_token) = create_signal(String::new());
 
     // -- actions -- //
-
-    let _init_login_flow = create_action(move |_: &()| {
-        let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
-        headers.insert(
-            ACCESS_CONTROL_ALLOW_CREDENTIALS,
-            HeaderValue::from_static("true"),
-        );
-        headers.insert(ORIGIN, HeaderValue::from_static("http://127.0.0.1:8081"));
-        let client = reqwest::Client::builder()
-            .default_headers(headers)
-            .build()
-            .unwrap();
-        let config = Configuration {
-            base_path: ORY_ADMIN_URL.to_string(),
-            user_agent: None,
-            client,
-            basic_auth: None,
-            oauth_access_token: None,
-            bearer_access_token: None,
-            api_key: None,
-        };
-        async move {
-            let response = create_browser_login_flow(&config, None, None, None, None, None).await;
-            match response {
-                Ok(login_flow) => {
-                    set_flow_id(login_flow.id);
-                    let _csrf_token = login_flow
-                        .ui
-                        .nodes
-                        .iter()
-                        .find(|node| match *node.attributes.clone() {
-                            UiNodeAttributes::UiNodeInputAttributes { name, .. } => {
-                                name == String::from("csrf_token")
-                            }
-                            _ => false,
-                        })
-                        .map(|node| match *node.attributes.clone() {
-                            UiNodeAttributes::UiNodeInputAttributes { value, .. } => {
-                                serde_json::from_str::<String>(&value.unwrap().to_string()).unwrap()
-                            }
-                            _ => String::default(),
-                        })
-                        .unwrap_or_default();
-                    set_csrf_token(_csrf_token);
-                }
-                Err(_) => log::error!("error creating login flow"),
-            }
-        }
-    });
+    //
+    // let _init_login_flow = create_action(move |_: &()| {
+    //     let mut headers = HeaderMap::new();
+    //     headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+    //     headers.insert(
+    //         ACCESS_CONTROL_ALLOW_CREDENTIALS,
+    //         HeaderValue::from_static("true"),
+    //     );
+    //     headers.insert(ORIGIN, HeaderValue::from_static("http://127.0.0.1:8081"));
+    //     let client = reqwest::Client::builder()
+    //         .default_headers(headers)
+    //         .build()
+    //         .unwrap();
+    //     let config = Configuration {
+    //         base_path: ORY_ADMIN_URL.to_string(),
+    //         user_agent: None,
+    //         client,
+    //         basic_auth: None,
+    //         oauth_access_token: None,
+    //         bearer_access_token: None,
+    //         api_key: None,
+    //     };
+    //     async move {
+    //         let response = create_browser_login_flow(&config, None, None, None, None, None).await;
+    //         match response {
+    //             Ok(login_flow) => {
+    //                 set_flow_id.set(login_flow.id);
+    //                 let _csrf_token = login_flow
+    //                     .ui
+    //                     .nodes
+    //                     .iter()
+    //                     .find(|node| match *node.attributes.clone() {
+    //                         UiNodeAttributes::UiNodeInputAttributes { name, .. } => {
+    //                             name == String::from("csrf_token")
+    //                         }
+    //                         _ => false,
+    //                     })
+    //                     .map(|node| match *node.attributes.clone() {
+    //                         UiNodeAttributes::UiNodeInputAttributes { value, .. } => {
+    //                             serde_json::from_str::<String>(&value.unwrap().to_string()).unwrap()
+    //                         }
+    //                         _ => String::default(),
+    //                     })
+    //                     .unwrap_or_default();
+    //                 set_csrf_token.update(move |token| *token = _csrf_token);
+    //             }
+    //             Err(_) => log::error!("error creating login flow"),
+    //         }
+    //     }
+    // });
     // TODO: Init ory login flow once CORS issues are solved.
     // init_login_flow.dispatch(());
 
-    let login_action = create_action(
+    let _login_action = create_action(
         move |(email, password, flow_id, csrf_token): &(String, String, String, String)| {
             let email = email.to_string();
             let password = password.to_string();
@@ -101,7 +96,7 @@ pub fn Login(
                 match result {
                     Ok(res) => {
                         set_login_error.update(|error| *error = None);
-                        on_success(res);
+                        on_success.call(res);
                     }
                     Err(err) => {
                         let msg = match err {
@@ -121,7 +116,7 @@ pub fn Login(
     );
 
     let dispatch_action = move || {
-        login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()))
+        // login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()))
     };
 
     view! {

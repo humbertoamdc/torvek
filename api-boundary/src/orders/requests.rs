@@ -1,18 +1,20 @@
+use crate::common::file::File;
+use crate::common::money::Money;
+use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateDrawingUploadUrlRequest {
+pub struct AdminCreateOrdersRequest {
     pub client_id: String,
-    pub file_name: String,
-    pub file_url: Option<String>,
+    pub project_id: String,
+    pub quotation_id: String,
+    pub data: Vec<AdminCreateOrdersRequestData>,
 }
 
-impl CreateDrawingUploadUrlRequest {
-    pub const fn new(client_id: String, file_name: String, file_url: Option<String>) -> Self {
-        Self {
-            client_id,
-            file_name,
-            file_url,
-        }
-    }
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminCreateOrdersRequestData {
+    pub part_id: String,
+    pub model_file: File,
+    pub payment: Money,
+    pub deadline: NaiveDate,
 }
