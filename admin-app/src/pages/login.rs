@@ -1,6 +1,6 @@
-use crate::api;
 use leptos::*;
 
+use crate::api;
 use crate::api::auth::{AuthorizedApi, UnauthorizedApi};
 use crate::api::models::auth::Credentials;
 
@@ -19,8 +19,8 @@ pub fn Login(
     let button_is_disabled = Signal::derive(move || {
         disabled.get() || password.get().is_empty() || email.get().is_empty()
     });
-    // let (flow_id, set_flow_id) = create_signal(String::new());
-    // let (csrf_token, set_csrf_token) = create_signal(String::new());
+    let (flow_id, _) = create_signal(String::new());
+    let (csrf_token, _) = create_signal(String::new());
 
     // -- actions -- //
     //
@@ -76,7 +76,7 @@ pub fn Login(
     // TODO: Init ory login flow once CORS issues are solved.
     // init_login_flow.dispatch(());
 
-    let _login_action = create_action(
+    let login_action = create_action(
         move |(email, password, flow_id, csrf_token): &(String, String, String, String)| {
             let email = email.to_string();
             let password = password.to_string();
@@ -116,7 +116,7 @@ pub fn Login(
     );
 
     let dispatch_action = move || {
-        // login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()))
+        login_action.dispatch((email.get(), password.get(), flow_id.get(), csrf_token.get()))
     };
 
     view! {

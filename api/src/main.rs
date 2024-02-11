@@ -1,7 +1,7 @@
-use aws_config::BehaviorVersion;
 use std::env;
 use std::net::SocketAddr;
 
+use aws_config::BehaviorVersion;
 use axum::Router;
 use http::header::{CONTENT_TYPE, ORIGIN};
 use http::{HeaderValue, Method};
@@ -59,6 +59,9 @@ async fn run_local(app: Router<AppState>) {
             .parse::<HeaderValue>()
             .unwrap(),
         format!("http://{}:8081", app_config.app.domain)
+            .parse::<HeaderValue>()
+            .unwrap(),
+        format!("http://{}:8082", app_config.app.domain)
             .parse::<HeaderValue>()
             .unwrap(),
     ];

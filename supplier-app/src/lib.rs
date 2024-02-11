@@ -1,22 +1,29 @@
+use leptos::*;
+use leptos_router::*;
+
+use ::clients::auth::AuthClient;
+use clients::suppliers_orders::SuppliersOrdersClient;
+use ory_kratos_client::models::Session;
+
+use crate::models::users::User;
+use crate::pages::dashboard::Dashboard;
+use crate::pages::home::Home;
+
 mod components;
 mod models;
 mod pages;
 
-use crate::models::users::User;
-use crate::pages::home::Home;
-use ::clients::auth::AuthClient;
-use leptos::*;
-use leptos_router::*;
-use ory_kratos_client::models::Session;
-
+pub const API_URL: &'static str = env!("API_URL");
 pub const ORY_URL: &'static str = env!("ORY_URL");
 
 #[component]
 pub fn App() -> impl IntoView {
     // -- clients -- //
     let auth_client = AuthClient::new(ORY_URL);
+    let orders_client = SuppliersOrdersClient::new(API_URL);
 
     provide_context(auth_client);
+    provide_context(orders_client);
 
     // -- signals -- //
 
@@ -72,8 +79,10 @@ pub fn App() -> impl IntoView {
                                 </Show>
                             }
                         }
-                    />
+                    >
 
+                        <Route path="/" view=move || view! { <Dashboard/> }/>
+                    </Route>
                 </Routes>
             </main>
         </Router>

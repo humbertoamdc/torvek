@@ -29,8 +29,8 @@ impl OrdersRepository for DynamodbOrders {
             .query()
             .table_name(&self.table)
             .index_name(ORDERS_BY_STATUS_INDEX)
-            .key_condition_expression("status = :status")
-            .expression_attribute_values(":status", AttributeValue::S(status.to_string()))
+            .key_condition_expression("#status = :value")
+            .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
             .expression_attribute_names("#status", "status")
             .send()
             .await;

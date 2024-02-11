@@ -22,7 +22,7 @@ impl SuppliersOrdersClient {
     ) -> Result<QueryOrdersByStatusResponse> {
         let url = format!("{}/orders", self.url);
         let request = Request::get(&url)
-            .query(&[("status", status.to_string())])
+            .query([("status", status.to_string())])
             .credentials(RequestCredentials::Include)
             .build()?;
 
