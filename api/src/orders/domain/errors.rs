@@ -2,6 +2,8 @@
 pub enum OrdersError {
     #[error("error while creating orders")]
     CreateOrdersError,
-    // #[error("an unexpected error occurred")]
-    // UnknownError,
+    #[error("error while querying orders")]
+    QueryOrdersError,
+    #[error("an unexpected error occurred")]
+    UnknownError,
 }

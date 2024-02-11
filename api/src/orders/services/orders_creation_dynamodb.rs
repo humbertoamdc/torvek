@@ -53,7 +53,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
                     (String::from("id"), AttributeValue::S(quotation_id)),
                 ])))
                 .condition_expression("#status = :payedStatus")
-                .update_expression("SET #status = :ordersCreatedStatus")
+                .update_expression("SET #status = :ordersCreatedStatus, updated_at = :updated_at")
                 .set_expression_attribute_names(Some(HashMap::from([(
                     String::from("#status"),
                     String::from("status"),
@@ -66,6 +66,10 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
                     (
                         String::from(":ordersCreatedStatus"),
                         AttributeValue::S(QuotationStatus::OrdersCreated.to_string()),
+                    ),
+                    (
+                        String::from(":updated_at"),
+                        AttributeValue::S(chrono::Utc::now().to_rfc3339()),
                     ),
                 ])))
                 .build()

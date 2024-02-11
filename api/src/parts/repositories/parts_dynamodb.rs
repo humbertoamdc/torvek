@@ -103,7 +103,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn query_orders_by_status(&self, status: PartStatus) -> Result<Vec<Part>, PartsError> {
+    async fn query_parts_by_status(&self, status: PartStatus) -> Result<Vec<Part>, PartsError> {
         let response = self
             .client
             .query()
@@ -146,7 +146,7 @@ impl PartsRepository for DynamodbParts {
         update_expression.push_str("updated_at = :updated_at, ");
         expression_attribute_values.insert(
             ":updated_at".to_string(),
-            AttributeValue::S(Utc::now().to_string()),
+            AttributeValue::S(Utc::now().to_rfc3339()),
         );
 
         update_expression.push_str("#status = :status, ");
