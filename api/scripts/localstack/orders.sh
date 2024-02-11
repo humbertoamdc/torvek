@@ -8,7 +8,7 @@ awslocal dynamodb create-table \
     --table-name Orders \
     --attribute-definitions \
         AttributeName=part_id,AttributeType=S \
-        AttributeName=order_status,AttributeType=S \
+        AttributeName=status,AttributeType=S \
         AttributeName=created_at,AttributeType=S \
     --key-schema \
         AttributeName=part_id,KeyType=HASH \
@@ -18,7 +18,7 @@ awslocal dynamodb create-table \
       {
         "IndexName": "OrdersByStatus",
         "KeySchema": [
-          {"AttributeName":"order_status","KeyType":"HASH"},
+          {"AttributeName":"status","KeyType":"HASH"},
           {"AttributeName":"created_at","KeyType":"RANGE"}
         ],
         "Projection":{

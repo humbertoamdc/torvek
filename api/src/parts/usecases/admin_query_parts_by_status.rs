@@ -1,10 +1,13 @@
+use std::sync::Arc;
+
+use axum::async_trait;
+
+use api_boundary::parts::requests::AdminQueryPartsByStatusRequest;
+use api_boundary::parts::responses::AdminQueryPartsByStatusResponse;
+
 use crate::parts::domain::errors::PartsError;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::usecases::UseCase;
-use api_boundary::parts::requests::AdminQueryPartsByStatusRequest;
-use api_boundary::parts::responses::AdminQueryPartsByStatusResponse;
-use axum::async_trait;
-use std::sync::Arc;
 
 pub struct AdminQueryPartsByStatusUseCase {
     parts_repository: Arc<dyn PartsRepository>,
@@ -26,7 +29,7 @@ impl UseCase<AdminQueryPartsByStatusRequest, AdminQueryPartsByStatusResponse, Pa
     ) -> Result<AdminQueryPartsByStatusResponse, PartsError> {
         let parts = self
             .parts_repository
-            .query_orders_by_status(request.status)
+            .query_parts_by_status(request.status)
             .await?;
 
         Ok(AdminQueryPartsByStatusResponse::new(parts))

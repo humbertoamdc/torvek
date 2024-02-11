@@ -10,12 +10,13 @@ api-boundary = { path = "../api-boundary" }
 clients = { path = "../clients" }
 console_error_panic_hook = "0.1.7"
 console_log = "1.0.0"
-ory-kratos-client = { path = "../ory-kratos-client" }
-leptos = { version = "0.6.5", features = ["csr", "nightly"] }
-leptos_router = { version = "0.6.3", features = ["csr", "nightly"] }
+ory-kratos-client = { version = "1.0.0", path = "../ory-kratos-client" }
+leptos = { version = "0.6.5", features = ["csr"] }
+leptos_router = { version = "0.6.5", features = ["csr"] }
 log = "0.4.20"
 gloo-net = "0.5.0"
 serde = "1.0.195"
 serde_json = "1.0.111"
 thiserror = "1.0.56"
 http = "1.0.0"
+rusty-money = "0.4.1"

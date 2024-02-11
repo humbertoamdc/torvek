@@ -1,7 +1,9 @@
-use crate::common::file::File;
-use crate::common::money::Money;
 use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
+
+use crate::common::file::File;
+use crate::common::money::Money;
+use crate::orders::models::OrderStatus;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AdminCreateOrdersRequest {
@@ -17,4 +19,9 @@ pub struct AdminCreateOrdersRequestData {
     pub model_file: File,
     pub payment: Money,
     pub deadline: NaiveDate,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryOrdersByStatusRequest {
+    pub status: OrderStatus,
 }

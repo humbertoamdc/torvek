@@ -131,7 +131,7 @@ impl QuotationsRepository for DynamodbQuotations {
             ),
             (
                 String::from(":updated_at"),
-                AttributeValue::S(Utc::now().to_string()),
+                AttributeValue::S(Utc::now().to_rfc3339()),
             ),
         ]);
         let expression_attribute_names =
