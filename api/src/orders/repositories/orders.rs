@@ -6,6 +6,5 @@ use crate::orders::domain::errors::OrdersError;
 
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {
-    async fn create_orders(&self, orders: Vec<Order>) -> Result<(), OrdersError>;
     async fn query_orders_by_status(&self, status: OrderStatus) -> Result<Vec<Order>, OrdersError>;
 }

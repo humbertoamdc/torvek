@@ -48,7 +48,6 @@ pub async fn complete_checkout_session_webhook(
                         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
                     }
                 } else {
-                    log::error!("error while parsing stripe event data 0");
                     Err(StatusCode::BAD_REQUEST)
                 }
             } else {

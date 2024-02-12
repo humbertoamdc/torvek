@@ -4,9 +4,8 @@ use stripe::{
     CreateCheckoutSessionLineItemsPriceDataProductData, Currency, StripeError,
 };
 
-use api_boundary::orders::requests::StripeCreateOrdersRequestData;
 use api_boundary::payments::requests::{
-    CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
+    CompleteCheckoutSessionWebhookData, CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
 };
 
 const CLIENT_ID: &'static str = "client_id";
@@ -93,10 +92,10 @@ impl StripePaymentsProcessor {
 
     fn create_orders_data_from_parts_data(
         parts_data: &Vec<CreateCheckoutSessionPartData>,
-    ) -> Vec<StripeCreateOrdersRequestData> {
+    ) -> Vec<CompleteCheckoutSessionWebhookData> {
         parts_data
             .iter()
-            .map(|part_data| StripeCreateOrdersRequestData {
+            .map(|part_data| CompleteCheckoutSessionWebhookData {
                 part_id: part_data.part_id.clone(),
                 model_file: part_data.model_file.clone(),
                 drawing_file: part_data.drawing_file.clone(),

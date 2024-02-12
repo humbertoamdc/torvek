@@ -1,6 +1,6 @@
-use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
+use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
-use serde_dynamo::{from_items, to_item};
+use serde_dynamo::from_items;
 
 use api_boundary::orders::models::{Order, OrderStatus};
 
@@ -23,39 +23,6 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn create_orders(&self, orders: Vec<Order>) -> Result<(), OrdersError> {
-        let items = orders
-            .into_iter()
-            .map(|order| {
-                WriteRequest::builder()
-                    .put_request(
-                        PutRequest::builder()
-                            .set_item(Some(
-                                to_item(order).expect("error converting to dynamodb item"),
-                            ))
-                            .build()
-                            .unwrap(),
-                    )
-                    .build()
-            })
-            .collect();
-
-        let response = self
-            .client
-            .batch_write_item()
-            .request_items(&self.table, items)
-            .send()
-            .await;
-
-        match response {
-            Ok(_) => Ok(()),
-            Err(err) => {
-                log::error!("{:?}", err);
-                Err(OrdersError::CreateOrdersBatchError)
-            }
-        }
-    }
-
     async fn query_orders_by_status(&self, status: OrderStatus) -> Result<Vec<Order>, OrdersError> {
         let response = self
             .client

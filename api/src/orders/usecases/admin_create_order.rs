@@ -31,7 +31,7 @@ impl UseCase<AdminCreateOrdersRequest, (), OrdersError> for AdminCreateOrderUseC
             })
             .collect();
 
-        // TODO: Change logic and naming to update order with payment.
+        // TODO: Change logic and naming to update order with payout.
 
         Ok(())
     }

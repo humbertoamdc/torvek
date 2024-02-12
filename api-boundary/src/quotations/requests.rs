@@ -42,10 +42,3 @@ pub struct UpdateQuotationStatusRequest {
     pub quotation_id: String,
     pub status: QuotationStatus,
 }
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct StripeConfirmQuotationPaymentRequest {
-    pub client_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-}

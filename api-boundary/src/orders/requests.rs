@@ -25,19 +25,3 @@ pub struct AdminCreateOrdersRequestData {
 pub struct QueryOrdersByStatusRequest {
     pub status: OrderStatus,
 }
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct StripeCreateOrdersRequest {
-    pub client_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-    pub data: Vec<StripeCreateOrdersRequestData>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct StripeCreateOrdersRequestData {
-    pub part_id: String,
-    pub model_file: File,
-    pub drawing_file: Option<File>,
-    pub deadline: NaiveDate,
-}
