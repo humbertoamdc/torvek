@@ -32,5 +32,4 @@ impl Quotation {
 pub enum QuotationStatus {
     AwaitingPayment,
     Payed,
-    OrdersCreated,
 }

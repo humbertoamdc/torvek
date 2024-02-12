@@ -1,9 +1,10 @@
-use crate::app_state::AppState;
 use axum::async_trait;
 use axum::extract::FromRequest;
 use axum::response::{IntoResponse, Response};
 use http::{Request, StatusCode};
 use stripe::{Event, Webhook};
+
+use crate::app_state::AppState;
 
 pub struct StripeEvent(pub Event);
 
@@ -41,7 +42,7 @@ where
                 &state.payments.webhook_secret,
             )
             .map_err(|err| {
-                log::error!("stripe webhook error: {err:?}");
+                log::error!("stripe webhook error: {err:?}",);
                 StatusCode::BAD_REQUEST.into_response()
             })?,
         ))

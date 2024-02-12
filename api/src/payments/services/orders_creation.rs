@@ -2,7 +2,7 @@ use axum::async_trait;
 
 use api_boundary::orders::models::Order;
 
-use crate::orders::domain::errors::OrdersError;
+use crate::payments::domain::errors::PaymentsError;
 
 #[async_trait]
 pub trait OrdersCreationService: Send + Sync + 'static {
@@ -12,5 +12,5 @@ pub trait OrdersCreationService: Send + Sync + 'static {
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
-    ) -> Result<(), OrdersError>;
+    ) -> Result<(), PaymentsError>;
 }
