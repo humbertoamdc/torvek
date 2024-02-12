@@ -7,8 +7,8 @@ use serde_dynamo::to_item;
 use api_boundary::orders::models::Order;
 use api_boundary::quotations::models::QuotationStatus;
 
-use crate::orders::domain::errors::OrdersError;
-use crate::orders::services::orders_creation::OrdersCreationService;
+use crate::payments::domain::errors::PaymentsError;
+use crate::payments::services::orders_creation::OrdersCreationService;
 
 #[derive(Clone)]
 pub struct DynamodbOrdersCreationService {
@@ -39,7 +39,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
-    ) -> Result<(), OrdersError> {
+    ) -> Result<(), PaymentsError> {
         // Update quotation status to OrdersCreated.
         let quotation_transaction =
             self.build_quotation_transaction(client_id, project_id, quotation_id);
@@ -63,7 +63,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(OrdersError::CreateOrdersError)
+                Err(PaymentsError::CreateOrdersAndConfirmQuotationPaymentTransactionError)
             }
         }
     }
@@ -89,10 +89,8 @@ impl DynamodbOrdersCreationService {
                         ),
                         (String::from("id"), AttributeValue::S(quotation_id)),
                     ])))
-                    .condition_expression("#status = :payedStatus")
-                    .update_expression(
-                        "SET #status = :ordersCreatedStatus, updated_at = :updated_at",
-                    )
+                    .condition_expression("#status = :awaitingPaymentStatus")
+                    .update_expression("SET #status = :payedStatus, updated_at = :updated_at")
                     .set_expression_attribute_names(Some(HashMap::from([(
                         String::from("#status"),
                         String::from("status"),
@@ -103,8 +101,8 @@ impl DynamodbOrdersCreationService {
                             AttributeValue::S(QuotationStatus::Payed.to_string()),
                         ),
                         (
-                            String::from(":ordersCreatedStatus"),
-                            AttributeValue::S(QuotationStatus::OrdersCreated.to_string()),
+                            String::from(":awaitingPaymentStatus"),
+                            AttributeValue::S(QuotationStatus::AwaitingPayment.to_string()),
                         ),
                         (
                             String::from(":updated_at"),

@@ -12,11 +12,11 @@ use crate::auth::application::services::identity_manager::{AdminIdentityManager,
 use crate::config::{Config, Environment};
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
-use crate::orders::services::orders_creation::OrdersCreationService;
-use crate::orders::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
 use crate::parts;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
+use crate::payments::services::orders_creation::OrdersCreationService;
+use crate::payments::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
 use crate::payments::services::stripe::StripePaymentsProcessor;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
@@ -44,7 +44,6 @@ pub struct AppStateAuth {
 #[derive(Clone)]
 pub struct AppStateOrders {
     pub orders_repository: Arc<dyn OrdersRepository>,
-    pub orders_creation_service: Arc<dyn OrdersCreationService>,
 }
 
 #[derive(Clone)]
@@ -67,6 +66,7 @@ pub struct AppStateParts {
 pub struct AppStatePayments {
     pub webhook_secret: String,
     pub payments_processor: StripePaymentsProcessor,
+    pub orders_creation_service: Arc<dyn OrdersCreationService>,
 }
 
 impl AppState {
@@ -79,7 +79,7 @@ impl AppState {
             projects: AppStateProjects::from(config).await,
             quotations: AppStateQuotations::from(config).await,
             parts: AppStateParts::from(config).await,
-            payments: AppStatePayments::from(config),
+            payments: AppStatePayments::from(config).await,
         }
     }
 }
@@ -138,16 +138,8 @@ impl AppStateOrders {
             dynamodb_client.clone(),
             config.orders.orders_table.clone(),
         ));
-        let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
-            dynamodb_client,
-            config.orders.orders_table.clone(),
-            config.quotations.quotations_table.clone(),
-        ));
 
-        Self {
-            orders_repository,
-            orders_creation_service,
-        }
+        Self { orders_repository }
     }
 }
 
@@ -221,17 +213,29 @@ impl AppStateParts {
 }
 
 impl AppStatePayments {
-    fn from(config: &Config) -> Self {
+    async fn from(config: &Config) -> Self {
+        // Configs
+        let shared_config = get_shared_config(config).await;
+        let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
+
         // Clients
         let client = Client::new(&config.payments.secret_key);
+        let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services
         let payments_processor =
             StripePaymentsProcessor::new(client, config.payments.success_url.clone());
 
+        let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
+            dynamodb_client,
+            config.orders.orders_table.clone(),
+            config.quotations.quotations_table.clone(),
+        ));
+
         Self {
             webhook_secret: config.payments.webhook_secret.clone(),
             payments_processor,
+            orders_creation_service,
         }
     }
 }

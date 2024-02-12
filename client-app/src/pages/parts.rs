@@ -1,15 +1,17 @@
-use crate::api::models::auth::UserInfo;
-use crate::api::parts::PartsClient;
-use crate::api::payments::PaymentsClient;
-use crate::components::parts::table::PartsTable;
+use leptos::*;
+use leptos_router::*;
+use web_sys::HtmlInputElement;
+
 use api_boundary::parts::models::{Part, PartStatus};
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::payments::requests::{
     CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
 };
-use leptos::*;
-use leptos_router::*;
-use web_sys::HtmlInputElement;
+
+use crate::api::models::auth::UserInfo;
+use crate::api::parts::PartsClient;
+use crate::api::payments::PaymentsClient;
+use crate::components::parts::table::PartsTable;
 
 #[derive(Params, PartialEq)]
 struct PartsParams {
@@ -130,7 +132,7 @@ pub fn Parts() -> impl IntoView {
             client_id: user_info.get_untracked().id,
             project_id: project_id().unwrap(),
             quotation_id: quotation_id().unwrap(),
-            parts_data: parts
+            data: parts
                 .get_untracked()
                 .iter()
                 .map(|part| CreateCheckoutSessionPartData::from(part))

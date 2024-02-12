@@ -1,8 +1,2 @@
-use axum::async_trait;
-
 pub mod create_checkout_session;
-
-#[async_trait]
-pub trait UseCase<Request, Response, Error> {
-    async fn execute(&self, request: Request) -> Result<Response, Error>;
-}
+pub mod create_orders_and_confirm_quotation_payment;

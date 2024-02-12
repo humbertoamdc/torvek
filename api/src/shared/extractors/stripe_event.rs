@@ -1,9 +1,10 @@
-use crate::app_state::AppState;
 use axum::async_trait;
 use axum::extract::FromRequest;
 use axum::response::{IntoResponse, Response};
 use http::{Request, StatusCode};
 use stripe::{Event, Webhook};
+
+use crate::app_state::AppState;
 
 pub struct StripeEvent(pub Event);
 

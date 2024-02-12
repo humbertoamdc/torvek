@@ -1,10 +1,10 @@
-use crate::app_state::AppState;
-use crate::quotations::controllers::http::{
-    admin_query_quotations_by_status, confirm_quotation_payment_webhook, create_quotation,
-    query_quotations_for_project,
-};
 use axum::routing::{get, post};
 use axum::Router;
+
+use crate::app_state::AppState;
+use crate::quotations::controllers::http::{
+    admin_query_quotations_by_status, create_quotation, query_quotations_for_project,
+};
 
 pub fn create_router() -> Router<AppState> {
     Router::new()
@@ -12,10 +12,6 @@ pub fn create_router() -> Router<AppState> {
         .route(
             "/clients/:client_id/projects/:project_id/quotations",
             get(query_quotations_for_project),
-        )
-        .route(
-            "/quotations/webhooks/confirm_payment",
-            post(confirm_quotation_payment_webhook),
         )
         .route("/admin/quotations", get(admin_query_quotations_by_status))
 }

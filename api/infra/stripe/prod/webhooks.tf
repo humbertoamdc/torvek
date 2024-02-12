@@ -11,8 +11,8 @@ provider "stripe" {
   api_key = "<API_KEY>"
 }
 
-resource "stripe_webhook_endpoint" "confirm_quotation_payment_webhook_prod" {
-  url            = "https://api.rusticad.com/api/v1/quotations/webhooks/confirm_payment"
+resource "stripe_webhook_endpoint" "complete_checkout_session_webhook_prod" {
+  url            = "https://api.rusticad.com/api/v1/payments/webhooks/complete_checkout_session"
   description    = "Webhook used by Stripe to confirm when a quotation payment is successful."
   enabled_events = [
     "checkout.session.completed"

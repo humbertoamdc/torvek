@@ -1,6 +1,6 @@
-use crate::quotations::models::QuotationStatus;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashMap;
+
+use crate::quotations::models::QuotationStatus;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationRequest {
@@ -33,48 +33,6 @@ impl QueryQuotationsForProjectRequest {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AdminQueryQuotationsByStatusRequest {
     pub status: QuotationStatus,
-}
-
-#[derive(Debug)]
-pub enum WebhookRequestError {
-    MissingMetadata,
-    MissingField,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct ConfirmQuotationPaymentWebhookRequest {
-    pub client_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-}
-impl TryFrom<Option<HashMap<String, String>>> for ConfirmQuotationPaymentWebhookRequest {
-    type Error = WebhookRequestError;
-
-    fn try_from(metadata: Option<HashMap<String, String>>) -> Result<Self, Self::Error> {
-        match metadata {
-            Some(metadata) => {
-                let client_id = metadata
-                    .get("client_id")
-                    .ok_or(WebhookRequestError::MissingField)?
-                    .clone();
-                let project_id = metadata
-                    .get("project_id")
-                    .ok_or(WebhookRequestError::MissingField)?
-                    .clone();
-                let quotation_id = metadata
-                    .get("quotation_id")
-                    .ok_or(WebhookRequestError::MissingField)?
-                    .clone();
-
-                Ok(Self {
-                    client_id,
-                    project_id,
-                    quotation_id,
-                })
-            }
-            None => Err(WebhookRequestError::MissingMetadata),
-        }
-    }
 }
 
 #[derive(Debug)]

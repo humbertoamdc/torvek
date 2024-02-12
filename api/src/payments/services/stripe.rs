@@ -1,13 +1,17 @@
-use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use stripe::{
     CheckoutSession, CheckoutSessionMode, Client, CreateCheckoutSession,
     CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsPriceData,
     CreateCheckoutSessionLineItemsPriceDataProductData, Currency, StripeError,
 };
 
+use api_boundary::payments::requests::{
+    CompleteCheckoutSessionWebhookData, CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
+};
+
 const CLIENT_ID: &'static str = "client_id";
 const PROJECT_ID: &'static str = "project_id";
 const QUOTATION_ID: &'static str = "quotation_id";
+const DATA: &'static str = "data";
 
 #[derive(Clone)]
 pub struct StripePaymentsProcessor {
@@ -27,7 +31,7 @@ impl StripePaymentsProcessor {
         &self,
         request: CreateCheckoutSessionRequest,
     ) -> Result<String, StripeError> {
-        let line_items = Self::line_items(&request);
+        let line_items = Self::line_items_from_parts_data(&request.data);
         let success_url = format!(
             "{}/projects/{}/quotations/{}/parts",
             self.success_url, request.project_id, request.quotation_id
@@ -41,6 +45,11 @@ impl StripePaymentsProcessor {
             (String::from(CLIENT_ID), request.client_id),
             (String::from(PROJECT_ID), request.project_id),
             (String::from(QUOTATION_ID), request.quotation_id),
+            (
+                String::from(DATA),
+                serde_json::to_string(&Self::create_orders_data_from_parts_data(&request.data))
+                    .unwrap(),
+            ),
         ]);
         params.metadata = Some(metadata);
 
@@ -49,12 +58,14 @@ impl StripePaymentsProcessor {
         Ok(result.url.unwrap())
     }
 
-    fn line_items(request: &CreateCheckoutSessionRequest) -> Vec<CreateCheckoutSessionLineItems> {
-        request.parts_data.iter().map(|part_data| CreateCheckoutSessionLineItems {
+    fn line_items_from_parts_data(
+        parts_data: &Vec<CreateCheckoutSessionPartData>,
+    ) -> Vec<CreateCheckoutSessionLineItems> {
+        parts_data.iter().map(|part_data| CreateCheckoutSessionLineItems {
             adjustable_quantity: None,
             dynamic_tax_rates: None,
             price: None,
-            price_data:  Some(CreateCheckoutSessionLineItemsPriceData {
+            price_data: Some(CreateCheckoutSessionLineItemsPriceData {
                 currency: Currency::MXN,
                 product: None,
                 product_data: Some(CreateCheckoutSessionLineItemsPriceDataProductData {
@@ -77,5 +88,19 @@ impl StripePaymentsProcessor {
             quantity: Some(part_data.quantity),
             tax_rates: None,
         }).collect()
+    }
+
+    fn create_orders_data_from_parts_data(
+        parts_data: &Vec<CreateCheckoutSessionPartData>,
+    ) -> Vec<CompleteCheckoutSessionWebhookData> {
+        parts_data
+            .iter()
+            .map(|part_data| CompleteCheckoutSessionWebhookData {
+                part_id: part_data.part_id.clone(),
+                model_file: part_data.model_file.clone(),
+                drawing_file: part_data.drawing_file.clone(),
+                deadline: part_data.deadline,
+            })
+            .collect()
     }
 }

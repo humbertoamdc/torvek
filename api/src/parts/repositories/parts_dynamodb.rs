@@ -55,7 +55,7 @@ impl PartsRepository for DynamodbParts {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(PartsError::PartsBatchCreateError),
+            Err(_) => Err(PartsError::CreatePartsBatchError),
         }
     }
 

@@ -12,3 +12,4 @@ serde-enum-str = "0.4.0"
 uuid = { version = "1.6.1", features = ["v4"] }
 chrono = { version = "0.4.31", features = ["serde"] }
 iso_currency = { version = "0.4.4", features = ["with-serde"] }
+serde_json = "1.0.113"

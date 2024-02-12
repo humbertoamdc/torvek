@@ -18,7 +18,7 @@ trap cleanup INT
 
 # Forward stripe webhooks to local environment
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Forwarding stripe webhooks to local environment"
-stripe listen --forward-to 127.0.0.1:3000/api/v1/quotations/webhooks/confirm_payment &
+stripe listen --forward-to 127.0.0.1:3000/api/v1/payments/webhooks/complete_checkout_session &
 
 # Start localstack
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting local AWS infra"
