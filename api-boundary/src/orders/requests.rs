@@ -25,3 +25,9 @@ pub struct AdminCreateOrdersRequestData {
 pub struct QueryOrdersByStatusRequest {
     pub status: OrderStatus,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminUpdateOrderPayoutRequest {
+    pub order_id: String,
+    pub payout: Money,
+}
