@@ -1,15 +1,18 @@
-use crate::parts::domain::errors::PartsError;
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::services::object_storage::ObjectStorage;
-use crate::parts::usecases::UseCase;
+use std::sync::Arc;
+use std::time::Duration;
+
+use axum::async_trait;
+use uuid::Uuid;
+
 use api_boundary::common::file::File;
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
-use axum::async_trait;
-use std::sync::Arc;
-use std::time::Duration;
-use uuid::Uuid;
+
+use crate::parts::domain::errors::PartsError;
+use crate::parts::repositories::parts::PartsRepository;
+use crate::parts::services::object_storage::ObjectStorage;
+use crate::shared::usecase::UseCase;
 
 pub struct CreatePartsUseCase {
     parts_repository: Arc<dyn PartsRepository>,

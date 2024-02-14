@@ -24,6 +24,8 @@ impl UseCase<AdminCreateOrdersRequest, (), OrdersError> for AdminCreateOrderUseC
                 Order::new(
                     order.part_id,
                     order.model_file,
+                    None,
+                    0,
                     Some(order.payment),
                     order.deadline,
                     OrderStatus::Open,

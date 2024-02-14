@@ -7,7 +7,7 @@ use api_boundary::parts::responses::AdminQueryPartsByStatusResponse;
 
 use crate::parts::domain::errors::PartsError;
 use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::usecases::UseCase;
+use crate::shared::usecase::UseCase;
 
 pub struct AdminQueryPartsByStatusUseCase {
     parts_repository: Arc<dyn PartsRepository>,

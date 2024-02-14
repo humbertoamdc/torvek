@@ -1,13 +1,20 @@
+use leptos::*;
+
+use api_boundary::orders::models::{Order, OrderStatus};
+use api_boundary::parts::models::{Part, PartStatus};
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
+use clients::admin_orders::AdminOrdersClient;
+
 use crate::api::auth::AuthorizedApi;
 use crate::api::models::auth::UserInfo;
 use crate::api::parts::PartsClient;
 use crate::api::quotations::QuotationsClient;
+use crate::components::orders::add_order_payouts_table::AddOrderPayoutsTable;
 use crate::components::parts::table::PartsTable;
 use crate::components::quotations::table::QuotationsTable;
 use crate::components::sidebar::Sidebar;
-use api_boundary::parts::models::{Part, PartStatus};
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
-use leptos::*;
+
+pub const API_URL: &'static str = env!("API_URL");
 
 #[component]
 pub fn Dashboard(
@@ -20,9 +27,11 @@ pub fn Dashboard(
     // -- api clients -- //
     let parts_client = PartsClient::new();
     let quotations_client = QuotationsClient::new();
+    let orders_client = AdminOrdersClient::new(API_URL);
 
     provide_context(parts_client);
     provide_context(quotations_client);
+    provide_context(orders_client);
 
     let parts = create_rw_signal(Vec::<Part>::default());
     let query_parts = create_action(move |_| async move {
@@ -48,6 +57,20 @@ pub fn Dashboard(
         }
     });
 
+    let orders = create_rw_signal(Vec::<Order>::default());
+    let query_orders_by_status = create_action(move |status: &OrderStatus| {
+        let status = status.clone();
+
+        async move {
+            let result = orders_client.query_orders_by_status(status).await;
+
+            match result {
+                Ok(response) => orders.update(|o| *o = response.orders),
+                Err(_) => (), // TODO: Handle error.
+            }
+        }
+    });
+
     // Fetch user data
     create_action(move |_| async move {
         let result = auth_client.user_info().await;
@@ -56,6 +79,7 @@ pub fn Dashboard(
                 user_info_signal.update(|u| {
                     query_parts.dispatch(());
                     query_quotations.dispatch(());
+                    query_orders_by_status.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
                 });
             }
@@ -81,6 +105,9 @@ pub fn Dashboard(
 
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Payed Quotations</h2>
                 <QuotationsTable quotations=quotations/>
+
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>
+                <AddOrderPayoutsTable orders/>
             </div>
         </div>
     }

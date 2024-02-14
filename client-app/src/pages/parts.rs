@@ -4,9 +4,7 @@ use web_sys::HtmlInputElement;
 
 use api_boundary::parts::models::{Part, PartStatus};
 use api_boundary::parts::requests::CreatePartsRequest;
-use api_boundary::payments::requests::{
-    CreateCheckoutSessionPartData, CreateCheckoutSessionRequest,
-};
+use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 
 use crate::api::models::auth::UserInfo;
 use crate::api::parts::PartsClient;
@@ -132,11 +130,6 @@ pub fn Parts() -> impl IntoView {
             client_id: user_info.get_untracked().id,
             project_id: project_id().unwrap(),
             quotation_id: quotation_id().unwrap(),
-            data: parts
-                .get_untracked()
-                .iter()
-                .map(|part| CreateCheckoutSessionPartData::from(part))
-                .collect(),
         };
 
         let response = payments_client.create_checkout_session(request).await;

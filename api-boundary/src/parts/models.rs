@@ -1,8 +1,9 @@
-use crate::common::file::File;
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::Uuid;
+
+use crate::common::file::File;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Part {
@@ -47,7 +48,7 @@ impl Part {
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PartStatus {
     AwaitingPricing,
     Ready,
