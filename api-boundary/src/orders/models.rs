@@ -11,7 +11,9 @@ pub struct Order {
     pub id: String,
     pub part_id: String,
     pub model_file: File,
-    pub payment: Option<Money>,
+    pub drawing_file: Option<File>,
+    pub quantity: u64,
+    pub payout: Option<Money>,
     pub deadline: NaiveDate,
     pub status: OrderStatus,
     pub created_at: DateTime<Utc>,
@@ -22,7 +24,9 @@ impl Order {
     pub fn new(
         part_id: String,
         model_file: File,
-        payment: Option<Money>,
+        drawing_file: Option<File>,
+        quantity: u64,
+        payout: Option<Money>,
         deadline: NaiveDate,
         status: OrderStatus,
     ) -> Self {
@@ -31,7 +35,9 @@ impl Order {
             id: Uuid::new_v4().to_string(),
             part_id,
             model_file,
-            payment,
+            drawing_file,
+            quantity,
+            payout,
             deadline,
             status,
             created_at: now,
@@ -41,8 +47,9 @@ impl Order {
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
+    PendingPricing,
     Open,
     InProgress,
     ReadyForShipment,

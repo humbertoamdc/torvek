@@ -9,6 +9,7 @@ use api_boundary::payments::requests::{
 };
 
 use crate::app_state::AppState;
+use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
 use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPaymentUseCase;
 use crate::shared::extractors::stripe_event::StripeEvent;
@@ -18,7 +19,12 @@ pub async fn create_checkout_session(
     State(app_state): State<AppState>,
     Json(request): Json<CreateCheckoutSessionRequest>,
 ) -> impl IntoResponse {
-    let usecase = CreateCheckoutSessionUseCase::new(app_state.payments.payments_processor);
+    let query_parts_for_quotation_usecase =
+        QueryPartsForQuotationUseCase::new(app_state.parts.parts_repository);
+    let usecase = CreateCheckoutSessionUseCase::new(
+        app_state.payments.payments_processor,
+        query_parts_for_quotation_usecase,
+    );
     let result = usecase.execute(request).await;
 
     match result {
@@ -37,8 +43,11 @@ pub async fn complete_checkout_session_webhook(
                 if let Ok(request) =
                     CompleteCheckoutSessionWebhookRequest::try_from(session.metadata)
                 {
+                    let query_parts_for_quotation_usecase =
+                        QueryPartsForQuotationUseCase::new(app_state.parts.parts_repository);
                     let usecase = CreateOrdersAndConfirmQuotationPaymentUseCase::new(
                         app_state.payments.orders_creation_service,
+                        query_parts_for_quotation_usecase,
                     );
 
                     let result = usecase.execute(request).await;

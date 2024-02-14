@@ -28,7 +28,7 @@ impl Quotation {
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuotationStatus {
     AwaitingPayment,
     Payed,

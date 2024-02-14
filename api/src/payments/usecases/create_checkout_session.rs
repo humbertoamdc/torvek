@@ -1,17 +1,28 @@
-use crate::payments::services::stripe::StripePaymentsProcessor;
-use crate::shared::usecase::UseCase;
-use api_boundary::payments::requests::CreateCheckoutSessionRequest;
-use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 use axum::async_trait;
 use stripe::StripeError;
 
+use api_boundary::parts::requests::QueryPartsForQuotationRequest;
+use api_boundary::payments::requests::CreateCheckoutSessionRequest;
+use api_boundary::payments::responses::CreateCheckoutSessionResponse;
+
+use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
+use crate::payments::services::stripe::StripePaymentsProcessor;
+use crate::shared::usecase::UseCase;
+
 pub struct CreateCheckoutSessionUseCase {
     payments_processor: StripePaymentsProcessor,
+    query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
 }
 
 impl CreateCheckoutSessionUseCase {
-    pub const fn new(payments_processor: StripePaymentsProcessor) -> Self {
-        Self { payments_processor }
+    pub const fn new(
+        payments_processor: StripePaymentsProcessor,
+        query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+    ) -> Self {
+        Self {
+            payments_processor,
+            query_parts_for_quotation_usecase,
+        }
     }
 }
 
@@ -23,9 +34,28 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Stripe
         &self,
         request: CreateCheckoutSessionRequest,
     ) -> Result<CreateCheckoutSessionResponse, StripeError> {
+        let query_parts_for_quotation_request = QueryPartsForQuotationRequest::new(
+            request.client_id.clone(),
+            request.project_id.clone(),
+            request.quotation_id.clone(),
+        );
+        let query_parts_for_quotation_response = self
+            .query_parts_for_quotation_usecase
+            .execute(query_parts_for_quotation_request)
+            .await
+            .map_err(|_| {
+                StripeError::ClientError(String::from("error while querying for parts"))
+                // TODO: Change to use payment error
+            })?;
+
         let url = self
             .payments_processor
-            .create_checkout_session(request)
+            .create_checkout_session(
+                request.client_id,
+                request.project_id,
+                request.quotation_id,
+                query_parts_for_quotation_response.parts,
+            )
             .await?;
 
         Ok(CreateCheckoutSessionResponse::new(url))

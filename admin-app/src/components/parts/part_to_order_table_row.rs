@@ -1,8 +1,9 @@
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::Part;
 use chrono::NaiveDate;
 use leptos::*;
 use thaw::DatePicker;
+
+use api_boundary::common::money::Money;
+use api_boundary::parts::models::Part;
 
 #[component]
 pub fn PartToOrderRow(

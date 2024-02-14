@@ -8,7 +8,7 @@ pub struct User {
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum UserRole {
     Admin,
     Client,
