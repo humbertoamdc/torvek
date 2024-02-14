@@ -1,10 +1,12 @@
 use stripe::{
     CheckoutSession, CheckoutSessionMode, Client, CreateCheckoutSession,
     CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsPriceData,
-    CreateCheckoutSessionLineItemsPriceDataProductData, Currency, StripeError,
+    CreateCheckoutSessionLineItemsPriceDataProductData, Currency,
 };
 
 use api_boundary::parts::models::Part;
+
+use crate::payments::domain::errors::PaymentsError;
 
 const CLIENT_ID: &'static str = "client_id";
 const PROJECT_ID: &'static str = "project_id";
@@ -30,7 +32,7 @@ impl StripePaymentsProcessor {
         project_id: String,
         quotation_id: String,
         parts: Vec<Part>,
-    ) -> Result<String, StripeError> {
+    ) -> Result<String, PaymentsError> {
         let line_items = Self::line_items_from_parts_data(&parts);
         let success_url = format!(
             "{}/projects/{}/quotations/{}/parts",
@@ -54,7 +56,7 @@ impl StripePaymentsProcessor {
             Ok(checkout_session) => Ok(checkout_session.url.unwrap()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(err)
+                Err(PaymentsError::CreateCheckoutSessionError)
             }
         }
     }
