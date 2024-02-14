@@ -16,7 +16,7 @@ pub fn OrdersRow(#[prop(into)] order: Order) -> impl IntoView {
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
                             rusty_money::Money::from_minor(
-                                    order.payout.amount,
+                                    order.payout.clone().unwrap().amount,
                                     rusty_money::iso::MXN,
                                 )
                                 .to_string()

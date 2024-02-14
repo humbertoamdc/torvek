@@ -103,11 +103,11 @@ pub fn Dashboard(
                 <h2 class="text-xl font-bold text-gray-900 mb-4">Parts Awaiting Pricing</h2>
                 <PartsTable parts=parts/>
 
-                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Payed Quotations</h2>
-                <QuotationsTable quotations=quotations/>
-
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>
                 <AddOrderPayoutsTable orders/>
+
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Payed Quotations</h2>
+                <QuotationsTable quotations=quotations/>
             </div>
         </div>
     }

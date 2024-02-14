@@ -2,12 +2,38 @@ use leptos::*;
 
 use api_boundary::common::money::Money;
 use api_boundary::orders::models::Order;
+use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
+use clients::admin_orders::AdminOrdersClient;
 
 #[component]
-pub fn AddOrderPayoutsTableRow(#[prop(into)] order: Order) -> impl IntoView {
+pub fn AddOrderPayoutsTableRow(
+    #[prop(into)] order: Order,
+    #[prop(into)] remove_self_from_orders_callback: Callback<()>,
+) -> impl IntoView {
+    // -- clients -- //
+
+    let orders_client = use_context::<AdminOrdersClient>().unwrap();
+
     // -- signals -- //
 
     let payout = create_rw_signal(None::<Money>);
+    let is_ready = move || payout.get().is_some();
+
+    // -- actions -- //
+    let update_order_payout = create_action(move |_| {
+        let request = AdminUpdateOrderPayoutRequest {
+            order_id: order.id.clone(),
+            payout: payout.get_untracked().unwrap(),
+        };
+
+        async move {
+            let result = orders_client.update_order_payout(request).await;
+            match result {
+                Ok(_) => remove_self_from_orders_callback.call(()),
+                Err(_) => (),
+            }
+        }
+    });
 
     view! {
         <tr>
@@ -28,6 +54,11 @@ pub fn AddOrderPayoutsTableRow(#[prop(into)] order: Order) -> impl IntoView {
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap">{order.status.to_string()}</p>
+                </div>
+            </td>
+            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
+                <div class="flex justify-center">
+                    <p class="text-gray-900 whitespace-no-wrap">PLACEHOLDER</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -92,9 +123,9 @@ pub fn AddOrderPayoutsTableRow(#[prop(into)] order: Order) -> impl IntoView {
                     <button
                         type="submit"
                         class="rounded-md bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                        disabled=move || !is_ready()
+                        on:click=move |_| update_order_payout.dispatch(())
                     >
-                        // hidden=move || !is_ready()
-                        // on:click=move |_| create_orders_from_parts.dispatch(())
 
                         Submit
                     </button>

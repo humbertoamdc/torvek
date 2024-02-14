@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
+use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
@@ -65,8 +68,29 @@ impl OrdersRepository for DynamodbOrders {
             .update_item()
             .table_name(&self.table)
             .key("id", AttributeValue::S(order_id))
-            .update_expression("SET payout = :payout")
-            .expression_attribute_values(":payout", AttributeValue::M(to_item(&payout).unwrap()))
+            .condition_expression("#status = :pendingPricingStatus")
+            .update_expression(
+                "SET payout = :payout, #status = :openStatus, updated_at = :updated_at",
+            )
+            .set_expression_attribute_values(Some(HashMap::from([
+                (
+                    String::from(":payout"),
+                    AttributeValue::M(to_item(&payout).unwrap()),
+                ),
+                (
+                    String::from(":pendingPricingStatus"),
+                    AttributeValue::S(OrderStatus::PendingPricing.to_string()),
+                ),
+                (
+                    String::from(":openStatus"),
+                    AttributeValue::S(OrderStatus::Open.to_string()),
+                ),
+                (
+                    String::from(":updated_at"),
+                    AttributeValue::S(Utc::now().to_rfc3339()),
+                ),
+            ])))
+            .expression_attribute_names("#status", "status")
             .send()
             .await;
 
