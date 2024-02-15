@@ -13,7 +13,9 @@ pub fn AddOrderPayoutsTable(#[prop(into)] orders: RwSignal<Vec<Order>>) -> impl 
                     <tr>
                         <For
                             each=move || {
-                                ["Name", "Status", "Deadline", "Payout", ""].into_iter().enumerate()
+                                ["Name", "Status", "Payed", "Deadline", "Payout", ""]
+                                    .into_iter()
+                                    .enumerate()
                             }
 
                             key=|(_, column_name)| column_name.to_string()
@@ -32,8 +34,16 @@ pub fn AddOrderPayoutsTable(#[prop(into)] orders: RwSignal<Vec<Order>>) -> impl 
                     <For
                         each=move || orders.get().into_iter().enumerate()
                         key=|(_, order)| order.id.clone()
-                        children=move |(_, order)| {
-                            view! { <AddOrderPayoutsTableRow order/> }
+                        children=move |(idx, order)| {
+                            let remove_self_from_orders_callback = Callback::new(move |_| {
+                                orders
+                                    .update(|orders| {
+                                        orders.remove(idx);
+                                    });
+                            });
+                            view! {
+                                <AddOrderPayoutsTableRow order remove_self_from_orders_callback/>
+                            }
                         }
                     />
 

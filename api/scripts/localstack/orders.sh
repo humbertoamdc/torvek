@@ -7,14 +7,24 @@ awslocal s3 mb s3://unnamed-client-files
 awslocal dynamodb create-table \
     --table-name Orders \
     --attribute-definitions \
+        AttributeName=id,AttributeType=S \
         AttributeName=part_id,AttributeType=S \
         AttributeName=status,AttributeType=S \
         AttributeName=created_at,AttributeType=S \
     --key-schema \
-        AttributeName=part_id,KeyType=HASH \
+        AttributeName=id,KeyType=HASH \
     --billing-mod PAY_PER_REQUEST \
     --global-secondary-indexes \
     '[
+      {
+        "IndexName": "OrderForPart",
+        "KeySchema": [
+          {"AttributeName":"part_id","KeyType":"HASH"}
+        ],
+        "Projection":{
+          "ProjectionType": "KEYS_ONLY"
+        }
+      },
       {
         "IndexName": "OrdersByStatus",
         "KeySchema": [

@@ -2,7 +2,7 @@ use gloo_net::http::Request;
 use web_sys::RequestCredentials;
 
 use api_boundary::orders::models::OrderStatus;
-use api_boundary::orders::requests::AdminCreateOrdersRequest;
+use api_boundary::orders::requests::{AdminCreateOrdersRequest, AdminUpdateOrderPayoutRequest};
 use api_boundary::orders::responses::QueryOrdersByStatusResponse;
 
 use crate::common::{send, Result};
@@ -21,6 +21,15 @@ impl AdminOrdersClient {
     pub async fn create_order(&self, request: AdminCreateOrdersRequest) -> Result<()> {
         let url = format!("{}/admin/orders", self.url);
         let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&request)?;
+
+        send(request).await
+    }
+
+    pub async fn update_order_payout(&self, request: AdminUpdateOrderPayoutRequest) -> Result<()> {
+        let url = format!("{}/admin/orders/payout", self.url);
+        let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)
             .json(&request)?;
 

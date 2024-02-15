@@ -1,8 +1,5 @@
-use std::collections::HashMap;
-
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
-use chrono::Utc;
 use serde_dynamo::{from_items, to_item};
 
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
@@ -74,10 +71,16 @@ impl QuotationsRepository for DynamodbQuotations {
 
                         Ok(quotations)
                     }
-                    Err(_) => Err(QuotationsError::UnknownError),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(QuotationsError::UnknownError)
+                    }
                 }
             }
-            Err(_) => Err(QuotationsError::QueryQuotationsError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(QuotationsError::QueryQuotationsError)
+            }
         }
     }
 
@@ -112,49 +115,6 @@ impl QuotationsRepository for DynamodbQuotations {
                 }
             }
             Err(_) => Err(QuotationsError::QueryQuotationsError),
-        }
-    }
-
-    async fn update_quotation_status(
-        &self,
-        client_id: String,
-        project_id: String,
-        quotation_id: String,
-        status: QuotationStatus,
-    ) -> Result<(), QuotationsError> {
-        let client_id_and_project_id = format!("{client_id}#{project_id}",);
-        let update_expression = String::from("SET #status = :status, updated_at = :updated_at");
-        let expression_attribute_values = HashMap::from([
-            (
-                String::from(":status"),
-                AttributeValue::S(status.to_string()),
-            ),
-            (
-                String::from(":updated_at"),
-                AttributeValue::S(Utc::now().to_rfc3339()),
-            ),
-        ]);
-        let expression_attribute_names =
-            HashMap::from([(String::from("#status"), String::from("status"))]);
-
-        let response = self
-            .client
-            .update_item()
-            .table_name(&self.table)
-            .key(
-                "client_id#project_id",
-                AttributeValue::S(client_id_and_project_id),
-            )
-            .key("id", AttributeValue::S(quotation_id))
-            .update_expression(update_expression)
-            .set_expression_attribute_values(Some(expression_attribute_values))
-            .set_expression_attribute_names(Some(expression_attribute_names))
-            .send()
-            .await;
-
-        match response {
-            Ok(_) => Ok(()),
-            Err(_) => Err(QuotationsError::UpdateQuotationError),
         }
     }
 }

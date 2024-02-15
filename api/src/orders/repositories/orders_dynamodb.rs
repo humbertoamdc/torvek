@@ -1,7 +1,12 @@
+use std::collections::HashMap;
+
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
+use chrono::Utc;
+use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
+use api_boundary::common::money::Money;
 use api_boundary::orders::models::{Order, OrderStatus};
 
 use crate::orders::domain::errors::OrdersError;
@@ -49,6 +54,51 @@ impl OrdersRepository for DynamodbOrders {
             Err(err) => {
                 log::error!("{:?}", err);
                 Err(OrdersError::QueryOrdersError)
+            }
+        }
+    }
+
+    async fn update_order_payout(
+        &self,
+        order_id: String,
+        payout: Money,
+    ) -> Result<(), OrdersError> {
+        let response = self
+            .client
+            .update_item()
+            .table_name(&self.table)
+            .key("id", AttributeValue::S(order_id))
+            .condition_expression("#status = :pendingPricingStatus")
+            .update_expression(
+                "SET payout = :payout, #status = :openStatus, updated_at = :updated_at",
+            )
+            .set_expression_attribute_values(Some(HashMap::from([
+                (
+                    String::from(":payout"),
+                    AttributeValue::M(to_item(&payout).unwrap()),
+                ),
+                (
+                    String::from(":pendingPricingStatus"),
+                    AttributeValue::S(OrderStatus::PendingPricing.to_string()),
+                ),
+                (
+                    String::from(":openStatus"),
+                    AttributeValue::S(OrderStatus::Open.to_string()),
+                ),
+                (
+                    String::from(":updated_at"),
+                    AttributeValue::S(Utc::now().to_rfc3339()),
+                ),
+            ])))
+            .expression_attribute_names("#status", "status")
+            .send()
+            .await;
+
+        match response {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                log::error!("{:?}", err);
+                Err(OrdersError::UpdateOrderPayoutError)
             }
         }
     }
