@@ -71,10 +71,16 @@ impl QuotationsRepository for DynamodbQuotations {
 
                         Ok(quotations)
                     }
-                    Err(_) => Err(QuotationsError::UnknownError),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(QuotationsError::UnknownError)
+                    }
                 }
             }
-            Err(_) => Err(QuotationsError::QueryQuotationsError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(QuotationsError::QueryQuotationsError)
+            }
         }
     }
 

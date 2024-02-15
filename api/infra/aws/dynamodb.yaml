@@ -7,20 +7,28 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
         - AttributeName: part_id
           AttributeType: S
-        - AttributeName: order_status
+        - AttributeName: status
           AttributeType: S
         - AttributeName: created_at
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: part_id
+        - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
+        - IndexName: OrderForPart
+          KeySchema:
+            - AttributeName: part_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: KEYS_ONLY
         - IndexName: OrdersByStatus
           KeySchema:
-            - AttributeName: order_status
+            - AttributeName: status
               KeyType: HASH
             - AttributeName: created_at
               KeyType: RANGE
@@ -79,7 +87,7 @@ Resources:
         - AttributeName: id
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: PartsByStatus
+        - IndexName: QuotationsByStatus
           KeySchema:
             - AttributeName: status
               KeyType: HASH
