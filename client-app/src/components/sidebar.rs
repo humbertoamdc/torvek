@@ -1,6 +1,7 @@
+use leptos::*;
+
 use crate::api::auth::AuthorizedClient;
 use crate::pages::Page;
-use leptos::*;
 
 #[component]
 pub fn Sidebar(
@@ -21,13 +22,13 @@ pub fn Sidebar(
     });
 
     view! {
-        <nav class="top-0 left-0 h-full border-r bg-white space-y-8 sm:w-72 min-w-max">
+        <nav class="top-0 left-0 h-screen fixed border-r bg-white space-y-8 sm:w-44 min-w-max">
             <div class="flex flex-col h-full">
                 <div class="h-20 flex items-center px-8">
                     <a href="/" class="flex-none">
                         <img
                             src="https://dewey.tailorbrands.com/production/brand_version_mockup_image/896/8709307896_af7a3de3-d175-49da-9dc6-951a99a3b27f.png?cb=1700542599"
-                            width=180
+                            width=176
                             class="mx-auto"
                         />
                     </a>

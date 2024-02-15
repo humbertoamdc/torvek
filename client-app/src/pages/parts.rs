@@ -1,6 +1,7 @@
 use leptos::*;
 use leptos_router::*;
-use web_sys::HtmlInputElement;
+use thaw::{Breadcrumb, BreadcrumbItem, Button, Upload};
+use web_sys::FileList;
 
 use api_boundary::parts::models::{Part, PartStatus};
 use api_boundary::parts::requests::CreatePartsRequest;
@@ -85,8 +86,8 @@ pub fn Parts() -> impl IntoView {
         query_parts.dispatch(());
     });
 
-    let create_parts = create_action(move |input_element: &HtmlInputElement| {
-        let file_list = input_element.clone().files().unwrap();
+    let create_parts = create_action(move |file_list: &FileList| {
+        let file_list = file_list.clone();
         let mut file_names: Vec<String> = Vec::with_capacity(file_list.length() as usize);
         for i in 0..file_list.length() {
             if let Some(file) = file_list.item(i) {
@@ -94,7 +95,6 @@ pub fn Parts() -> impl IntoView {
             }
         }
 
-        let input_element = input_element.clone();
         let request = CreatePartsRequest::new(
             String::from(user_info.get_untracked().id),
             project_id().unwrap_or_default(),
@@ -119,7 +119,6 @@ pub fn Parts() -> impl IntoView {
                 }
                 Err(_) => (), // TODO: Handle error.
             }
-            input_element.set_value("");
             query_parts_callback.call(());
         }
     });
@@ -141,43 +140,52 @@ pub fn Parts() -> impl IntoView {
         }
     });
 
+    // -- derived signals -- //
+
+    let is_creating_checkout_session =
+        Signal::derive(move || create_checkout_session.pending().get());
+
     query_parts.dispatch(());
 
     view! {
+        <Breadcrumb>
+            <BreadcrumbItem>
+                <button on:click=move |_| {
+                    let navigate = use_navigate();
+                    navigate("/projects", Default::default())
+                }>"Projects"</button>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                <button on:click=move |_| {
+                    let navigate = use_navigate();
+                    let path = format!("/projects/{}/quotations", project_id().unwrap());
+                    navigate(&path, Default::default())
+                }>"Quotations"</button>
+            </BreadcrumbItem>
+            <BreadcrumbItem>"Parts"</BreadcrumbItem>
+        </Breadcrumb>
+
         <header class="flex justify-between items-center py-4">
             <h1 class="text-3xl font-bold text-gray-900">Parts</h1>
         </header>
 
         <div class="flex justify-between">
-            <label
-                for="dropzone-file"
-                class="justify-center rounded-md bg-indigo-600 d px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:cursor-pointer"
-            >
-                <input
-                    id="dropzone-file"
-                    type="file"
-                    class="hidden"
-                    accept=".stp,.step"
-                    multiple
-                    on:change=move |ev| {
-                        let input_element = event_target::<HtmlInputElement>(&ev);
-                        create_parts.dispatch(input_element);
-                    }
-                />
 
-                Create Parts
-            </label>
-            <button
-                type="submit"
-                class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            <Upload
+                accept=".stp,.step"
+                multiple=true
+                custom_request=move |file_list| create_parts.dispatch(file_list)
+            >
+                <Button>"Create Parts"</Button>
+            </Upload>
+
+            <Button
+                loading=is_creating_checkout_session
                 disabled=checkout_button_disabled
-                on:click=move |_| {
-                    create_checkout_session.dispatch(());
-                }
+                on_click=move |_| create_checkout_session.dispatch(())
             >
-
                 "Checkout"
-            </button>
+            </Button>
         </div>
 
         <div class="mt-8"></div>

@@ -1,9 +1,11 @@
+use leptos::*;
+use leptos_router::*;
+use thaw::{Layout, LayoutPosition, LayoutSider};
+
 use crate::api::auth::AuthorizedClient;
 use crate::api::models::auth::UserInfo;
 use crate::components::loading::Loading;
 use crate::components::sidebar::Sidebar;
-use leptos::*;
-use leptos_router::*;
 
 #[component]
 pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>) -> impl IntoView {
@@ -24,22 +26,26 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
     fetch_user_info.dispatch(());
 
     view! {
-        <div class="flex h-screen bg-gray-100">
-            // Sidebar
-            <Sidebar auth_client=auth_client on_logout=on_logout/>
+        <Layout position=LayoutPosition::Static has_sider=true>
+            <LayoutSider>
+                <Sidebar auth_client=auth_client on_logout=on_logout/>
+            </LayoutSider>
+            <Layout>
+                <Layout>
+                    // Main content
+                    <div class="h-screen flex-1 px-8 py-6 bg-gray-100">
+                        <Show
+                            when=move || !fetch_user_info.pending().get()
+                            fallback=move || {
+                                view! { <Loading/> }
+                            }
+                        >
 
-            // Main content
-            <div class="flex-1 px-10 py-6">
-                <Show
-                    when=move || !fetch_user_info.pending().get()
-                    fallback=move || {
-                        view! { <Loading/> }
-                    }
-                >
-
-                    <Outlet/>
-                </Show>
-            </div>
-        </div>
+                            <Outlet/>
+                        </Show>
+                    </div>
+                </Layout>
+            </Layout>
+        </Layout>
     }
 }
