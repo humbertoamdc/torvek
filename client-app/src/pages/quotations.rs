@@ -1,10 +1,13 @@
+use leptos::*;
+use leptos_router::*;
+use thaw::{Breadcrumb, BreadcrumbItem, Button};
+
+use api_boundary::quotations::models::Quotation;
+use api_boundary::quotations::requests::CreateQuotationRequest;
+
 use crate::api::models::auth::UserInfo;
 use crate::api::quotations::QuotationsClient;
 use crate::components::quotations::quotation_button::QuotationButton;
-use api_boundary::quotations::models::Quotation;
-use api_boundary::quotations::requests::CreateQuotationRequest;
-use leptos::*;
-use leptos_router::*;
 
 #[derive(Params, PartialEq)]
 struct QuotationsParams {
@@ -18,6 +21,8 @@ pub fn QuotationsContainer() -> impl IntoView {
 
 #[component]
 pub fn Quotations() -> impl IntoView {
+    let navigate = use_navigate();
+
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
@@ -77,23 +82,30 @@ pub fn Quotations() -> impl IntoView {
         }
     });
 
+    // -- derived signals -- //
+
+    let is_creating_quotation = Signal::derive(move || create_quotation.pending().get());
+
     query_quotations.dispatch(());
 
     view! {
+        <Breadcrumb>
+            <BreadcrumbItem>
+                <button on:click=move |_| navigate(
+                    "/projects",
+                    Default::default(),
+                )>"Projects"</button>
+            </BreadcrumbItem>
+            <BreadcrumbItem>"Quotations"</BreadcrumbItem>
+        </Breadcrumb>
+
         <header class="flex justify-between items-center py-4">
             <h1 class="text-3xl font-bold text-gray-900">Quotations</h1>
         </header>
 
-        <button
-            type="submit"
-            class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            on:click=move |_| {
-                create_quotation.dispatch(());
-            }
-        >
-
+        <Button loading=is_creating_quotation on_click=move |_| create_quotation.dispatch(())>
             "New Quotation"
-        </button>
+        </Button>
 
         <div class="mt-8 flex flex-wrap gap-4">
             <For

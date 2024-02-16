@@ -1,10 +1,13 @@
+use leptos::*;
+use leptos_router::*;
+use thaw::Button;
+
+use api_boundary::projects::models::Project;
+use api_boundary::projects::requests::CreateProjectRequest;
+
 use crate::api::models::auth::UserInfo;
 use crate::api::projects::ProjectsClient;
 use crate::components::projects::project_button::ProjectButton;
-use api_boundary::projects::models::Project;
-use api_boundary::projects::requests::CreateProjectRequest;
-use leptos::*;
-use leptos_router::*;
 
 #[component]
 pub fn ProjectsContainer() -> impl IntoView {
@@ -54,6 +57,10 @@ pub fn Projects() -> impl IntoView {
         }
     });
 
+    // -- derived signals -- //
+
+    let is_creating_project = Signal::derive(move || create_project.pending().get());
+
     query_projects.dispatch(());
 
     view! {
@@ -61,16 +68,9 @@ pub fn Projects() -> impl IntoView {
             <h1 class="text-3xl font-bold text-gray-900">Projects</h1>
         </header>
 
-        <button
-            type="submit"
-            class="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            on:click=move |_| {
-                create_project.dispatch(());
-            }
-        >
-
+        <Button loading=is_creating_project on_click=move |_| create_project.dispatch(())>
             "New Project"
-        </button>
+        </Button>
 
         <div class="mt-8 flex flex-wrap gap-4">
             <For
