@@ -20,7 +20,7 @@ impl Quotation {
             id: Uuid::new_v4().to_string(),
             client_id,
             project_id,
-            status: QuotationStatus::AwaitingPayment,
+            status: QuotationStatus::Created,
             created_at: now,
             updated_at: now,
         }
@@ -30,6 +30,7 @@ impl Quotation {
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuotationStatus {
-    AwaitingPayment,
+    Created,
+    PendingPayment,
     Payed,
 }

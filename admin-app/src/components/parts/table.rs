@@ -1,10 +1,17 @@
-use crate::components::parts::table_row::PartsRow;
-use crate::models::ReactivePart;
-use api_boundary::parts::models::Part;
 use leptos::*;
+use thaw::{Button, ButtonSize};
+
+use api_boundary::parts::models::Part;
+
+use crate::components::parts::table_row::PartsRow;
 
 #[component]
 pub fn PartsTable(#[prop(into)] parts: RwSignal<Vec<Part>>) -> impl IntoView {
+    // -- derived signals -- //
+
+    let submit_is_disabled =
+        Signal::derive(move || !parts.get().iter().all(|part| part.unit_price.is_some()));
+
     view! {
         <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
             <table class="min-w-full leading-normal">
@@ -42,14 +49,30 @@ pub fn PartsTable(#[prop(into)] parts: RwSignal<Vec<Part>>) -> impl IntoView {
                     <For
                         each=move || parts.get().into_iter().enumerate()
                         key=|(_, part)| part.id.clone()
-                        children=move |(_, part)| {
-                            let reactive_part = ReactivePart::from(&part);
-                            view! { <PartsRow reactive_part=reactive_part/> }
+                        children=move |(i, part)| {
+                            view! {
+                                <PartsRow
+                                    part=part.clone()
+                                    on_change=move |unit_price: u64| {
+                                        parts.update(|parts| parts[i].unit_price = Some(unit_price));
+                                    }
+                                />
+                            }
                         }
                     />
 
                 </tbody>
             </table>
         </div>
+        <Button
+            class="mt-4 self-end"
+            size=ButtonSize::Large
+            disabled=submit_is_disabled
+            on_click=move |_| {
+                // TODO: Send updated parts
+            }
+        >
+            "Submit"
+        </Button>
     }
 }

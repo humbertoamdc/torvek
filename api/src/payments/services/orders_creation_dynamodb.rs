@@ -102,7 +102,7 @@ impl DynamodbOrdersCreationService {
                         ),
                         (
                             String::from(":awaitingPaymentStatus"),
-                            AttributeValue::S(QuotationStatus::AwaitingPayment.to_string()),
+                            AttributeValue::S(QuotationStatus::PendingPayment.to_string()),
                         ),
                         (
                             String::from(":updated_at"),

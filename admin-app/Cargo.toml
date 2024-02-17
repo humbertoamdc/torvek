@@ -37,3 +37,4 @@ rusty-money = "0.4.1"
 iso_currency = "0.4.4"
 http = "1.0.0"
 thaw = { version = "0.2.0-beta", features = ["csr"] }
+leptos-use = "0.10.2"

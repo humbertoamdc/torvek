@@ -1,6 +1,8 @@
-use crate::components::quotations::table_row::QuotationsRow;
-use api_boundary::quotations::models::Quotation;
 use leptos::*;
+
+use api_boundary::quotations::models::Quotation;
+
+use crate::components::quotations::table_row::QuotationsRow;
 
 #[component]
 pub fn QuotationsTable(#[prop(into)] quotations: RwSignal<Vec<Quotation>>) -> impl IntoView {

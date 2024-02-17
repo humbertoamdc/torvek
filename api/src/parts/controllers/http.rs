@@ -1,15 +1,14 @@
-use axum::extract::{Path, Query, State};
+use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
-    AdminQueryPartsByStatusRequest, AdminUpdatePartRequest, CreateDrawingUploadUrlRequest,
-    CreatePartsRequest, QueryPartsForQuotationRequest, UpdatePartRequest,
+    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreatePartsRequest,
+    QueryPartsForQuotationRequest, UpdatePartRequest,
 };
 
 use crate::app_state::AppState;
-use crate::parts::usecases::admin_query_parts_by_status::AdminQueryPartsByStatusUseCase;
 use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
@@ -73,18 +72,18 @@ pub async fn create_drawing_upload_url(
     }
 }
 
-pub async fn admin_query_parts_by_status(
-    State(app_state): State<AppState>,
-    Query(request): Query<AdminQueryPartsByStatusRequest>,
-) -> impl IntoResponse {
-    let usecase = AdminQueryPartsByStatusUseCase::new(app_state.parts.parts_repository);
-    let result = usecase.execute(request).await;
-
-    match result {
-        Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
-    }
-}
+// pub async fn admin_query_parts_by_status(
+//     State(app_state): State<AppState>,
+//     Query(request): Query<AdminQueryPartsByStatusRequest>,
+// ) -> impl IntoResponse {
+//     let usecase = AdminQueryPartsByStatusUseCase::new(app_state.parts.parts_repository);
+//     let result = usecase.execute(request).await;
+//
+//     match result {
+//         Ok(response) => Ok((StatusCode::OK, Json(response))),
+//         Err(_) => Err(StatusCode::BAD_REQUEST),
+//     }
+// }
 
 pub async fn admin_update_part(
     State(app_state): State<AppState>,

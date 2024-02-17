@@ -1,6 +1,6 @@
 use axum::async_trait;
 
-use api_boundary::parts::models::{Part, PartStatus};
+use api_boundary::parts::models::Part;
 
 use crate::parts::domain::errors::PartsError;
 use crate::parts::domain::updatable_part::UpdatablePart;
@@ -14,10 +14,5 @@ pub trait PartsRepository: Send + Sync + 'static {
         project_id: String,
         quotation_id: String,
     ) -> Result<Vec<Part>, PartsError>;
-    async fn query_parts_by_status(&self, status: PartStatus) -> Result<Vec<Part>, PartsError>;
-    async fn update_part(
-        &self,
-        updatable_part: UpdatablePart,
-        status: PartStatus,
-    ) -> Result<(), PartsError>;
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<(), PartsError>;
 }

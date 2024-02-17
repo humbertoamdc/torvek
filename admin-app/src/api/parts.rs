@@ -1,12 +1,12 @@
-use crate::api::common::{into_json, Result};
-use crate::env::API_URL;
-use api_boundary::parts::requests::AdminUpdatePartRequest;
-use api_boundary::parts::responses::{
-    AdminQueryPartsByStatusResponse, QueryPartsForQuotationResponse,
-};
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use web_sys::RequestCredentials;
+
+use api_boundary::parts::requests::AdminUpdatePartRequest;
+use api_boundary::parts::responses::QueryPartsForQuotationResponse;
+
+use crate::api::common::{into_json, Result};
+use crate::env::API_URL;
 
 #[derive(Clone, Copy)]
 pub struct PartsClient {
@@ -30,19 +30,6 @@ impl PartsClient {
             self.url
         );
         let request = Request::get(&url)
-            .credentials(RequestCredentials::Include)
-            .build()?;
-
-        self.send(request).await
-    }
-
-    pub async fn query_parts_by_status(
-        &self,
-        status: String,
-    ) -> Result<AdminQueryPartsByStatusResponse> {
-        let url = format!("{}/admin/parts", self.url);
-        let request = Request::get(&url)
-            .query([("status", status)])
             .credentials(RequestCredentials::Include)
             .build()?;
 

@@ -1,32 +1,17 @@
-use crate::api::parts::PartsClient;
-use crate::models::ReactivePart;
-use api_boundary::parts::requests::AdminUpdatePartRequest;
+use leptos::*;
 use leptos::*;
 use rusty_money::{iso, Money};
 
+use api_boundary::parts::models::Part;
+
 #[component]
-pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
-    let parts_client = use_context::<PartsClient>().unwrap_or(PartsClient::new());
+pub fn PartsRow<F>(#[prop(into)] part: Part, on_change: F) -> impl IntoView
+where
+    F: Fn(u64) + 'static,
+{
+    // -- signals -- //
 
-    let update_part = create_action(move |_| {
-        let update_part_request = AdminUpdatePartRequest {
-            id: reactive_part.id.clone(),
-            client_id: reactive_part.client_id.clone(),
-            project_id: reactive_part.project_id.clone(),
-            quotation_id: reactive_part.quotation_id.clone(),
-            unit_price: reactive_part.unit_price.get_untracked().unwrap(),
-            sub_total: reactive_part.sub_total.get_untracked().unwrap(),
-        };
-
-        async move {
-            let response = parts_client.update_part(update_part_request).await;
-
-            match response {
-                Ok(_) => (),
-                Err(_) => (),
-            }
-        }
-    });
+    let sub_total = create_rw_signal(None::<u64>);
 
     view! {
         <tr>
@@ -40,29 +25,27 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                         />
                     </div>
                     <div class="ml-3">
-                        <p class="text-gray-900 whitespace-no-wrap">
-                            {reactive_part.model_file.name}
-                        </p>
+                        <p class="text-gray-900 whitespace-no-wrap">{part.model_file.name}</p>
                     </div>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">{reactive_part.process}</p>
+                    <p class="text-gray-900 whitespace-no-wrap">{part.process}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">{reactive_part.material}</div>
+                <div class="flex justify-center">{part.material}</div>
 
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">{reactive_part.tolerance}</p>
+                    <p class="text-gray-900 whitespace-no-wrap">{part.tolerance}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">{reactive_part.quantity}</p>
+                    <p class="text-gray-900 whitespace-no-wrap">{part.quantity}</p>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
@@ -75,16 +58,13 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                             min=1
                             class="w-32 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="N/A"
-                            value=reactive_part.unit_price.get_untracked()
+                            value=part.unit_price
                             on:change=move |ev| {
-                                let unit_price = (event_target_value(&ev).parse::<f64>().unwrap()
-                                    * 100.0) as u64;
-                                reactive_part.unit_price.update(|u| *u = Some(unit_price));
-                                reactive_part
-                                    .sub_total
-                                    .update(|s| {
-                                        *s = Some(unit_price * reactive_part.quantity);
-                                    });
+                                let unit_price = (event_target_value(&ev)
+                                    .parse::<f64>()
+                                    .unwrap() * 100.0) as u64;
+                                sub_total.update(|s| *s = Some(unit_price * part.quantity));
+                                on_change(unit_price);
                             }
                         />
 
@@ -95,7 +75,7 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap">
                         {move || {
-                            match reactive_part.sub_total.get() {
+                            match sub_total.get() {
                                 Some(sub_total) => {
                                     Money::from_minor(sub_total as i64, iso::MXN).to_string()
                                 }
@@ -103,18 +83,6 @@ pub fn PartsRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
                             }
                         }}
 
-                    </p>
-                </div>
-            </td>
-            <td class="px-2 py-3 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">
-                        <button
-                            class="px-5 py-3 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg"
-                            on:click=move |_| update_part.dispatch(())
-                        >
-                            Submit
-                        </button>
                     </p>
                 </div>
             </td>
