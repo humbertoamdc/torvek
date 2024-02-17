@@ -31,7 +31,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - s3:PutObject
                   - s3:GetObject
                 Resource:
                   - !ImportValue ConfigFilesBucketArn
@@ -77,4 +76,8 @@ Resources:
                   - !Sub
                     - "${partsTableArn}/*"
                     - partsTableArn: !ImportValue PartsTableArn
+                  - !ImportValue PartPriceOptionsTableArn
+                  - !Sub
+                    - "${partPriceOptionsTableArn}/*"
+                    - partPriceOptionsTableArn: !ImportValue PartPriceOptionsTableArn
       RoleName: ApiLambdaRole
