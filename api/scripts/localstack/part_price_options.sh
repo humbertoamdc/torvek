@@ -2,11 +2,11 @@
 
 # DynamoDB Tables
 awslocal dynamodb create-table \
-    --table-name Parts \
+    --table-name PartPriceOptions \
     --attribute-definitions \
-        AttributeName=client_id#project_id#quotation_id,AttributeType=S \
+        AttributeName=part_id,AttributeType=S \
         AttributeName=id,AttributeType=S \
     --key-schema \
-        AttributeName=client_id#project_id#quotation_id,KeyType=HASH \
+        AttributeName=part_id,KeyType=HASH \
         AttributeName=id,KeyType=RANGE \
     --billing-mod PAY_PER_REQUEST
