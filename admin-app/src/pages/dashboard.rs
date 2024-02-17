@@ -69,7 +69,6 @@ pub fn Dashboard(
         match result {
             Ok(user_info) => {
                 user_info_signal.update(|u| {
-                    // query_parts.dispatch(());
                     query_created_quotations.dispatch(());
                     query_orders_by_status.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
@@ -91,9 +90,6 @@ pub fn Dashboard(
                     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
                 </header>
 
-                // <OrdersTable client_orders=client_orders/>
-                // <h2 class="text-xl font-bold text-gray-900 mb-4">Parts Awaiting Pricing</h2>
-                // <PartsTable parts=parts/>
                 <h2 id="someid" class="text-xl font-bold text-gray-900 mt-6 mb-4">
                     Created Quotations
                 </h2>

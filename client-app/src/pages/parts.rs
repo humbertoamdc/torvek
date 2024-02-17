@@ -63,8 +63,6 @@ pub fn Parts() -> impl IntoView {
 
     // -- action -- //
 
-    // let query_quotation
-
     let query_parts = create_action(move |_| async move {
         let parts_client = PartsClient::new();
         let result = parts_client
