@@ -10,7 +10,6 @@ use crate::api::parts::PartsClient;
 use crate::api::quotations::QuotationsClient;
 use crate::components::orders::add_order_payouts_table::AddOrderPayoutsTable;
 use crate::components::quotations::created_quotations_table::CreatedQuotationsTable;
-use crate::components::quotations::table::QuotationsTable;
 use crate::components::sidebar::Sidebar;
 
 pub const API_URL: &'static str = env!("API_URL");
@@ -24,6 +23,7 @@ pub fn Dashboard(
     provide_context(user_info_signal);
 
     // -- api clients -- //
+
     let parts_client = PartsClient::new();
     let quotations_client = QuotationsClient::new();
     let orders_client = AdminOrdersClient::new(API_URL);
@@ -32,22 +32,9 @@ pub fn Dashboard(
     provide_context(quotations_client);
     provide_context(orders_client);
 
-    // let parts = create_rw_signal(Vec::<Part>::default());
-    // let query_parts = create_action(move |_| async move {
-    //     let result = parts_client
-    //         .query_parts_by_status(PartStatus::AwaitingPricing.to_string())
-    //         .await;
-    //
-    //     match result {
-    //         Ok(response) => parts.update(|p| *p = response.parts),
-    //         Err(_) => (), // TODO: Handle error.
-    //     }
-    // });
-
     // -- signals -- //
 
     let created_quotations = create_rw_signal(Vec::<Quotation>::default());
-    let payed_quotations = create_rw_signal(Vec::<Quotation>::default());
     let orders = create_rw_signal(Vec::<Order>::default());
 
     // -- actions -- //
@@ -59,17 +46,6 @@ pub fn Dashboard(
 
         match result {
             Ok(response) => created_quotations.update(|q| *q = response.quotations),
-            Err(_) => (), // TODO: Handle error.
-        }
-    });
-
-    let query_payed_quotations = create_action(move |_| async move {
-        let result = quotations_client
-            .query_quotations_by_status(QuotationStatus::Payed)
-            .await;
-
-        match result {
-            Ok(response) => payed_quotations.update(|q| *q = response.quotations),
             Err(_) => (), // TODO: Handle error.
         }
     });
@@ -95,7 +71,6 @@ pub fn Dashboard(
                 user_info_signal.update(|u| {
                     // query_parts.dispatch(());
                     query_created_quotations.dispatch(());
-                    query_payed_quotations.dispatch(());
                     query_orders_by_status.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
                 });
@@ -126,9 +101,6 @@ pub fn Dashboard(
 
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>
                 <AddOrderPayoutsTable orders/>
-
-                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Payed Quotations</h2>
-                <QuotationsTable quotations=payed_quotations/>
             </div>
         </div>
     }

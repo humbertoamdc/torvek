@@ -2,7 +2,6 @@ use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use web_sys::RequestCredentials;
 
-use api_boundary::parts::requests::AdminUpdatePartRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 
 use crate::api::common::{into_json, Result};
@@ -32,15 +31,6 @@ impl PartsClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()?;
-
-        self.send(request).await
-    }
-
-    pub async fn update_part(&self, body: AdminUpdatePartRequest) -> Result<()> {
-        let url = format!("{}/admin/parts", self.url);
-        let request = Request::patch(&url)
-            .credentials(RequestCredentials::Include)
-            .json(&body)?;
 
         self.send(request).await
     }

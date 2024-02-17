@@ -1,5 +1,4 @@
 use leptos::*;
-use leptos::*;
 use rusty_money::{iso, Money};
 
 use api_boundary::parts::models::Part;
