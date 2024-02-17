@@ -3,9 +3,10 @@ use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button, Upload};
 use web_sys::FileList;
 
-use api_boundary::parts::models::{Part, PartStatus};
+use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
 
 use crate::api::models::auth::UserInfo;
 use crate::api::parts::PartsClient;
@@ -31,16 +32,12 @@ pub fn Parts() -> impl IntoView {
 
     // -- signals -- //
 
+    let quotation = create_rw_signal(None::<Quotation>);
     let parts = create_rw_signal(Vec::<Part>::default());
     let checkout_button_disabled = Signal::derive(move || {
-        let parts_awaiting_pricing = parts
-            .get()
-            .iter()
-            .map(|part| part.status.clone())
-            .collect::<Vec<PartStatus>>()
-            .contains(&PartStatus::AwaitingPricing);
-
-        parts.get().is_empty() || parts_awaiting_pricing
+        quotation.get_untracked().is_none()
+            || quotation.get_untracked().unwrap().status != QuotationStatus::PendingPayment
+            || parts.get().is_empty()
     });
 
     // -- params -- //

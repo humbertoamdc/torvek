@@ -1,7 +1,8 @@
-use api_boundary::common::file::File;
-use api_boundary::parts::models::{Part, PartStatus};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
+
+use api_boundary::common::file::File;
+use api_boundary::parts::models::Part;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DynamodbPartItem {
@@ -10,7 +11,6 @@ pub struct DynamodbPartItem {
     pub client_project_and_quotation_ids: String,
     pub model_file: File,
     pub drawing_file: Option<File>,
-    pub status: PartStatus,
     pub process: String,
     pub material: String,
     pub tolerance: String,
@@ -38,7 +38,6 @@ impl Into<Part> for DynamodbPartItem {
             quotation_id,
             model_file: self.model_file,
             drawing_file: self.drawing_file,
-            status: self.status,
             process: self.process,
             material: self.material,
             tolerance: self.tolerance,
@@ -61,7 +60,6 @@ impl From<Part> for DynamodbPartItem {
             ),
             model_file: part.model_file,
             drawing_file: part.drawing_file,
-            status: part.status,
             process: part.process,
             material: part.material,
             tolerance: part.tolerance,

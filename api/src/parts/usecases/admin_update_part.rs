@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use axum::async_trait;
 
-use api_boundary::parts::models::PartStatus;
 use api_boundary::parts::requests::AdminUpdatePartRequest;
 
 use crate::parts::domain::errors::PartsError;
@@ -25,8 +24,6 @@ impl UseCase<AdminUpdatePartRequest, (), PartsError> for AdminUpdatePartUseCase 
     async fn execute(&self, request: AdminUpdatePartRequest) -> Result<(), PartsError> {
         let updatable_part = UpdatablePart::from(&request);
 
-        self.parts_repository
-            .update_part(updatable_part, PartStatus::Ready)
-            .await
+        self.parts_repository.update_part(updatable_part).await
     }
 }
