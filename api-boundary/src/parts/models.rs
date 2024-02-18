@@ -3,6 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::common::file::File;
+use crate::common::money::Money;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Part {
@@ -38,6 +39,30 @@ impl Part {
             quantity: 1,
             unit_price: None,
             sub_total: None,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PartPriceOption {
+    pub id: String,
+    pub part_id: String,
+    pub price: Money,
+    pub deadline: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl PartPriceOption {
+    pub fn new(part_id: String, price: Money, deadline: DateTime<Utc>) -> Self {
+        let now = Utc::now();
+        Self {
+            id: Uuid::new_v4().to_string(),
+            part_id,
+            price,
+            deadline,
             created_at: now,
             updated_at: now,
         }

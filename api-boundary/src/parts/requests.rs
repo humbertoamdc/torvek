@@ -1,6 +1,8 @@
+use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::common::file::File;
+use crate::common::money::Money;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsRequest {
@@ -69,4 +71,19 @@ pub struct AdminUpdatePartRequest {
     pub quotation_id: String,
     pub unit_price: u64,
     pub sub_total: u64,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequest {
+    pub client_id: String,
+    pub project_id: String,
+    pub quotation_id: String,
+    pub price_data: Vec<CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData {
+    pub part_id: String,
+    pub price: Money,
+    pub deadline: DateTime<Utc>,
 }

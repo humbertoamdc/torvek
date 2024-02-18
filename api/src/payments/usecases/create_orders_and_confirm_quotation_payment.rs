@@ -46,9 +46,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
             .query_parts_for_quotation_usecase
             .execute(query_parts_for_quotation_request)
             .await
-            .map_err(
-                |_| PaymentsError::QueryPartsError, // TODO: Change to use payment error
-            )?;
+            .map_err(|_| PaymentsError::QueryPartsError)?;
 
         let orders = query_parts_for_quotation_response
             .parts

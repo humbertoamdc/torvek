@@ -4,12 +4,14 @@ use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
-    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreatePartsRequest,
+    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest,
+    CreatePartPriceOptionsAndUpdateQuotationStatusRequest, CreatePartsRequest,
     QueryPartsForQuotationRequest, UpdatePartRequest,
 };
 
 use crate::app_state::AppState;
 use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
+use crate::parts::usecases::create_part_price_options_and_update_quotation_status::CreatePartPriceOptionsAndUpdateQuotationStatusUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
@@ -82,5 +84,20 @@ pub async fn admin_update_part(
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn admin_create_part_price_options(
+    State(app_state): State<AppState>,
+    Json(request): Json<CreatePartPriceOptionsAndUpdateQuotationStatusRequest>,
+) -> impl IntoResponse {
+    let usecase = CreatePartPriceOptionsAndUpdateQuotationStatusUseCase::new(
+        app_state.parts.part_price_options_creation,
+    );
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
