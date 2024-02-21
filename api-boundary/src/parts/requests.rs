@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::common::file::File;
@@ -85,5 +85,5 @@ pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequest {
 pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData {
     pub part_id: String,
     pub price: Money,
-    pub deadline: DateTime<Utc>,
+    pub deadline: NaiveDate,
 }

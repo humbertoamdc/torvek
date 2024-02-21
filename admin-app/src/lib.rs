@@ -1,9 +1,11 @@
-use crate::api::auth::UnauthorizedApi;
-use api::auth::AuthorizedApi;
-use api::models::auth::UserInfo;
-use clients::admin_orders::AdminOrdersClient;
 use leptos::*;
 use leptos_router::*;
+
+use api::auth::AuthorizedApi;
+use api::models::auth::UserInfo;
+use clients::orders::OrdersClient;
+
+use crate::api::auth::UnauthorizedApi;
 
 use self::components::loading::Loading;
 use self::pages::*;
@@ -19,7 +21,7 @@ static API_URL: &'static str = env!("API_URL");
 #[component]
 pub fn App() -> impl IntoView {
     // -- clients -- //
-    provide_context(AdminOrdersClient::new(API_URL));
+    provide_context(OrdersClient::new(API_URL));
 
     // -- signals -- //
 

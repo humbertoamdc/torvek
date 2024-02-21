@@ -1,20 +1,31 @@
 use gloo_net::http::Request;
-use serde::de::DeserializeOwned;
 use web_sys::RequestCredentials;
 
+use api_boundary::parts::requests::CreatePartPriceOptionsAndUpdateQuotationStatusRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 
-use crate::api::common::{into_json, Result};
-use crate::env::API_URL;
+use crate::common::{send, Result};
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub struct PartsClient {
     url: &'static str,
 }
 
 impl PartsClient {
-    pub const fn new() -> Self {
-        Self { url: API_URL }
+    pub const fn new(url: &'static str) -> Self {
+        Self { url }
+    }
+
+    pub async fn admin_create_part_price_options(
+        &self,
+        request: CreatePartPriceOptionsAndUpdateQuotationStatusRequest,
+    ) -> Result<()> {
+        let url = format!("{}/admin/part_price_options", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&request)?;
+
+        send(request).await
     }
 
     pub async fn query_parts_for_quotation(
@@ -23,7 +34,6 @@ impl PartsClient {
         project_id: String,
         quotation_id: String,
     ) -> Result<QueryPartsForQuotationResponse> {
-        // TODO: Create and use endpoint for admin.
         let url = format!(
             "{}/clients/{client_id}/projects/{project_id}/quotations/{quotation_id}/parts",
             self.url
@@ -32,11 +42,6 @@ impl PartsClient {
             .credentials(RequestCredentials::Include)
             .build()?;
 
-        self.send(request).await
-    }
-
-    async fn send<T: DeserializeOwned>(&self, req: Request) -> Result<T> {
-        let response = req.send().await?;
-        into_json(response).await
+        send(request).await
     }
 }

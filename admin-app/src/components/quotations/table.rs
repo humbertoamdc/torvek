@@ -13,14 +13,8 @@ pub fn QuotationsTable(#[prop(into)] quotations: RwSignal<Vec<Quotation>>) -> im
                     <For
                         each=move || quotations.get().into_iter().enumerate()
                         key=|(_, quotation)| quotation.id.clone()
-                        children=move |(idx, quotation)| {
-                            let remove_quotation = Callback::new(move |_: ()| {
-                                quotations
-                                    .update(|q| {
-                                        q.remove(idx);
-                                    })
-                            });
-                            view! { <QuotationsRow quotation remove_quotation/> }
+                        children=move |(_, quotation)| {
+                            view! { <QuotationsRow quotation/> }
                         }
                     />
 

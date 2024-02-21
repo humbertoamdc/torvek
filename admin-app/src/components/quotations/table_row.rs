@@ -1,10 +1,10 @@
-use crate::api::parts::PartsClient;
-use crate::components::parts::part_to_order_table::PartToOrderTable;
+use chrono::NaiveDate;
+use leptos::*;
+
 use api_boundary::common::money::Money;
 use api_boundary::parts::models::Part;
 use api_boundary::quotations::models::Quotation;
-use chrono::NaiveDate;
-use leptos::*;
+use clients::parts::PartsClient;
 
 #[derive(Debug, Clone)]
 pub struct PartToOrderData {
@@ -14,15 +14,12 @@ pub struct PartToOrderData {
 }
 
 #[component]
-pub fn QuotationsRow(
-    #[prop(into)] quotation: Quotation,
-    #[prop(into)] remove_quotation: Callback<()>,
-) -> impl IntoView {
+pub fn QuotationsRow(#[prop(into)] quotation: Quotation) -> impl IntoView {
     let (quotation, _) = create_signal(quotation);
 
     // -- clients -- //
 
-    let parts_client = use_context::<PartsClient>().unwrap_or(PartsClient::new());
+    let parts_client = use_context::<PartsClient>().unwrap();
 
     // -- signals -- //
 
@@ -78,19 +75,19 @@ pub fn QuotationsRow(
                 </p>
 
             </button>
-            <Show
-                when=move || expanded.get()
-                fallback=|| {
-                    view! {}
-                }
-            >
+        // <Show
+        // when=move || expanded.get()
+        // fallback=|| {
+        // view! {}
+        // }
+        // >
 
-                <PartToOrderTable
-                    quotation=quotation.get_untracked()
-                    parts_to_orders_data=parts_to_orders_data_for_quotation
-                    remove_quotation
-                />
-            </Show>
+        // <PartToOrderTable
+        // quotation=quotation.get_untracked()
+        // parts_to_orders_data=parts_to_orders_data_for_quotation
+        // remove_quotation
+        // />
+        // </Show>
         </div>
     }
 }

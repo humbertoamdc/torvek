@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde_derive::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -50,13 +50,13 @@ pub struct PartPriceOption {
     pub id: String,
     pub part_id: String,
     pub price: Money,
-    pub deadline: DateTime<Utc>,
+    pub deadline: NaiveDate,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
 impl PartPriceOption {
-    pub fn new(part_id: String, price: Money, deadline: DateTime<Utc>) -> Self {
+    pub fn new(part_id: String, price: Money, deadline: NaiveDate) -> Self {
         let now = Utc::now();
         Self {
             id: Uuid::new_v4().to_string(),
