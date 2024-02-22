@@ -1,11 +1,12 @@
 use axum::extract::{Path, State};
-use axum::response::IntoResponse;
 use axum::Json;
+use axum::response::IntoResponse;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
     AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreatePartQuotesRequest,
-    CreatePartsRequest, QueryPartsForQuotationRequest, UpdatePartRequest,
+    CreatePartsRequest, QueryPartQuotesForPartsRequest, QueryPartsForQuotationRequest,
+    UpdatePartRequest,
 };
 
 use crate::app_state::AppState;
@@ -13,9 +14,36 @@ use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
+use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForPartsUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
 use crate::shared::usecase::UseCase;
+
+pub async fn admin_update_part(
+    State(app_state): State<AppState>,
+    Json(request): Json<AdminUpdatePartRequest>,
+) -> impl IntoResponse {
+    let usecase = AdminUpdatePartUseCase::new(app_state.parts.parts_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn admin_create_part_quotes(
+    State(app_state): State<AppState>,
+    Json(request): Json<CreatePartQuotesRequest>,
+) -> impl IntoResponse {
+    let usecase = CreatePartQuotesUseCase::new(app_state.parts.part_quotes_creation);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
 
 pub async fn create_parts(
     State(app_state): State<AppState>,
@@ -73,28 +101,15 @@ pub async fn create_drawing_upload_url(
     }
 }
 
-pub async fn admin_update_part(
+pub async fn query_part_quotes_for_parts(
     State(app_state): State<AppState>,
-    Json(request): Json<AdminUpdatePartRequest>,
+    Json(request): Json<QueryPartQuotesForPartsRequest>,
 ) -> impl IntoResponse {
-    let usecase = AdminUpdatePartUseCase::new(app_state.parts.parts_repository);
+    let usecase = QueryPartQuotesForPartsUseCase::new(app_state.parts.part_quotes_repository);
     let result = usecase.execute(request).await;
 
     match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
-    }
-}
-
-pub async fn admin_create_part_quotes(
-    State(app_state): State<AppState>,
-    Json(request): Json<CreatePartQuotesRequest>,
-) -> impl IntoResponse {
-    let usecase = CreatePartQuotesUseCase::new(app_state.parts.part_quotes_creation);
-    let result = usecase.execute(request).await;
-
-    match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

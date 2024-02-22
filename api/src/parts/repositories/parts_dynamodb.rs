@@ -53,7 +53,10 @@ impl PartsRepository for DynamodbParts {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(PartsError::CreatePartsBatchError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(PartsError::CreatePartsBatchError)
+            }
         }
     }
 
@@ -94,10 +97,16 @@ impl PartsRepository for DynamodbParts {
 
                         Ok(parts)
                     }
-                    Err(_) => Err(PartsError::UnknownError),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(PartsError::UnknownError)
+                    }
                 }
             }
-            Err(_) => Err(PartsError::QueryPartsError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(PartsError::QueryPartsError)
+            }
         }
     }
 
@@ -184,7 +193,10 @@ impl PartsRepository for DynamodbParts {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(PartsError::UpdatePartError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(PartsError::UpdatePartError)
+            }
         }
     }
 }
