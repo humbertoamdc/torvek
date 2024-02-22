@@ -2,8 +2,8 @@ use std::env;
 use std::sync::Arc;
 
 use aws_config::{BehaviorVersion, SdkConfig};
-use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::header::ACCEPT;
 use stripe::Client;
 
 use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityManager;
@@ -13,6 +13,8 @@ use crate::config::{Config, Environment};
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
 use crate::parts;
+use crate::parts::repositories::part_quotes::PartQuotesRepository;
+use crate::parts::repositories::part_quotes_dynamodb::DynamodbPartQuotes;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
@@ -61,6 +63,7 @@ pub struct AppStateQuotations {
 #[derive(Clone)]
 pub struct AppStateParts {
     pub parts_repository: Arc<dyn PartsRepository>,
+    pub part_quotes_repository: Arc<dyn PartQuotesRepository>,
     pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
     pub part_quotes_creation: Arc<dyn PartQuotesCreation>,
 }
@@ -203,6 +206,10 @@ impl AppStateParts {
             dynamodb_client.clone(),
             config.parts.parts_table.clone(),
         ));
+        let part_quotes_repository = Arc::new(DynamodbPartQuotes::new(
+            dynamodb_client.clone(),
+            config.parts.parts_table.clone(),
+        ));
         let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
@@ -215,6 +222,7 @@ impl AppStateParts {
 
         Self {
             parts_repository,
+            part_quotes_repository,
             object_storage,
             part_quotes_creation,
         }

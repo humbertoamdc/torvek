@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::common::file::File;
 use crate::common::money::Money;
+use crate::parts::models::PartQuote;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsRequest {
@@ -11,6 +14,7 @@ pub struct CreatePartsRequest {
     pub quotation_id: String,
     pub file_names: Vec<String>,
 }
+
 impl CreatePartsRequest {
     pub const fn new(
         client_id: String,
@@ -33,6 +37,7 @@ pub struct QueryPartsForQuotationRequest {
     pub project_id: String,
     pub quotation_id: String,
 }
+
 impl QueryPartsForQuotationRequest {
     pub const fn new(client_id: String, project_id: String, quotation_id: String) -> Self {
         Self {
@@ -86,4 +91,14 @@ pub struct CreatePartQuotesRequestData {
     pub part_id: String,
     pub price: Money,
     pub deadline: NaiveDate,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryPartQuotesForPartsRequest {
+    pub part_ids: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryPartQuotesForPartsResponse {
+    pub part_quotes_by_part_id: HashMap<String, Vec<PartQuote>>,
 }

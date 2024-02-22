@@ -10,6 +10,8 @@ pub enum PartsError {
     UpdatePartError,
     #[error("error while creating part quotes")]
     CreatePartsQuotesError,
+    #[error("error while querying part quotes")]
+    QueryPartQuotesError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }
