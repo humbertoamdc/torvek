@@ -46,7 +46,7 @@ pub struct ConfigQuotations {
 pub struct ConfigParts {
     pub s3_bucket: String,
     pub parts_table: String,
-    pub part_price_options_table: String,
+    pub part_quotes_table: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

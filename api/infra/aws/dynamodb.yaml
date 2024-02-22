@@ -127,7 +127,7 @@ Resources:
       TableClass: STANDARD
       TableName: Parts
 
-  PartPriceOptionsTable:
+  PartQuotesTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -149,7 +149,7 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD
-      TableName: PartPriceOptions
+      TableName: PartQuotes
 
 Outputs:
   OrdersTableArn:
@@ -176,8 +176,8 @@ Outputs:
     Export:
       Name: PartsTableArn
 
-  PartPriceOptionsTableArn:
-    Description: ARN of part price options dynamodb table.
-    Value: !GetAtt PartPriceOptionsTable.Arn
+  PartQuotesTableArn:
+    Description: ARN of part quotes dynamodb table.
+    Value: !GetAtt PartQuotesTable.Arn
     Export:
-      Name: PartPriceOptionsTableArn
+      Name: PartQuotesTableArn

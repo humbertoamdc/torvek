@@ -46,7 +46,7 @@ impl Part {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct PartPriceOption {
+pub struct PartQuote {
     pub id: String,
     pub part_id: String,
     pub price: Money,
@@ -55,7 +55,7 @@ pub struct PartPriceOption {
     pub updated_at: DateTime<Utc>,
 }
 
-impl PartPriceOption {
+impl PartQuote {
     pub fn new(part_id: String, price: Money, deadline: NaiveDate) -> Self {
         let now = Utc::now();
         Self {

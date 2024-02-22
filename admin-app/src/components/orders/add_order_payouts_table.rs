@@ -32,15 +32,16 @@ pub fn AddOrderPayoutsTable(#[prop(into)] orders: RwSignal<Vec<Order>>) -> impl 
                 </thead>
                 <tbody>
                     <For
-                        each=move || orders.get().into_iter().enumerate()
-                        key=|(_, order)| order.id.clone()
-                        children=move |(idx, order)| {
-                            let remove_self_from_orders_callback = Callback::new(move |_| {
+                        each=move || orders.get().into_iter()
+                        key=|order| order.id.clone()
+                        children=move |order| {
+                            let order_id = order.id.clone();
+                            let remove_self_from_orders_callback = move |_| {
                                 orders
                                     .update(|orders| {
-                                        orders.remove(idx);
+                                        orders.retain(|current_order| current_order.id != order_id);
                                     });
-                            });
+                            };
                             view! {
                                 <AddOrderPayoutsTableRow order remove_self_from_orders_callback/>
                             }

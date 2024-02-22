@@ -12,7 +12,7 @@ awslocal dynamodb create-table \
     --billing-mod PAY_PER_REQUEST
 
 awslocal dynamodb create-table \
-    --table-name PartPriceOptions \
+    --table-name PartQuotes \
     --attribute-definitions \
         AttributeName=part_id,AttributeType=S \
         AttributeName=id,AttributeType=S \

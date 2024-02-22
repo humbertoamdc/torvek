@@ -90,9 +90,7 @@ pub fn Dashboard(
                     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
                 </header>
 
-                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">
-                    Created Quotations
-                </h2>
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Created Quotations</h2>
                 <CreatedQuotationsCollapsible quotations=created_quotations/>
 
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>

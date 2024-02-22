@@ -1,7 +1,7 @@
 use gloo_net::http::Request;
 use web_sys::RequestCredentials;
 
-use api_boundary::parts::requests::CreatePartPriceOptionsAndUpdateQuotationStatusRequest;
+use api_boundary::parts::requests::CreatePartQuotesRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 
 use crate::common::{send, Result};
@@ -16,11 +16,8 @@ impl PartsClient {
         Self { url }
     }
 
-    pub async fn admin_create_part_price_options(
-        &self,
-        request: CreatePartPriceOptionsAndUpdateQuotationStatusRequest,
-    ) -> Result<()> {
-        let url = format!("{}/admin/part_price_options", self.url);
+    pub async fn admin_create_part_quotes(&self, request: CreatePartQuotesRequest) -> Result<()> {
+        let url = format!("{}/admin/part_quotes", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
             .json(&request)?;

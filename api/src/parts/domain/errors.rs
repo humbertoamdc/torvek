@@ -8,8 +8,8 @@ pub enum PartsError {
     QueryPartsError,
     #[error("error while updating part")]
     UpdatePartError,
-    #[error("error while creating part price options and updating quotation status transaction")]
-    CreatePartsPriceOptionsAndUpdateQuotationStatusTransactionError,
+    #[error("error while creating part quotes")]
+    CreatePartsQuotesError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }

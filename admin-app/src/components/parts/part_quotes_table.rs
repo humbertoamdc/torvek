@@ -8,17 +8,17 @@ use thaw::{Button, ButtonSize};
 
 use api_boundary::common::money::Money;
 use api_boundary::parts::models::Part;
-use api_boundary::parts::requests::{
-    CreatePartPriceOptionsAndUpdateQuotationStatusRequest,
-    CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData,
-};
+use api_boundary::parts::requests::{CreatePartQuotesRequest, CreatePartQuotesRequestData};
 use api_boundary::quotations::models::Quotation;
 use clients::parts::PartsClient;
 
 use crate::components::parts::part_quotes_table_row::PartQuotesTableRow;
 
 #[component]
-pub fn PartQuotesTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
+pub fn PartQuotesTable(
+    #[prop(into)] quotation: Quotation,
+    #[prop(into)] on_create: Callback<()>,
+) -> impl IntoView {
     // -- variables --//
 
     let client_id = quotation.client_id.clone();
@@ -57,8 +57,8 @@ pub fn PartQuotesTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
         }
     });
 
-    let create_part_price_options = create_action(move |_| {
-        let parts_price_options_map = parts
+    let create_part_quotes = create_action(move |_| {
+        let parts_prices_map = parts
             .get_untracked()
             .into_iter()
             .zip(prices_options_list.get_untracked())
@@ -71,38 +71,35 @@ pub fn PartQuotesTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
             .map(|(part, deadlines)| (part.id, deadlines))
             .collect::<HashMap<String, Vec<RwSignal<Option<NaiveDate>>>>>();
 
-        let mut price_data: Vec<CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData> =
-            Vec::new();
+        let mut price_data: Vec<CreatePartQuotesRequestData> = Vec::new();
 
         parts.get_untracked().into_iter().for_each(|part| {
-            parts_price_options_map
+            parts_prices_map
                 .get(&part.id)
                 .unwrap()
                 .into_iter()
                 .zip(parts_deadlines_map.get(&part.id).unwrap())
                 .for_each(|(price_option, deadline)| {
-                    price_data.push(
-                        CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData {
-                            part_id: part.id.clone(),
-                            price: price_option.get_untracked().unwrap(),
-                            deadline: deadline.get_untracked().unwrap(),
-                        },
-                    );
+                    price_data.push(CreatePartQuotesRequestData {
+                        part_id: part.id.clone(),
+                        price: price_option.get_untracked().unwrap(),
+                        deadline: deadline.get_untracked().unwrap(),
+                    });
                 });
         });
 
-        let request = CreatePartPriceOptionsAndUpdateQuotationStatusRequest {
+        let request = CreatePartQuotesRequest {
             client_id: client_id.clone(),
             project_id: project_id.clone(),
             quotation_id: quotation_id.clone(),
-            price_data,
+            data: price_data,
         };
 
         async move {
-            let result = parts_client.admin_create_part_price_options(request).await;
+            let result = parts_client.admin_create_part_quotes(request).await;
 
             match result {
-                Ok(_) => log::info!("Success"),
+                Ok(_) => on_create.call(()),
                 Err(_) => (),
             }
         }
@@ -158,7 +155,7 @@ pub fn PartQuotesTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
                 class="mt-4 self-end"
                 size=ButtonSize::Large
                 disabled=submit_is_disabled
-                on_click=move |_| create_part_price_options.dispatch(())
+                on_click=move |_| create_part_quotes.dispatch(())
             >
 
                 "Submit"

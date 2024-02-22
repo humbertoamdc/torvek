@@ -4,14 +4,13 @@ use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
-    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest,
-    CreatePartPriceOptionsAndUpdateQuotationStatusRequest, CreatePartsRequest,
-    QueryPartsForQuotationRequest, UpdatePartRequest,
+    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreatePartQuotesRequest,
+    CreatePartsRequest, QueryPartsForQuotationRequest, UpdatePartRequest,
 };
 
 use crate::app_state::AppState;
 use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
-use crate::parts::usecases::create_part_price_options_and_update_quotation_status::CreatePartPriceOptionsAndUpdateQuotationStatusUseCase;
+use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
@@ -87,13 +86,11 @@ pub async fn admin_update_part(
     }
 }
 
-pub async fn admin_create_part_price_options(
+pub async fn admin_create_part_quotes(
     State(app_state): State<AppState>,
-    Json(request): Json<CreatePartPriceOptionsAndUpdateQuotationStatusRequest>,
+    Json(request): Json<CreatePartQuotesRequest>,
 ) -> impl IntoResponse {
-    let usecase = CreatePartPriceOptionsAndUpdateQuotationStatusUseCase::new(
-        app_state.parts.part_price_options_creation,
-    );
+    let usecase = CreatePartQuotesUseCase::new(app_state.parts.part_quotes_creation);
     let result = usecase.execute(request).await;
 
     match result {
