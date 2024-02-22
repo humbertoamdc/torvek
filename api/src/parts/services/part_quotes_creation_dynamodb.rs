@@ -4,48 +4,47 @@ use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 
-use api_boundary::parts::models::PartPriceOption;
+use api_boundary::parts::models::PartQuote;
 use api_boundary::quotations::models::QuotationStatus;
 
 use crate::parts::domain::errors::PartsError;
-use crate::parts::services::part_price_options_creation::PartPriceOptionsCreation;
+use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 
-pub struct DynamodbPartPriceOptionsCreation {
+pub struct DynamodbParQuotesCreation {
     client: aws_sdk_dynamodb::Client,
-    part_price_options_table: String,
+    part_quotes_table: String,
     quotations_table: String,
 }
 
-impl DynamodbPartPriceOptionsCreation {
+impl DynamodbParQuotesCreation {
     pub fn new(
         client: aws_sdk_dynamodb::Client,
-        part_price_options_table: String,
+        part_quotes_table: String,
         quotations_table: String,
     ) -> Self {
         Self {
             client,
-            part_price_options_table,
+            part_quotes_table,
             quotations_table,
         }
     }
 }
 
 #[async_trait]
-impl PartPriceOptionsCreation for DynamodbPartPriceOptionsCreation {
-    async fn create_part_price_options(
+impl PartQuotesCreation for DynamodbParQuotesCreation {
+    async fn create_part_quotes_and_update_quotation_status(
         &self,
         client_id: String,
         project_id: String,
         quotation_id: String,
-        part_price_options: Vec<PartPriceOption>,
+        part_quotes: Vec<PartQuote>,
     ) -> Result<(), PartsError> {
         // Update quotation status to PendingPayment..
         let quotation_transaction =
             self.build_quotation_transaction(client_id, project_id, quotation_id);
 
-        // Create part price options Dynamodb items.
-        let part_price_options_transactions =
-            self.build_part_price_options_transaction(part_price_options);
+        // Create part quotes Dynamodb items.
+        let part_quotes_transactions = self.build_part_quotes_transaction(part_quotes);
 
         // Build transaction request.
         let mut transaction_request = self
@@ -53,7 +52,7 @@ impl PartPriceOptionsCreation for DynamodbPartPriceOptionsCreation {
             .transact_write_items()
             .transact_items(quotation_transaction);
 
-        for transaction in part_price_options_transactions {
+        for transaction in part_quotes_transactions {
             transaction_request = transaction_request.transact_items(transaction.clone());
         }
 
@@ -63,13 +62,13 @@ impl PartPriceOptionsCreation for DynamodbPartPriceOptionsCreation {
             Ok(_) => Ok(()),
             Err(error) => {
                 log::error!("{:?}", error);
-                Err(PartsError::CreatePartsPriceOptionsAndUpdateQuotationStatusTransactionError)
+                Err(PartsError::CreatePartsQuotesError)
             }
         }
     }
 }
 
-impl DynamodbPartPriceOptionsCreation {
+impl DynamodbParQuotesCreation {
     fn build_quotation_transaction(
         &self,
         client_id: String,
@@ -112,21 +111,17 @@ impl DynamodbPartPriceOptionsCreation {
             .build()
     }
 
-    fn build_part_price_options_transaction(
-        &self,
-        part_price_options: Vec<PartPriceOption>,
-    ) -> Vec<TransactWriteItem> {
-        part_price_options
+    fn build_part_quotes_transaction(&self, part_quotes: Vec<PartQuote>) -> Vec<TransactWriteItem> {
+        part_quotes
             .into_iter()
-            .map(|part_price_option| {
+            .map(|part_quote| {
                 TransactWriteItem::builder()
                     .put(
                         Put::builder()
                             .set_item(Some(
-                                to_item(part_price_option)
-                                    .expect("error converting to dynamodb item"),
+                                to_item(part_quote).expect("error converting to dynamodb item"),
                             ))
-                            .table_name(&self.part_price_options_table)
+                            .table_name(&self.part_quotes_table)
                             .build()
                             .unwrap(),
                     )

@@ -74,15 +74,15 @@ pub struct AdminUpdatePartRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequest {
+pub struct CreatePartQuotesRequest {
     pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub price_data: Vec<CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData>,
+    pub data: Vec<CreatePartQuotesRequestData>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreatePartPriceOptionsAndUpdateQuotationStatusRequestPriceData {
+pub struct CreatePartQuotesRequestData {
     pub part_id: String,
     pub price: Money,
     pub deadline: NaiveDate,
