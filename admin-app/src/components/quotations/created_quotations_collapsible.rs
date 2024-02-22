@@ -3,7 +3,7 @@ use thaw::{Card, Collapse, CollapseItem};
 
 use api_boundary::quotations::models::Quotation;
 
-use crate::components::parts::table::PartsTable;
+use crate::components::parts::part_quotes_table::PartQuotesTable;
 
 #[component]
 pub fn CreatedQuotationsCollapsible(
@@ -21,7 +21,7 @@ pub fn CreatedQuotationsCollapsible(
                                 title=format!("Quotation with ID {}", quotation.id.clone())
                                 key=quotation.id.clone()
                             >
-                                <PartsTable quotation/>
+                                <PartQuotesTable quotation/>
                             </CollapseItem>
                         }
                     }

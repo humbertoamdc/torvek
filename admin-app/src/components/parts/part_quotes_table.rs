@@ -15,10 +15,10 @@ use api_boundary::parts::requests::{
 use api_boundary::quotations::models::Quotation;
 use clients::parts::PartsClient;
 
-use crate::components::parts::table_row::PartsRow;
+use crate::components::parts::part_quotes_table_row::PartQuotesTableRow;
 
 #[component]
-pub fn PartsTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
+pub fn PartQuotesTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
     // -- variables --//
 
     let client_id = quotation.client_id.clone();
@@ -150,7 +150,7 @@ pub fn PartsTable(#[prop(into)] quotation: Quotation) -> impl IntoView {
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
                     deadlines_list.update(|deadlines| deadlines.push(deadline_options.clone()));
-                    view! { <PartsRow part=part.clone() price_options deadline_options/> }
+                    view! { <PartQuotesTableRow part=part.clone() price_options deadline_options/> }
                 }
             />
 

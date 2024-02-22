@@ -25,7 +25,7 @@ pub fn Dashboard(
     // -- api clients -- //
 
     let parts_client = PartsClient::new(API_URL);
-    let quotations_client = QuotationsClient::new();
+    let quotations_client = QuotationsClient::new(API_URL);
     let orders_client = OrdersClient::new(API_URL);
 
     provide_context(parts_client);
@@ -90,11 +90,10 @@ pub fn Dashboard(
                     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
                 </header>
 
-                <h2 id="someid" class="text-xl font-bold text-gray-900 mt-6 mb-4">
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">
                     Created Quotations
                 </h2>
                 <CreatedQuotationsCollapsible quotations=created_quotations/>
-                // <CreatedQuotationsTable quotations=created_quotations/>
 
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>
                 <AddOrderPayoutsTable orders/>
