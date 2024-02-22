@@ -1,7 +1,7 @@
 use leptos::*;
 
 use api_boundary::orders::models::{Order, OrderStatus};
-use clients::suppliers_orders::SuppliersOrdersClient;
+use clients::orders::OrdersClient;
 
 use crate::components::orders::orders_table_row::OrdersRow;
 
@@ -9,7 +9,7 @@ use crate::components::orders::orders_table_row::OrdersRow;
 pub fn OrdersTable() -> impl IntoView {
     // -- clients -- //
 
-    let orders_client = use_context::<SuppliersOrdersClient>().unwrap();
+    let orders_client = use_context::<OrdersClient>().unwrap();
 
     // -- signals -- //
 

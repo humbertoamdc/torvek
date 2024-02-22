@@ -1,10 +1,11 @@
-use crate::api::common::{into_json, Result};
-use crate::env::API_URL;
-use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::responses::AdminQueryQuotationsByStatusResponse;
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
 use web_sys::RequestCredentials;
+
+use api_boundary::quotations::models::QuotationStatus;
+use api_boundary::quotations::responses::AdminQueryQuotationsByStatusResponse;
+
+use crate::api::common::{into_json, Result};
 
 #[derive(Clone, Copy)]
 pub struct QuotationsClient {
@@ -12,8 +13,8 @@ pub struct QuotationsClient {
 }
 
 impl QuotationsClient {
-    pub const fn new() -> Self {
-        Self { url: API_URL }
+    pub const fn new(url: &'static str) -> Self {
+        Self { url }
     }
 
     pub async fn query_quotations_by_status(

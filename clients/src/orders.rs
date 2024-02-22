@@ -2,32 +2,25 @@ use gloo_net::http::Request;
 use web_sys::RequestCredentials;
 
 use api_boundary::orders::models::OrderStatus;
-use api_boundary::orders::requests::{AdminCreateOrdersRequest, AdminUpdateOrderPayoutRequest};
+use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
 use api_boundary::orders::responses::QueryOrdersByStatusResponse;
 
 use crate::common::{send, Result};
 
 #[derive(Copy, Clone)]
-pub struct AdminOrdersClient {
+pub struct OrdersClient {
     url: &'static str,
 }
 
-impl AdminOrdersClient {
+impl OrdersClient {
     pub const fn new(url: &'static str) -> Self {
         Self { url }
     }
 
-    // TODO: Delete
-    pub async fn create_order(&self, request: AdminCreateOrdersRequest) -> Result<()> {
-        let url = format!("{}/admin/orders", self.url);
-        let request = Request::post(&url)
-            .credentials(RequestCredentials::Include)
-            .json(&request)?;
-
-        send(request).await
-    }
-
-    pub async fn update_order_payout(&self, request: AdminUpdateOrderPayoutRequest) -> Result<()> {
+    pub async fn admin_update_order_payout(
+        &self,
+        request: AdminUpdateOrderPayoutRequest,
+    ) -> Result<()> {
         let url = format!("{}/admin/orders/payout", self.url);
         let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)

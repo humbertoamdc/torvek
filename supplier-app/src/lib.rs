@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_router::*;
 
 use ::clients::auth::AuthClient;
-use clients::suppliers_orders::SuppliersOrdersClient;
+use clients::orders::OrdersClient;
 use ory_kratos_client::models::Session;
 
 use crate::models::users::User;
@@ -20,7 +20,7 @@ pub const ORY_URL: &'static str = env!("ORY_URL");
 pub fn App() -> impl IntoView {
     // -- clients -- //
     let auth_client = AuthClient::new(ORY_URL);
-    let orders_client = SuppliersOrdersClient::new(API_URL);
+    let orders_client = OrdersClient::new(API_URL);
 
     provide_context(auth_client);
     provide_context(orders_client);

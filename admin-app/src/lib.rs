@@ -1,16 +1,17 @@
-use crate::api::auth::UnauthorizedApi;
-use api::auth::AuthorizedApi;
-use api::models::auth::UserInfo;
-use clients::admin_orders::AdminOrdersClient;
 use leptos::*;
 use leptos_router::*;
+
+use api::auth::AuthorizedApi;
+use api::models::auth::UserInfo;
+use clients::orders::OrdersClient;
+
+use crate::api::auth::UnauthorizedApi;
 
 use self::components::loading::Loading;
 use self::pages::*;
 
 mod api;
 mod components;
-mod env;
 mod models;
 mod pages;
 
@@ -19,7 +20,7 @@ static API_URL: &'static str = env!("API_URL");
 #[component]
 pub fn App() -> impl IntoView {
     // -- clients -- //
-    provide_context(AdminOrdersClient::new(API_URL));
+    provide_context(OrdersClient::new(API_URL));
 
     // -- signals -- //
 
@@ -40,7 +41,7 @@ pub fn App() -> impl IntoView {
     };
 
     // -- init API -- //
-    let unauthorized_api = UnauthorizedApi::new();
+    let unauthorized_api = UnauthorizedApi::new(API_URL);
     let logging_in = create_action(move |_| async move {
         // Try to login. If there is a session id in the cookies we can skip the login page.
         if let Ok((authorized_api, user_info)) =

@@ -15,6 +15,8 @@ use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
 use crate::parts;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
+use crate::parts::services::part_price_options_creation::PartPriceOptionsCreation;
+use crate::parts::services::part_price_options_creation_dynamodb::DynamodbPartPriceOptionsCreation;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::payments::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
 use crate::payments::services::stripe::StripePaymentsProcessor;
@@ -60,6 +62,7 @@ pub struct AppStateQuotations {
 pub struct AppStateParts {
     pub parts_repository: Arc<dyn PartsRepository>,
     pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
+    pub part_price_options_creation: Arc<dyn PartPriceOptionsCreation>,
 }
 
 #[derive(Clone)]
@@ -197,17 +200,23 @@ impl AppStateParts {
 
         // Services & Repositories
         let parts_repository = Arc::new(DynamodbParts::new(
-            dynamodb_client,
+            dynamodb_client.clone(),
             config.parts.parts_table.clone(),
         ));
         let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
         ));
+        let part_price_options_creation = Arc::new(DynamodbPartPriceOptionsCreation::new(
+            dynamodb_client,
+            config.parts.part_price_options_table.clone(),
+            config.quotations.quotations_table.clone(),
+        ));
 
         Self {
             parts_repository,
             object_storage,
+            part_price_options_creation,
         }
     }
 }

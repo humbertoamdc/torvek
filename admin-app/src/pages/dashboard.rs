@@ -2,14 +2,14 @@ use leptos::*;
 
 use api_boundary::orders::models::{Order, OrderStatus};
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
-use clients::admin_orders::AdminOrdersClient;
+use clients::orders::OrdersClient;
+use clients::parts::PartsClient;
 
 use crate::api::auth::AuthorizedApi;
 use crate::api::models::auth::UserInfo;
-use crate::api::parts::PartsClient;
 use crate::api::quotations::QuotationsClient;
 use crate::components::orders::add_order_payouts_table::AddOrderPayoutsTable;
-use crate::components::quotations::created_quotations_table::CreatedQuotationsTable;
+use crate::components::quotations::created_quotations_collapsible::CreatedQuotationsCollapsible;
 use crate::components::sidebar::Sidebar;
 
 pub const API_URL: &'static str = env!("API_URL");
@@ -24,9 +24,9 @@ pub fn Dashboard(
 
     // -- api clients -- //
 
-    let parts_client = PartsClient::new();
-    let quotations_client = QuotationsClient::new();
-    let orders_client = AdminOrdersClient::new(API_URL);
+    let parts_client = PartsClient::new(API_URL);
+    let quotations_client = QuotationsClient::new(API_URL);
+    let orders_client = OrdersClient::new(API_URL);
 
     provide_context(parts_client);
     provide_context(quotations_client);
@@ -90,10 +90,10 @@ pub fn Dashboard(
                     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
                 </header>
 
-                <h2 id="someid" class="text-xl font-bold text-gray-900 mt-6 mb-4">
+                <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">
                     Created Quotations
                 </h2>
-                <CreatedQuotationsTable quotations=created_quotations/>
+                <CreatedQuotationsCollapsible quotations=created_quotations/>
 
                 <h2 class="text-xl font-bold text-gray-900 mt-6 mb-4">Orders Pending Pricing</h2>
                 <AddOrderPayoutsTable orders/>

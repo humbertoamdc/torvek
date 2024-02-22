@@ -1,4 +1,3 @@
-pub mod part_to_order_table;
-pub mod part_to_order_table_row;
-pub mod table;
-pub mod table_row;
+mod part_quote_card;
+pub mod part_quotes_table;
+mod part_quotes_table_row;

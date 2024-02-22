@@ -1,9 +1,9 @@
-use crate::api::common::{into_json, Error, Result};
-use crate::api::models::auth::{Credentials, UserInfo};
-use crate::env;
 use gloo_net::http::{Request, RequestBuilder};
 use leptos::web_sys::RequestCredentials;
 use serde::de::DeserializeOwned;
+
+use crate::api::common::{into_json, Error, Result};
+use crate::api::models::auth::{Credentials, UserInfo};
 
 #[derive(Clone, Copy)]
 pub struct UnauthorizedApi {
@@ -16,8 +16,8 @@ pub struct AuthorizedApi {
 }
 
 impl UnauthorizedApi {
-    pub const fn new() -> Self {
-        Self { url: env::API_URL }
+    pub const fn new(url: &'static str) -> Self {
+        Self { url }
     }
     pub async fn admin_login(&self, credentials: &Credentials) -> Result<AuthorizedApi> {
         let url = format!("{}/accounts/admins/login", self.url);
@@ -28,7 +28,7 @@ impl UnauthorizedApi {
             .await?;
 
         match response.ok() {
-            true => Ok(AuthorizedApi::new()),
+            true => Ok(AuthorizedApi::new(self.url)),
             false => Err(Error::UnknownError),
         }
     }
@@ -39,7 +39,7 @@ impl UnauthorizedApi {
             .build()?;
         let result = self.send(req).await;
         match result {
-            Ok(user_info) => Ok((AuthorizedApi::new(), user_info)),
+            Ok(user_info) => Ok((AuthorizedApi::new(self.url), user_info)),
             Err(err) => Err(err),
         }
     }
@@ -50,8 +50,8 @@ impl UnauthorizedApi {
 }
 
 impl AuthorizedApi {
-    pub const fn new() -> Self {
-        Self { url: env::API_URL }
+    pub const fn new(url: &'static str) -> Self {
+        Self { url }
     }
 
     pub async fn logout(&self) -> Result<UnauthorizedApi> {
@@ -60,7 +60,7 @@ impl AuthorizedApi {
             .credentials(RequestCredentials::Include)
             .send()
             .await?;
-        Ok(UnauthorizedApi::new())
+        Ok(UnauthorizedApi::new(self.url))
     }
     pub async fn user_info(&self) -> Result<UserInfo> {
         let url = format!("{}/accounts/admins/session", self.url);

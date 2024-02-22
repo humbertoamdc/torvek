@@ -3,7 +3,7 @@ use leptos::*;
 use api_boundary::common::money::Money;
 use api_boundary::orders::models::Order;
 use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
-use clients::admin_orders::AdminOrdersClient;
+use clients::orders::OrdersClient;
 
 #[component]
 pub fn AddOrderPayoutsTableRow(
@@ -12,7 +12,7 @@ pub fn AddOrderPayoutsTableRow(
 ) -> impl IntoView {
     // -- clients -- //
 
-    let orders_client = use_context::<AdminOrdersClient>().unwrap();
+    let orders_client = use_context::<OrdersClient>().unwrap();
 
     // -- signals -- //
 
@@ -27,7 +27,7 @@ pub fn AddOrderPayoutsTableRow(
         };
 
         async move {
-            let result = orders_client.update_order_payout(request).await;
+            let result = orders_client.admin_update_order_payout(request).await;
             match result {
                 Ok(_) => remove_self_from_orders_callback.call(()),
                 Err(_) => (),
