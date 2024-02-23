@@ -1,15 +1,17 @@
+use std::collections::HashMap;
+
 use leptos::*;
 use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button, Upload};
 use web_sys::FileList;
 
-use api_boundary::parts::models::Part;
-use api_boundary::parts::requests::CreatePartsRequest;
+use api_boundary::parts::models::{Part, PartQuote};
+use api_boundary::parts::requests::{CreatePartsRequest, QueryPartQuotesForPartsRequest};
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
+use clients::parts::PartsClient;
 
 use crate::api::models::auth::UserInfo;
-use crate::api::parts::PartsClient;
 use crate::api::payments::PaymentsClient;
 use crate::components::parts::table::PartsTable;
 
@@ -26,6 +28,10 @@ pub fn PartsContainer() -> impl IntoView {
 
 #[component]
 pub fn Parts() -> impl IntoView {
+    // -- clients -- //
+
+    let parts_client = use_context::<PartsClient>().unwrap();
+
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
@@ -34,6 +40,8 @@ pub fn Parts() -> impl IntoView {
 
     let quotation = create_rw_signal(None::<Quotation>);
     let parts = create_rw_signal(Vec::<Part>::default());
+    let part_quotes_by_part =
+        create_rw_signal(HashMap::<String, RwSignal<Vec<PartQuote>>>::default());
     let checkout_button_disabled = Signal::derive(move || {
         quotation.get_untracked().is_none()
             || quotation.get_untracked().unwrap().status != QuotationStatus::PendingPayment
@@ -63,8 +71,36 @@ pub fn Parts() -> impl IntoView {
 
     // -- action -- //
 
+    let query_part_quotes_for_parts = create_action(move |_| {
+        let part_ids = parts
+            .get_untracked()
+            .into_iter()
+            .map(|part| part.id)
+            .collect::<Vec<String>>();
+        let request = QueryPartQuotesForPartsRequest { part_ids };
+
+        async move {
+            let result = parts_client.query_part_quotes_for_parts(request).await;
+
+            match result {
+                Ok(response) => {
+                    part_quotes_by_part.update(|part_quotes_by_part| {
+                        response.part_quotes_by_part_id.into_iter().for_each(
+                            |(part_id, part_quotes)| {
+                                part_quotes_by_part
+                                    .get(&part_id)
+                                    .unwrap()
+                                    .update(|local_part_quotes| *local_part_quotes = part_quotes);
+                            },
+                        );
+                    });
+                }
+                Err(_) => (),
+            }
+        }
+    });
+
     let query_parts = create_action(move |_| async move {
-        let parts_client = PartsClient::new();
         let result = parts_client
             .query_parts_for_quotation(
                 user_info.get_untracked().id,
@@ -74,7 +110,17 @@ pub fn Parts() -> impl IntoView {
             .await;
 
         match result {
-            Ok(response) => parts.update(|p| *p = response.parts),
+            Ok(response) => {
+                part_quotes_by_part.update(|part_quotes_by_part| {
+                    *part_quotes_by_part = response
+                        .parts
+                        .iter()
+                        .map(|part| (part.id.clone(), create_rw_signal(Vec::default())))
+                        .collect();
+                });
+                parts.update(|p| *p = response.parts);
+                query_part_quotes_for_parts.dispatch(());
+            }
             Err(_) => (), // TODO: Handle error.
         }
     });
@@ -99,7 +145,6 @@ pub fn Parts() -> impl IntoView {
             file_names.to_owned(),
         );
         async move {
-            let parts_client = PartsClient::new();
             match parts_client.create_parts(request).await {
                 Ok(response) => {
                     for i in 0..file_list.length() {
@@ -186,6 +231,6 @@ pub fn Parts() -> impl IntoView {
         </div>
 
         <div class="mt-8"></div>
-        <PartsTable parts=parts/>
+        <PartsTable parts part_quotes_by_part />
     }
 }

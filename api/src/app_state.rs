@@ -2,8 +2,8 @@ use std::env;
 use std::sync::Arc;
 
 use aws_config::{BehaviorVersion, SdkConfig};
-use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::ACCEPT;
+use reqwest::header::{HeaderMap, HeaderValue};
 use stripe::Client;
 
 use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityManager;
@@ -208,7 +208,7 @@ impl AppStateParts {
         ));
         let part_quotes_repository = Arc::new(DynamodbPartQuotes::new(
             dynamodb_client.clone(),
-            config.parts.parts_table.clone(),
+            config.parts.part_quotes_table.clone(),
         ));
         let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
             s3_client,

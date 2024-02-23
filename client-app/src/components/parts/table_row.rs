@@ -1,18 +1,28 @@
-use crate::api::models::auth::UserInfo;
-use crate::api::parts::PartsClient;
-use crate::components::parts::materials_dropdown::MaterialsDropdown;
-use crate::components::parts::tolerance_dropdown::TolerancesDropdown;
-use crate::models::reactive_part::ReactivePart;
-use api_boundary::common::file::File;
-use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
-use api_boundary::parts::requests::UpdatePartRequest;
 use leptos::*;
 use rusty_money::{iso, Money};
 use web_sys::HtmlInputElement;
 
+use api_boundary::common::file::File;
+use api_boundary::parts::models::PartQuote;
+use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
+use api_boundary::parts::requests::UpdatePartRequest;
+use clients::parts::PartsClient;
+
+use crate::api::models::auth::UserInfo;
+use crate::components::parts::materials_dropdown::MaterialsDropdown;
+use crate::components::parts::tolerance_dropdown::TolerancesDropdown;
+use crate::models::reactive_part::ReactivePart;
+
 #[component]
-pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
+pub fn PartsTableRow(
+    #[prop(into)] reactive_part: ReactivePart,
+    #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
+) -> impl IntoView {
     let part_id = reactive_part.id.clone();
+
+    // -- clients -- //
+
+    let parts_client = use_context::<PartsClient>().unwrap();
 
     // -- context -- //
 
@@ -31,7 +41,6 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
             tolerance: Some(reactive_part.tolerance.get_untracked()),
             quantity: Some(reactive_part.quantity.get_untracked()),
         };
-        let parts_client = PartsClient::new();
         async move {
             let response = parts_client.update_part(update_part_request).await;
 
@@ -58,7 +67,6 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
         };
 
         async move {
-            let parts_client = PartsClient::new();
             match parts_client.create_drawing_upload_url(request).await {
                 Ok(response) => {
                     let upload_file_response = parts_client

@@ -1,13 +1,17 @@
+use std::default::Default;
+
+use leptos::*;
+use leptos_router::*;
+
+use api::auth::AuthorizedClient;
+use api::models::auth::UserInfo;
+use clients::parts::PartsClient;
+
 use crate::api::auth::UnauthorizedClient;
 use crate::pages::home::Home;
 use crate::pages::parts::{Parts, PartsContainer};
 use crate::pages::projects::{Projects, ProjectsContainer};
 use crate::pages::quotations::{Quotations, QuotationsContainer};
-use api::auth::AuthorizedClient;
-use api::models::auth::UserInfo;
-use leptos::*;
-use leptos_router::*;
-use std::default::Default;
 
 use self::components::loading::Loading;
 use self::pages::*;
@@ -19,8 +23,16 @@ mod pages;
 
 mod models;
 
+pub const API_URL: &'static str = env!("API_URL");
+
 #[component]
 pub fn App() -> impl IntoView {
+    // -- clients -- //
+
+    let parts_client = PartsClient::new(API_URL);
+
+    provide_context(parts_client);
+
     // -- signals -- //
 
     let authorized_api_signal: RwSignal<Option<AuthorizedClient>> =

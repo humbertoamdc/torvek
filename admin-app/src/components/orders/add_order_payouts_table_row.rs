@@ -86,7 +86,6 @@ pub fn AddOrderPayoutsTableRow(
 
                             on:change=move |ev| {
                                 let payment_amount = (event_target_value(&ev)).parse::<f64>();
-                                log::info!("{payment_amount:?}");
                                 match payment_amount {
                                     Ok(amount) => {
                                         payout
