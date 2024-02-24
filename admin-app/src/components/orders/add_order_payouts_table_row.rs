@@ -86,7 +86,6 @@ pub fn AddOrderPayoutsTableRow(
 
                             on:change=move |ev| {
                                 let payment_amount = (event_target_value(&ev)).parse::<f64>();
-                                log::info!("{payment_amount:?}");
                                 match payment_amount {
                                     Ok(amount) => {
                                         payout
@@ -106,11 +105,7 @@ pub fn AddOrderPayoutsTableRow(
 
                     {move || {
                         if payout.get().is_some() {
-                            rusty_money::Money::from_minor(
-                                    payout.get().unwrap().amount,
-                                    rusty_money::iso::MXN,
-                                )
-                                .to_string()
+                            payout.get().unwrap().to_string()
                         } else {
                             String::from("$")
                         }

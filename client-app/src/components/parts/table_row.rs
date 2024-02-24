@@ -1,22 +1,36 @@
-use crate::api::models::auth::UserInfo;
-use crate::api::parts::PartsClient;
-use crate::components::parts::materials_dropdown::MaterialsDropdown;
-use crate::components::parts::tolerance_dropdown::TolerancesDropdown;
-use crate::models::reactive_part::ReactivePart;
-use api_boundary::common::file::File;
-use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
-use api_boundary::parts::requests::UpdatePartRequest;
 use leptos::*;
-use rusty_money::{iso, Money};
 use web_sys::HtmlInputElement;
 
+use api_boundary::common::file::File;
+use api_boundary::parts::models::PartQuote;
+use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
+use api_boundary::parts::requests::UpdatePartRequest;
+use clients::parts::PartsClient;
+
+use crate::api::models::auth::UserInfo;
+use crate::components::parts::materials_dropdown::MaterialsDropdown;
+use crate::components::parts::part_quote_card::PartQuoteCard;
+use crate::components::parts::tolerance_dropdown::TolerancesDropdown;
+use crate::models::reactive_part::ReactivePart;
+
 #[component]
-pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView {
+pub fn PartsTableRow(
+    #[prop(into)] reactive_part: ReactivePart,
+    #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
+) -> impl IntoView {
     let part_id = reactive_part.id.clone();
+
+    // -- clients -- //
+
+    let parts_client = use_context::<PartsClient>().unwrap();
 
     // -- context -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
+
+    // -- signals -- //
+
+    let selected_part_quote_cards = create_rw_signal(Vec::<RwSignal<bool>>::new());
 
     // -- actions -- //
     let update_part = create_action(move |_| {
@@ -31,7 +45,6 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
             tolerance: Some(reactive_part.tolerance.get_untracked()),
             quantity: Some(reactive_part.quantity.get_untracked()),
         };
-        let parts_client = PartsClient::new();
         async move {
             let response = parts_client.update_part(update_part_request).await;
 
@@ -58,7 +71,6 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
         };
 
         async move {
-            let parts_client = PartsClient::new();
             match parts_client.create_drawing_upload_url(request).await {
                 Ok(response) => {
                     let upload_file_response = parts_client
@@ -82,43 +94,57 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
     });
 
     view! {
-        <tr>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex items-center justify-left pl-6">
-                    <div class="flex-shrink-0 w-10 h-10">
-                        <img
-                            class="w-full h-full rounded-full"
-                            src="https://cdn.dribbble.com/userupload/11259598/file/original-70a5fe9cc326f004bb78e36ee5e9d8a7.png?resize=100x0"
-                            alt="User Image"
-                        />
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-gray-900 whitespace-no-wrap">
-                            {reactive_part.model_file.get_untracked().name}
-                        </p>
-                        <p
-                            class="text-gray-900 whitespace-no-wrap"
-                            for=format!("drawing-file-{}", part_id)
-                        >
-                            <label for=format!("drawing-file-{}", part_id)>
-                                <input
-                                    id=format!("drawing-file-{}", part_id)
+        <div class="flex shadow my-2 p-4 h-80 bg-white rounded-xl overflow-hidden space-x-2">
+            <div class="flex flex-col items-center justify-left">
+                <div class="flex-shrink-0 w-80">
+                    <img
+                        class="object-scale-down"
+                        src="https://cdn.dribbble.com/userupload/11259598/file/original-70a5fe9cc326f004bb78e36ee5e9d8a7.png?resize=320x0"
+                        alt="User Image"
+                    />
+                    <div class="flex ml-3 space-x-2">
+                        <label for=format!("model-file-{}", part_id)>
+                            <input
+                                id=format!("model-file-{}", part_id)
 
-                                    type="file"
-                                    class="hidden"
-                                    accept=".pdf"
-                                    on:change=move |ev| {
-                                        let input_element = event_target::<HtmlInputElement>(&ev);
-                                        upload_drawing_file.dispatch(input_element);
-                                    }
+                                type="file"
+                                class="hidden"
+                                accept=".stp,.step"
+                                on:change=move |_| {}
+                            />
+
+                            <span class="inline-flex items-center rounded-xl bg-gray-100 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-gray-600 ring-1 ring-inset hover:ring-gray-600 cursor-pointer ">
+                                <img
+                                    style="width: 18px; height: 18px;"
+                                    src="https://icons.veryicon.com/png/o/construction-tools/cloud-device/spare-part-type-01.png"
+                                    alt="User Image"
                                 />
+                                <div class="ml-1">
+                                    {reactive_part.model_file.get_untracked().name}
+                                </div>
 
-                                <span class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-1 ring-inset ring-red-600/10 cursor-pointer ">
-                                    <img
-                                        style="width: 18px; height: 18px;"
-                                        src="https://icons.veryicon.com/png/o/transport/traffic-2/pdf-34.png"
-                                        alt="User Image"
-                                    />
+                            </span>
+                        </label>
+                        <label for=format!("drawing-file-{}", part_id)>
+                            <input
+                                id=format!("drawing-file-{}", part_id)
+
+                                type="file"
+                                class="hidden"
+                                accept=".pdf"
+                                on:change=move |ev| {
+                                    let input_element = event_target::<HtmlInputElement>(&ev);
+                                    upload_drawing_file.dispatch(input_element);
+                                }
+                            />
+
+                            <span class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-1 ring-inset hover:ring-red-600 cursor-pointer ">
+                                <img
+                                    style="width: 18px; height: 18px;"
+                                    src="https://icons.veryicon.com/png/o/transport/traffic-2/pdf-34.png"
+                                    alt="User Image"
+                                />
+                                <div class="ml-1">
                                     {move || {
                                         match reactive_part.drawing_file.get() {
                                             Some(drawing_file) => drawing_file.name,
@@ -126,36 +152,35 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                                         }
                                     }}
 
-                                </span>
-                            </label>
+                                </div>
 
-                        </p>
+                            </span>
+                        </label>
 
                     </div>
                 </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">
-                        {reactive_part.process.get_untracked()}
-                    </p>
+            </div>
+            <div class="flex-col grow grow">
+                <div class="flex items-baseline">
+                    <p class="font-bold text-base pr-2">"Process:"</p>
+                    <p class="ml-4 text-md text-gray-900">{reactive_part.process}</p>
                 </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <MaterialsDropdown
-                        material=reactive_part.material
-                        on_material_change=move |material| {
-                            reactive_part.material.update(|m| *m = material);
-                            update_part.dispatch(());
-                        }
-                    />
+                <div class="flex items-baseline mt-1">
+                    <p class="font-bold text-base pr-2">"Material:"</p>
+                    <div class="ml-3">
+                        <MaterialsDropdown
+                            material=reactive_part.material
+                            on_material_change=move |material| {
+                                reactive_part.material.update(|m| *m = material);
+                                update_part.dispatch(());
+                            }
+                        />
+
+                    </div>
 
                 </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap"></p>
+                <div class="flex items-baseline mt-1">
+                    <p class="font-bold text-base pr-2">"Tolerance:"</p>
                     <TolerancesDropdown
                         tolerance=reactive_part.tolerance
                         on_tolerance_change=move |tolerance| {
@@ -165,15 +190,14 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     />
 
                 </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
+                <div class="flex items-baseline mt-1">
+                    <p class="font-bold text-base pr-2">"Quantity:"</p>
                     <input
                         type="number"
                         id="quantity"
                         name="quantity"
                         min=1
-                        class="w-20 px-3 py-2 text-center bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        class="w-20 ml-2 px-3 py-1.5 text-sm text-center bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                         value=reactive_part.quantity.get_untracked()
                         on:change=move |ev| {
                             let quantity = event_target_value(&ev).parse::<u64>().unwrap();
@@ -183,37 +207,33 @@ pub fn PartsTableRow(#[prop(into)] reactive_part: ReactivePart) -> impl IntoView
                     />
 
                 </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">
-                        {move || {
-                            match reactive_part.unit_price.get() {
-                                Some(unit_price) => {
-                                    Money::from_minor(unit_price as i64, iso::MXN).to_string()
-                                }
-                                None => String::from("N/A"),
-                            }
-                        }}
+            </div>
+            <div class="flex flex-col w-80 space-y-2">
+                <For
+                    each=move || part_quotes.get().into_iter()
+                    key=|part_quote| part_quote.id.clone()
+                    children=move |part_quote| {
+                        let is_selected = create_rw_signal(false);
+                        let on_select = move |selected| {
+                            selected_part_quote_cards
+                                .with(|selected_part_quote_cards| {
+                                    selected_part_quote_cards
+                                        .iter()
+                                        .for_each(|selected_card| {
+                                            selected_card.update(|selected_card| *selected_card = false)
+                                        })
+                                });
+                            is_selected.update(|is_selected| *is_selected = true);
+                        };
+                        selected_part_quote_cards
+                            .update(|selected_part_quote_cards| {
+                                selected_part_quote_cards.push(is_selected)
+                            });
+                        view! { <PartQuoteCard part_quote is_selected on_select/> }
+                    }
+                />
 
-                    </p>
-                </div>
-            </td>
-            <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
-                <div class="flex justify-center">
-                    <p class="text-gray-900 whitespace-no-wrap">
-                        {move || {
-                            match reactive_part.sub_total.get() {
-                                Some(sub_total) => {
-                                    Money::from_minor(sub_total as i64, iso::MXN).to_string()
-                                }
-                                None => String::from("N/A"),
-                            }
-                        }}
-
-                    </p>
-                </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     }
 }

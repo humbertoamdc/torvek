@@ -1,5 +1,6 @@
-use client_app::*;
 use leptos::*;
+
+use client_app::*;
 
 fn main() {
     _ = console_log::init_with_level(log::Level::Debug);

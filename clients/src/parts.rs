@@ -1,10 +1,16 @@
 use gloo_net::http::Request;
-use web_sys::RequestCredentials;
+use web_sys::{File, RequestCredentials};
+use web_sys::wasm_bindgen::JsValue;
 
-use api_boundary::parts::requests::CreatePartQuotesRequest;
-use api_boundary::parts::responses::QueryPartsForQuotationResponse;
+use api_boundary::parts::requests::{
+    CreateDrawingUploadUrlRequest, CreatePartQuotesRequest, CreatePartsRequest,
+    QueryPartQuotesForPartsRequest, QueryPartQuotesForPartsResponse, UpdatePartRequest,
+};
+use api_boundary::parts::responses::{
+    CreateDrawingUploadUrlResponse, CreatePartsResponse, QueryPartsForQuotationResponse,
+};
 
-use crate::common::{send, Result};
+use crate::common::{Result, send};
 
 #[derive(Copy, Clone)]
 pub struct PartsClient {
@@ -25,6 +31,49 @@ impl PartsClient {
         send(request).await
     }
 
+    pub async fn create_parts(&self, body: CreatePartsRequest) -> Result<CreatePartsResponse> {
+        let url = format!("{}/parts", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
+
+        send(request).await
+    }
+
+    pub async fn upload_file_with_presigned_url(
+        &self,
+        file: File,
+        presigned_url: String,
+    ) -> Result<()> {
+        Request::put(presigned_url.as_str())
+            .body(JsValue::from(file))?
+            .send()
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn update_part(&self, body: UpdatePartRequest) -> Result<()> {
+        let url = format!("{}/parts", self.url);
+        let request = Request::patch(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
+
+        send(request).await
+    }
+
+    pub async fn create_drawing_upload_url(
+        &self,
+        body: CreateDrawingUploadUrlRequest,
+    ) -> Result<CreateDrawingUploadUrlResponse> {
+        let url = format!("{}/parts/drawing_upload_url", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
+
+        send(request).await
+    }
+
     pub async fn query_parts_for_quotation(
         &self,
         client_id: String,
@@ -38,6 +87,18 @@ impl PartsClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()?;
+
+        send(request).await
+    }
+
+    pub async fn query_part_quotes_for_parts(
+        &self,
+        body: QueryPartQuotesForPartsRequest,
+    ) -> Result<QueryPartQuotesForPartsResponse> {
+        let url = format!("{}/parts/quotes", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&body)?;
 
         send(request).await
     }

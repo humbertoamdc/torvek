@@ -47,8 +47,7 @@ pub fn PartQuoteCard(
             .unwrap()
             * 100.0) as i64;
 
-        let mut money =
-            rusty_money::Money::from_minor(formatted_price, rusty_money::iso::MXN).to_string();
+        let mut money = Money::new(formatted_price, iso_currency::Currency::MXN).to_string();
         money.remove(0);
 
         price.update(|p| *p = money);

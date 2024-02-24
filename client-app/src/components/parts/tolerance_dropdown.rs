@@ -28,7 +28,7 @@ pub fn TolerancesDropdown(
                     is_focused.update(|f| *f = false);
                 }
 
-                class="w-full inline-flex items-center justify-between px-3 py-2 text-sm text-gray-600 bg-white border rounded-lg shadow-sm outline-none"
+                class="w-full inline-flex items-center justify-between px-2 py-1.5 text-sm text-gray-600 bg-white border rounded-lg shadow-sm outline-none"
             >
                 <div class="flex items-center gap-x-3">
                     <Show when=move || !change_action.pending().get() fallback=move || view! {}>
@@ -40,7 +40,7 @@ pub fn TolerancesDropdown(
             // Dropdown menu
             <Show when=move || is_focused.get() fallback=move || view! {}>
 
-                <div class="fixed w-52 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto">
+                <div class="fixed w-52 mt-1.5 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-y-auto">
 
                     {items
                         .iter()
@@ -55,7 +55,7 @@ pub fn TolerancesDropdown(
                                     }
                                 >
 
-                                    <span class="pr-4 line-clamp-1 flex items-center gap-2">
+                                    <span class="pr-4 line-clamp-1 text-sm flex items-center gap-2">
                                         {item}
                                     </span>
                                 </div>
