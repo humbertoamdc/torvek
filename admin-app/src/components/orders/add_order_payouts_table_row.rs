@@ -105,11 +105,7 @@ pub fn AddOrderPayoutsTableRow(
 
                     {move || {
                         if payout.get().is_some() {
-                            rusty_money::Money::from_minor(
-                                    payout.get().unwrap().amount,
-                                    rusty_money::iso::MXN,
-                                )
-                                .to_string()
+                            payout.get().unwrap().to_string()
                         } else {
                             String::from("$")
                         }

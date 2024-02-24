@@ -14,13 +14,7 @@ pub fn OrdersRow(#[prop(into)] order: Order) -> impl IntoView {
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">
                 <div class="flex justify-center">
                     <p class="text-gray-900 whitespace-no-wrap">
-                        {move || {
-                            rusty_money::Money::from_minor(
-                                    order.payout.clone().unwrap().amount,
-                                    rusty_money::iso::MXN,
-                                )
-                                .to_string()
-                        }}
+                        {move || order.payout.clone().unwrap().amount.to_string()}
 
                     </p>
                 </div>

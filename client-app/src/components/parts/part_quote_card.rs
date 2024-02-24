@@ -18,17 +18,14 @@ pub fn PartQuoteCard(
     };
 
     view! {
-        <button
-            class=move || button_class()
-            on:click=move |_| on_select.call(is_selected)
-        >
+        <button class=move || button_class() on:click=move |_| on_select.call(is_selected)>
             <div>
                 <p class="text-sm font-bold text-left text-gray-700">"Expedite"</p>
                 <p class="text-sm font-semibold text-gray-500">"7 business days"</p>
             </div>
             <div>
                 <p class="text-sm font-semibold text-right text-gray-500">"$123.56 ea."</p>
-                <p class="text-2xl font-bold text-gray-700">{rusty_money::Money::from_minor(part_quote.price.amount, rusty_money::iso::USD).to_string()}</p>
+                <p class="text-2xl font-bold text-gray-700">{part_quote.price.to_string()}</p>
             </div>
         </button>
     }

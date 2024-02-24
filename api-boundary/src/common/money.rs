@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use iso_currency::Currency;
 use serde_derive::{Deserialize, Serialize};
 
@@ -19,5 +21,19 @@ impl Default for Money {
             amount: 0,
             currency: Currency::MXN,
         }
+    }
+}
+
+impl Display for Money {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let currency = match self.currency {
+            Currency::USD => rusty_money::iso::USD,
+            _ => rusty_money::iso::MXN,
+        };
+        write!(
+            f,
+            "{}",
+            rusty_money::Money::from_minor(self.amount, currency).to_string()
+        )
     }
 }

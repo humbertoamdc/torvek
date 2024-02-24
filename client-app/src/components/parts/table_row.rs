@@ -103,57 +103,59 @@ pub fn PartsTableRow(
                         alt="User Image"
                     />
                     <div class="flex ml-3 space-x-2">
-                            <label for=format!("model-file-{}", part_id)>
-                                <input
-                                    id=format!("model-file-{}", part_id)
+                        <label for=format!("model-file-{}", part_id)>
+                            <input
+                                id=format!("model-file-{}", part_id)
 
-                                    type="file"
-                                    class="hidden"
-                                    accept=".stp,.step"
-                                    on:change=move |_| {
-                                        // TODO: Change for upload model file.
-                                    }
+                                type="file"
+                                class="hidden"
+                                accept=".stp,.step"
+                                on:change=move |_| {}
+                            />
+
+                            <span class="inline-flex items-center rounded-xl bg-gray-100 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-gray-600 ring-1 ring-inset hover:ring-gray-600 cursor-pointer ">
+                                <img
+                                    style="width: 18px; height: 18px;"
+                                    src="https://icons.veryicon.com/png/o/construction-tools/cloud-device/spare-part-type-01.png"
+                                    alt="User Image"
                                 />
+                                <div class="ml-1">
+                                    {reactive_part.model_file.get_untracked().name}
+                                </div>
 
-                                <span class="inline-flex items-center rounded-xl bg-gray-100 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-gray-600 ring-1 ring-inset hover:ring-gray-600 cursor-pointer ">
-                                    <img
-                                        style="width: 18px; height: 18px;"
-                                        src="https://icons.veryicon.com/png/o/construction-tools/cloud-device/spare-part-type-01.png"
-                                        alt="User Image"
-                                    />
-                                    <div class="ml-1">{reactive_part.model_file.get_untracked().name}</div>
+                            </span>
+                        </label>
+                        <label for=format!("drawing-file-{}", part_id)>
+                            <input
+                                id=format!("drawing-file-{}", part_id)
 
-                                </span>
-                            </label>
-                            <label for=format!("drawing-file-{}", part_id)>
-                                <input
-                                    id=format!("drawing-file-{}", part_id)
+                                type="file"
+                                class="hidden"
+                                accept=".pdf"
+                                on:change=move |ev| {
+                                    let input_element = event_target::<HtmlInputElement>(&ev);
+                                    upload_drawing_file.dispatch(input_element);
+                                }
+                            />
 
-                                    type="file"
-                                    class="hidden"
-                                    accept=".pdf"
-                                    on:change=move |ev| {
-                                        let input_element = event_target::<HtmlInputElement>(&ev);
-                                        upload_drawing_file.dispatch(input_element);
-                                    }
+                            <span class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-1 ring-inset hover:ring-red-600 cursor-pointer ">
+                                <img
+                                    style="width: 18px; height: 18px;"
+                                    src="https://icons.veryicon.com/png/o/transport/traffic-2/pdf-34.png"
+                                    alt="User Image"
                                 />
-
-                                <span class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-1 ring-inset hover:ring-red-600 cursor-pointer ">
-                                    <img
-                                        style="width: 18px; height: 18px;"
-                                        src="https://icons.veryicon.com/png/o/transport/traffic-2/pdf-34.png"
-                                        alt="User Image"
-                                    />
-                                    <div class="ml-1">{move || {
+                                <div class="ml-1">
+                                    {move || {
                                         match reactive_part.drawing_file.get() {
                                             Some(drawing_file) => drawing_file.name,
                                             None => String::from("Pdf"),
                                         }
                                     }}
-                                    </div>
 
-                                </span>
-                            </label>
+                                </div>
+
+                            </span>
+                        </label>
 
                     </div>
                 </div>
@@ -213,15 +215,24 @@ pub fn PartsTableRow(
                     children=move |part_quote| {
                         let is_selected = create_rw_signal(false);
                         let on_select = move |selected| {
-                            selected_part_quote_cards.with(|selected_part_quote_cards| selected_part_quote_cards.iter().for_each(|selected_card| selected_card.update(|selected_card| *selected_card = false)));
+                            selected_part_quote_cards
+                                .with(|selected_part_quote_cards| {
+                                    selected_part_quote_cards
+                                        .iter()
+                                        .for_each(|selected_card| {
+                                            selected_card.update(|selected_card| *selected_card = false)
+                                        })
+                                });
                             is_selected.update(|is_selected| *is_selected = true);
                         };
-                        selected_part_quote_cards.update(|selected_part_quote_cards| selected_part_quote_cards.push(is_selected));
-                        view! {
-                            <PartQuoteCard part_quote is_selected on_select/>
-                        }
+                        selected_part_quote_cards
+                            .update(|selected_part_quote_cards| {
+                                selected_part_quote_cards.push(is_selected)
+                            });
+                        view! { <PartQuoteCard part_quote is_selected on_select/> }
                     }
                 />
+
             </div>
         </div>
     }
