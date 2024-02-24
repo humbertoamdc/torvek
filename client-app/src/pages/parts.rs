@@ -231,6 +231,6 @@ pub fn Parts() -> impl IntoView {
         </div>
 
         <div class="mt-8"></div>
-        <PartsTable parts part_quotes_by_part />
+        <PartsTable parts part_quotes_by_part/>
     }
 }

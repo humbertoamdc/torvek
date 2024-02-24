@@ -30,20 +30,18 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
             <LayoutSider>
                 <Sidebar auth_client=auth_client on_logout=on_logout/>
             </LayoutSider>
-            <Layout>
+            <Layout class="h-screen bg-gray-100 px-8 py-6 h-screen bg-gray-100">
                 <Layout>
                     // Main content
-                    <div class="h-screen flex-1 px-8 py-6 bg-gray-100">
-                        <Show
-                            when=move || !fetch_user_info.pending().get()
-                            fallback=move || {
-                                view! { <Loading/> }
-                            }
-                        >
+                    <Show
+                        when=move || !fetch_user_info.pending().get()
+                        fallback=move || {
+                            view! { <Loading/> }
+                        }
+                    >
 
-                            <Outlet/>
-                        </Show>
-                    </div>
+                        <Outlet/>
+                    </Show>
                 </Layout>
             </Layout>
         </Layout>

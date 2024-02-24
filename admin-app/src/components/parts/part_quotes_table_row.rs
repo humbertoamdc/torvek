@@ -16,6 +16,7 @@ pub fn PartQuotesTableRow(
     view! {
         <div class="flex shadow bg-white text-sm my-2 h-80 rounded-xl overflow-hidden p-4 space-x-2">
             <div class="flex flex-col items-center">
+                <div class="flex-shrink-0 w-80">
                 <img
                     class="object-scale-down"
                     src="https://cdn.dribbble.com/userupload/11259598/file/original-70a5fe9cc326f004bb78e36ee5e9d8a7.png?resize=300x0"
@@ -24,6 +25,7 @@ pub fn PartQuotesTableRow(
                 <div class="ml-3">
                     <p class="text-gray-900 whitespace-no-wrap">{part.model_file.name}</p>
                 </div>
+            <div>
             </div>
             <div class="flex-col grow">
                 <div class="flex items-baseline">
