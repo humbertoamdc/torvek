@@ -10,6 +10,7 @@ pub struct DynamodbPartItem {
     #[serde(rename = "client_id#project_id#quotation_id")]
     pub client_project_and_quotation_ids: String,
     pub model_file: File,
+    pub render_file: File,
     pub drawing_file: Option<File>,
     pub process: String,
     pub material: String,
@@ -37,6 +38,7 @@ impl Into<Part> for DynamodbPartItem {
             project_id,
             quotation_id,
             model_file: self.model_file,
+            render_file: self.render_file,
             drawing_file: self.drawing_file,
             process: self.process,
             material: self.material,
@@ -59,6 +61,7 @@ impl From<Part> for DynamodbPartItem {
                 part.client_id, part.project_id, part.quotation_id
             ),
             model_file: part.model_file,
+            render_file: part.render_file,
             drawing_file: part.drawing_file,
             process: part.process,
             material: part.material,

@@ -30,7 +30,7 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
             <LayoutSider>
                 <Sidebar auth_client=auth_client on_logout=on_logout/>
             </LayoutSider>
-            <Layout class="h-screen bg-gray-100 px-8 py-6 h-screen bg-gray-100">
+            <Layout class="h-screen px-8 py-6">
                 <Layout>
                     // Main content
                     <Show

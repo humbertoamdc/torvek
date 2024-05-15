@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
-use axum::Json;
 use axum::response::IntoResponse;
+use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
@@ -65,7 +65,10 @@ pub async fn query_parts_for_quotation(
     State(app_state): State<AppState>,
     Path((client_id, project_id, quotation_id)): Path<(String, String, String)>,
 ) -> impl IntoResponse {
-    let usecase = QueryPartsForQuotationUseCase::new(app_state.parts.parts_repository);
+    let usecase = QueryPartsForQuotationUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
     let request = QueryPartsForQuotationRequest::new(client_id, project_id, quotation_id);
     let result = usecase.execute(request).await;
 

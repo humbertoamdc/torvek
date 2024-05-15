@@ -1,6 +1,7 @@
 use gloo_net::http::Request;
-use web_sys::{File, RequestCredentials};
+use gloo_net::Error;
 use web_sys::wasm_bindgen::JsValue;
+use web_sys::{File, RequestCredentials};
 
 use api_boundary::parts::requests::{
     CreateDrawingUploadUrlRequest, CreatePartQuotesRequest, CreatePartsRequest,
@@ -10,7 +11,7 @@ use api_boundary::parts::responses::{
     CreateDrawingUploadUrlResponse, CreatePartsResponse, QueryPartsForQuotationResponse,
 };
 
-use crate::common::{Result, send};
+use crate::common::{send, Result};
 
 #[derive(Copy, Clone)]
 pub struct PartsClient {
@@ -38,6 +39,13 @@ impl PartsClient {
             .json(&body)?;
 
         send(request).await
+    }
+
+    pub async fn get_file_from_presigned_url(
+        &self,
+        presigned_url: String,
+    ) -> std::result::Result<gloo_net::http::Response, Error> {
+        Request::get(presigned_url.as_str()).send().await
     }
 
     pub async fn upload_file_with_presigned_url(

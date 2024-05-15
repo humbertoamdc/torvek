@@ -24,3 +24,7 @@ serde_derive = "1.0.193"
 console_error_panic_hook = "0.1.7"
 web-sys = { version = "0.3.67", features = ["FileList", "HtmlInputElement", "File"] }
 thaw = { version = "0.2.0-beta", features = ["csr"] }
+three-d = "0.17.0"
+leptos-use = "0.10.3"
+winit = "0.28.7"
+three-d-asset = { version = "0.7.0", features = ["http", "data-url", "obj", "gltf"] }

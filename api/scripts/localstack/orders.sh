@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# S3 Buckets
-awslocal s3 mb s3://unnamed-client-files
-
 # DynamoDB Tables
 awslocal dynamodb create-table \
     --table-name Orders \

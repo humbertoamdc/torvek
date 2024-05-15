@@ -19,8 +19,10 @@ pub async fn create_checkout_session(
     State(app_state): State<AppState>,
     Json(request): Json<CreateCheckoutSessionRequest>,
 ) -> impl IntoResponse {
-    let query_parts_for_quotation_usecase =
-        QueryPartsForQuotationUseCase::new(app_state.parts.parts_repository);
+    let query_parts_for_quotation_usecase = QueryPartsForQuotationUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
     let usecase = CreateCheckoutSessionUseCase::new(
         app_state.payments.payments_processor,
         query_parts_for_quotation_usecase,
@@ -43,8 +45,10 @@ pub async fn complete_checkout_session_webhook(
                 if let Ok(request) =
                     CompleteCheckoutSessionWebhookRequest::try_from(session.metadata)
                 {
-                    let query_parts_for_quotation_usecase =
-                        QueryPartsForQuotationUseCase::new(app_state.parts.parts_repository);
+                    let query_parts_for_quotation_usecase = QueryPartsForQuotationUseCase::new(
+                        app_state.parts.parts_repository,
+                        app_state.parts.object_storage,
+                    );
                     let usecase = CreateOrdersAndConfirmQuotationPaymentUseCase::new(
                         app_state.payments.orders_creation_service,
                         query_parts_for_quotation_usecase,

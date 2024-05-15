@@ -1,6 +1,7 @@
+use leptos::{create_rw_signal, RwSignal};
+
 use api_boundary::common::file::File;
 use api_boundary::parts::models::Part;
-use leptos::{create_rw_signal, RwSignal};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ReactivePart {
@@ -9,6 +10,7 @@ pub struct ReactivePart {
     pub project_id: String,
     pub quotation_id: String,
     pub model_file: RwSignal<File>,
+    pub render_file: RwSignal<File>,
     pub drawing_file: RwSignal<Option<File>>,
     pub process: RwSignal<String>,
     pub material: RwSignal<String>,
@@ -26,6 +28,7 @@ impl From<&Part> for ReactivePart {
             project_id: part.project_id.clone(),
             quotation_id: part.quotation_id.clone(),
             model_file: create_rw_signal(part.model_file.clone()),
+            render_file: create_rw_signal(part.render_file.clone()),
             drawing_file: create_rw_signal(part.drawing_file.clone()),
             process: create_rw_signal(part.process.clone()),
             material: create_rw_signal(part.material.clone()),

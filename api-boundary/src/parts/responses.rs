@@ -1,5 +1,6 @@
-use crate::parts::models::Part;
 use serde_derive::{Deserialize, Serialize};
+
+use crate::parts::models::Part;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsResponse {
@@ -40,5 +41,15 @@ pub struct AdminQueryPartsByStatusResponse {
 impl AdminQueryPartsByStatusResponse {
     pub fn new(parts: Vec<Part>) -> Self {
         Self { parts }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GetRenderFilePresignedUrlResponse {
+    pub file_url: String,
+}
+impl GetRenderFilePresignedUrlResponse {
+    pub const fn new(file_url: String) -> Self {
+        Self { file_url }
     }
 }
