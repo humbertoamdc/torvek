@@ -146,7 +146,7 @@ pub fn PartsTableRow(
     // -- effects -- //
 
     let _ = create_effect(move |_| {
-        if is_visible.get() && load_part_model.value().get().is_some() {
+        if load_part_model.value().get().is_some() {
             let window = web_sys::window().expect("should have a window in this context");
             let document = window.document().expect("window should have a document");
 

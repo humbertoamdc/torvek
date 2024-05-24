@@ -24,7 +24,6 @@ pub fn part_window(window_builders_and_models: Vec<(WindowBuilder, three_d_asset
     // let canvas_ref = create_node_ref::<Canvas>();
     // let is_visible = use_element_visibility(canvas_ref);
 
-    log::info!("Creating part window...");
     let event_loop = winit::event_loop::EventLoop::new();
     let windows: HashMap<
         WindowId,

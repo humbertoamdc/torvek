@@ -15,7 +15,7 @@ pub fn PartQuotesTableRow(
     // -- signals -- //
     view! {
         <div class="flex shadow bg-white text-sm my-2 h-80 rounded-xl overflow-hidden p-4 space-x-2">
-            <div class="flex flex-col items-center">
+            <div class="flex flex-row items-center">
                 <div class="flex-shrink-0 w-80">
                     <img
                         class="object-scale-down"
