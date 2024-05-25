@@ -122,22 +122,16 @@ pub fn PartsTableRow(
             if resp.is_ok() && resp.unwrap().status() == StatusCode::OK {
                 break;
             } else {
-                // sleep(Duration::from_millis(5000));
+                gloo_timers::future::TimeoutFuture::new(1_000).await;
+                log::info!("Waiting...");
             }
         }
 
+        // TODO: Use presigned url to render file. We are double fetching the file, we can use the result obtained
+        //       in the loop and create the RawAssets manually since using the `load_async` function is not working
+        //       with presigned urls.
         let mut result =
             three_d_asset::io::load_async(&[reactive_part.render_file.get_untracked().url]).await;
-
-        // TODO: Test in three_d playground and debug what is happening.
-        match &result {
-            Ok(raw_assets) => {
-                // log::info!("Success?? {raw_assets:#?}")
-            }
-            Err(err) => {
-                log::error!("an error occurred while fetching assets{err:?}");
-            }
-        };
 
         result.unwrap().deserialize("/").unwrap()
     });
