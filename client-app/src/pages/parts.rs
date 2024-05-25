@@ -132,9 +132,11 @@ pub fn Parts() -> impl IntoView {
     let create_parts = create_action(move |file_list: &FileList| {
         let file_list = file_list.clone();
         let mut file_names: Vec<String> = Vec::with_capacity(file_list.length() as usize);
+        let mut files = Vec::with_capacity(file_list.length() as usize);
         for i in 0..file_list.length() {
             if let Some(file) = file_list.item(i) {
                 file_names.push(file.name());
+                files.push(file.clone())
             }
         }
 
@@ -144,19 +146,18 @@ pub fn Parts() -> impl IntoView {
             quotation_id().unwrap_or_default(),
             file_names.to_owned(),
         );
+
         async move {
             match parts_client.create_parts(request).await {
                 Ok(response) => {
-                    for i in 0..file_list.length() {
-                        if let Some(file) = file_list.item(i) {
-                            parts_client
-                                .upload_file_with_presigned_url(
-                                    file,
-                                    response.upload_urls[i as usize].clone(),
-                                )
-                                .await
-                                .expect("error while uploading file with presigned url");
-                        }
+                    for (i, file) in files.into_iter().enumerate() {
+                        parts_client
+                            .upload_file_with_presigned_url(
+                                file,
+                                response.upload_urls[i as usize].clone(),
+                            )
+                            .await
+                            .expect("error while uploading file with presigned url");
                     }
                 }
                 Err(_) => (), // TODO: Handle error.

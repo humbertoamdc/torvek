@@ -1,18 +1,30 @@
-version: "latest"
-
 services:
   localstack:
     container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
     image: localstack/localstack
     ports:
-      - "127.0.0.1:4566:4566" # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
     environment:
       - DEBUG=${DEBUG-}
       - DOCKER_HOST=unix:///var/run/docker.sock
       - EXTRA_CORS_ALLOWED_ORIGINS=*
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+      - HOST_TMP_FOLDER=${PWD}/localstack_tmp
     volumes:
       - "./scripts/localstack:/etc/localstack/init/ready.d"
       # Logs, cache and generated data by AWS services live here.
       - "${LOCALSTACK_VOLUME_DIR:-./volumes/localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+
+  file_converter:
+    build: ./scripts/local_file_converter
+    environment:
+      - AWS_ENDPOINT_URL=http://host.docker.internal:4566
+      - QUEUE_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/file-converter-queue
+    depends_on:
+      - localstack
+

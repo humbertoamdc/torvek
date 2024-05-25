@@ -20,6 +20,10 @@ trap cleanup INT
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Forwarding stripe webhooks to local environment"
 stripe listen --forward-to 127.0.0.1:3000/api/v1/payments/webhooks/complete_checkout_session &
 
+# Build file converter image
+echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Updating docker images"
+docker compose build
+
 # Start localstack
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting local AWS infra"
 docker compose up -d --wait

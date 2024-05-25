@@ -12,6 +12,7 @@ pub struct Part {
     pub project_id: String,
     pub quotation_id: String,
     pub model_file: File,
+    pub render_file: File,
     pub drawing_file: Option<File>,
     pub process: String,   // TODO: Extract to enum in api-boundary.
     pub material: String,  // TODO: Extract to enum in api-boundary.
@@ -23,7 +24,13 @@ pub struct Part {
     pub updated_at: DateTime<Utc>,
 }
 impl Part {
-    pub fn new(client_id: String, project_id: String, quotation_id: String, file: File) -> Self {
+    pub fn new(
+        client_id: String,
+        project_id: String,
+        quotation_id: String,
+        model_file: File,
+        render_file: File,
+    ) -> Self {
         let now = Utc::now();
 
         Self {
@@ -31,7 +38,8 @@ impl Part {
             client_id,
             project_id,
             quotation_id,
-            model_file: file,
+            model_file,
+            render_file,
             drawing_file: None,
             process: String::from("CNC"),
             material: String::from("Aluminum 6061-T6"),

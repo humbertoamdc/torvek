@@ -41,6 +41,7 @@ tower-http = { version = "0.4.4", features = ["full"] }
 tracing = { version = "0.1.40", features = [] }
 uuid = { version = "1.7.0", features = ["v4"] }
 serde-enum-str = "0.4.0"
+url = "2.5.0"
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 openssl = { version = "0.10.59", features = ["vendored"] }
