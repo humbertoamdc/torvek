@@ -121,10 +121,8 @@ pub fn PartsTableRow(
 
             if resp.is_ok() && resp.unwrap().status() == StatusCode::OK {
                 break;
-            } else {
-                gloo_timers::future::TimeoutFuture::new(1_000).await;
-                log::info!("Waiting...");
             }
+            gloo_timers::future::TimeoutFuture::new(1_000).await;
         }
 
         // TODO: Use presigned url to render file. We are double fetching the file, we can use the result obtained
