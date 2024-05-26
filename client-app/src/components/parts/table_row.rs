@@ -3,6 +3,7 @@ use leptos::html::Canvas;
 use leptos::wasm_bindgen::JsCast;
 use leptos::*;
 use leptos_use::use_element_visibility;
+use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration;
 use web_sys::{HtmlCanvasElement, HtmlInputElement};
@@ -27,6 +28,7 @@ pub fn PartsTableRow(
     #[prop(into)] reactive_part: ReactivePart,
     #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
     #[prop(into)] insert_window: Callback<(WindowBuilder, three_d_asset::Model)>,
+    #[prop(into)] selected_part_quote: RwSignal<Option<String>>,
 ) -> impl IntoView {
     let part_id = reactive_part.id.clone();
 
@@ -274,6 +276,8 @@ pub fn PartsTableRow(
                     key=|part_quote| part_quote.id.clone()
                     children=move |part_quote| {
                         let is_selected = create_rw_signal(false);
+                        let part_id_clone = part_id.clone();
+                        let part_quote_clone = part_quote.clone();
                         let on_select = move |_| {
                             selected_part_quote_cards
                                 .with(|selected_part_quote_cards| {
@@ -283,6 +287,7 @@ pub fn PartsTableRow(
                                             selected_card.update(|selected_card| *selected_card = false)
                                         })
                                 });
+                            selected_part_quote.update(|selected_part_quote| *selected_part_quote = Some(part_quote_clone.id.clone()));
                             is_selected.update(|is_selected| *is_selected = true);
                         };
                         selected_part_quote_cards

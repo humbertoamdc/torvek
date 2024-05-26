@@ -13,6 +13,7 @@ use crate::models::reactive_part::ReactivePart;
 pub fn PartsTable(
     #[prop(into)] parts: RwSignal<Vec<Part>>,
     #[prop(into)] part_quotes_by_part: RwSignal<HashMap<String, RwSignal<Vec<PartQuote>>>>,
+    #[prop(into)] selected_quote_per_part: RwSignal<HashMap<String, RwSignal<Option<String>>>>,
 ) -> impl IntoView {
     // -- signals -- //
 
@@ -35,7 +36,8 @@ pub fn PartsTable(
                 children=move |(_, part)| {
                     let reactive_part = ReactivePart::from(&part);
                     let part_quotes = part_quotes_by_part.get()[&part.id];
-                    view! { <PartsTableRow reactive_part part_quotes insert_window/> }
+                    let selected_part_quote = selected_quote_per_part.get()[&part.id];
+                    view! { <PartsTableRow reactive_part part_quotes insert_window selected_part_quote/> }
                 }
             />
 

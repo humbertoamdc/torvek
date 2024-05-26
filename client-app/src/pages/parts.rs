@@ -40,12 +40,16 @@ pub fn Parts() -> impl IntoView {
 
     let quotation = create_rw_signal(None::<Quotation>);
     let parts = create_rw_signal(Vec::<Part>::default());
+    let selected_quote_per_part =
+        create_rw_signal(HashMap::<String, RwSignal<Option<String>>>::new());
     let part_quotes_by_part =
         create_rw_signal(HashMap::<String, RwSignal<Vec<PartQuote>>>::default());
     let checkout_button_disabled = Signal::derive(move || {
-        quotation.get_untracked().is_none()
-            || quotation.get_untracked().unwrap().status != QuotationStatus::PendingPayment
-            || parts.get().is_empty()
+        selected_quote_per_part.get().is_empty()
+            || selected_quote_per_part
+                .get()
+                .iter()
+                .any(|(part_id, selected_quote)| selected_quote.get().is_none())
     });
 
     // -- params -- //
@@ -118,7 +122,14 @@ pub fn Parts() -> impl IntoView {
                         .map(|part| (part.id.clone(), create_rw_signal(Vec::default())))
                         .collect();
                 });
-                parts.update(|p| *p = response.parts);
+                selected_quote_per_part.update(|selected_quote_per_part| {
+                    *selected_quote_per_part = response
+                        .parts
+                        .iter()
+                        .map(|part| (part.id.clone(), create_rw_signal(None)))
+                        .collect()
+                });
+                parts.update(|p| *p = response.parts.clone());
                 query_part_quotes_for_parts.dispatch(());
             }
             Err(_) => (), // TODO: Handle error.
@@ -232,6 +243,6 @@ pub fn Parts() -> impl IntoView {
         </div>
 
         <div class="mt-8"></div>
-        <PartsTable parts part_quotes_by_part/>
+        <PartsTable parts part_quotes_by_part selected_quote_per_part/>
     }
 }
