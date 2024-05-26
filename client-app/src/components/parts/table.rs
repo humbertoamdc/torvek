@@ -37,7 +37,9 @@ pub fn PartsTable(
                     let reactive_part = ReactivePart::from(&part);
                     let part_quotes = part_quotes_by_part.get()[&part.id];
                     let selected_part_quote = selected_quote_per_part.get()[&part.id];
-                    view! { <PartsTableRow reactive_part part_quotes insert_window selected_part_quote/> }
+                    view! {
+                        <PartsTableRow reactive_part part_quotes insert_window selected_part_quote/>
+                    }
                 }
             />
 

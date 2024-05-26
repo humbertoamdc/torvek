@@ -287,7 +287,10 @@ pub fn PartsTableRow(
                                             selected_card.update(|selected_card| *selected_card = false)
                                         })
                                 });
-                            selected_part_quote.update(|selected_part_quote| *selected_part_quote = Some(part_quote_clone.id.clone()));
+                            selected_part_quote
+                                .update(|selected_part_quote| {
+                                    *selected_part_quote = Some(part_quote_clone.id.clone());
+                                });
                             is_selected.update(|is_selected| *is_selected = true);
                         };
                         selected_part_quote_cards
