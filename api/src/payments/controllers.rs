@@ -9,6 +9,7 @@ use api_boundary::payments::requests::{
 };
 
 use crate::app_state::AppState;
+use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForPartsUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
 use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPaymentUseCase;
@@ -23,9 +24,12 @@ pub async fn create_checkout_session(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
+    let query_part_quotes_for_part_usecase =
+        QueryPartQuotesForPartsUseCase::new(app_state.parts.part_quotes_repository);
     let usecase = CreateCheckoutSessionUseCase::new(
         app_state.payments.payments_processor,
         query_parts_for_quotation_usecase,
+        query_part_quotes_for_part_usecase,
     );
     let result = usecase.execute(request).await;
 

@@ -1,6 +1,8 @@
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
+use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
+use std::collections::HashMap;
 
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
 
@@ -52,10 +54,10 @@ impl QuotationsRepository for DynamodbQuotations {
         let response = self
             .client
             .query()
+            .table_name(&self.table)
             .key_condition_expression("#client_id_project_id = :value")
             .expression_attribute_values(":value", AttributeValue::S(client_id_and_project_id))
             .expression_attribute_names("#client_id_project_id", "client_id#project_id")
-            .table_name(&self.table)
             .send()
             .await;
 
@@ -115,6 +117,46 @@ impl QuotationsRepository for DynamodbQuotations {
                 }
             }
             Err(_) => Err(QuotationsError::QueryQuotationsError),
+        }
+    }
+
+    async fn get_quotation_by_id(
+        &self,
+        client_id: String,
+        project_id: String,
+        quotation_id: String,
+    ) -> Result<Quotation, QuotationsError> {
+        let client_id_and_project_id = format!("{client_id}#{project_id}");
+
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.table)
+            .set_key(Some(HashMap::from([
+                (
+                    String::from("client_id#project_id"),
+                    AttributeValue::S(client_id_and_project_id),
+                ),
+                (String::from("id"), AttributeValue::S(quotation_id)),
+            ])))
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.item {
+                Some(item) => match from_item::<DynamodbQuotationItem>(item) {
+                    Ok(dynamodb_quotation) => Ok(dynamodb_quotation.into()),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(QuotationsError::UnknownError)
+                    }
+                },
+                None => Err(QuotationsError::GetQuotationItemNotFoundError),
+            },
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(QuotationsError::UnknownError)
+            }
         }
     }
 }

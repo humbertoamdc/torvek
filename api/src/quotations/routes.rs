@@ -3,7 +3,8 @@ use axum::Router;
 
 use crate::app_state::AppState;
 use crate::quotations::controllers::http::{
-    admin_query_quotations_by_status, create_quotation, query_quotations_for_project,
+    admin_query_quotations_by_status, create_quotation, get_quotation_by_id,
+    query_quotations_for_project,
 };
 
 pub fn create_router() -> Router<AppState> {
@@ -12,6 +13,10 @@ pub fn create_router() -> Router<AppState> {
         .route(
             "/clients/:client_id/projects/:project_id/quotations",
             get(query_quotations_for_project),
+        )
+        .route(
+            "/clients/:client_id/projects/:project_id/quotations/:quotation_id",
+            get(get_quotation_by_id),
         )
         .route("/admin/quotations", get(admin_query_quotations_by_status))
 }

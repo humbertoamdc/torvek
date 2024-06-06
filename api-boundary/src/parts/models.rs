@@ -57,19 +57,21 @@ impl Part {
 pub struct PartQuote {
     pub id: String,
     pub part_id: String,
-    pub price: Money,
+    pub unit_price: Money,
+    pub sub_total: Money,
     pub deadline: NaiveDate,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
 impl PartQuote {
-    pub fn new(part_id: String, price: Money, deadline: NaiveDate) -> Self {
+    pub fn new(part_id: String, unit_price: Money, sub_total: Money, deadline: NaiveDate) -> Self {
         let now = Utc::now();
         Self {
             id: Uuid::new_v4().to_string(),
             part_id,
-            price,
+            unit_price,
+            sub_total,
             deadline,
             created_at: now,
             updated_at: now,

@@ -10,7 +10,7 @@ ORY_PORT=4002
 # Function to handle cleanup
 function cleanup() {
     echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Red}EXIT${NoColor}] Cleaning up..."
-    lsof -i :$ORY_PORT -t | xargs kill
+    lsof -i :4002 -t | xargs kill
     exit
 }
 
@@ -18,7 +18,7 @@ function cleanup() {
 trap cleanup INT
 
 ory tunnel http://127.0.0.1:8082 \
-    --port $ORY_PORT \
+    --port 4002 \
     --project priceless-easley-mvim77stn4 \
     --allowed-cors-origins http://127.0.0.1:8082 \
     --cookie-domain 127.0.0.1:8082 \

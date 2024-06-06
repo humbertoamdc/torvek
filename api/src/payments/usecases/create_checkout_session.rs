@@ -1,6 +1,11 @@
+use api_boundary::parts::models::PartQuote;
 use axum::async_trait;
+use std::collections::HashMap;
 
-use api_boundary::parts::requests::QueryPartsForQuotationRequest;
+use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForPartsUseCase;
+use api_boundary::parts::requests::{
+    QueryPartQuotesForPartsRequest, QueryPartsForQuotationRequest,
+};
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 
@@ -12,16 +17,19 @@ use crate::shared::usecase::UseCase;
 pub struct CreateCheckoutSessionUseCase {
     payments_processor: StripePaymentsProcessor,
     query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+    query_part_quotes_for_parts_use_case: QueryPartQuotesForPartsUseCase,
 }
 
 impl CreateCheckoutSessionUseCase {
     pub const fn new(
         payments_processor: StripePaymentsProcessor,
         query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+        query_part_quotes_for_parts_use_case: QueryPartQuotesForPartsUseCase,
     ) -> Self {
         Self {
             payments_processor,
             query_parts_for_quotation_usecase,
+            query_part_quotes_for_parts_use_case,
         }
     }
 }
@@ -45,6 +53,33 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Paymen
             .await
             .map_err(|_| PaymentsError::QueryPartsError)?;
 
+        let part_ids = request
+            .selected_quotes_per_part
+            .iter()
+            .map(|(part_id, _)| part_id.clone())
+            .collect::<Vec<String>>();
+        let query_part_quotes_for_parts_request = QueryPartQuotesForPartsRequest { part_ids };
+        // TODO: Implement a batch get endpoint to retrieve only the selected part quote per part.
+        let query_part_quotes_for_parts_response = self
+            .query_part_quotes_for_parts_use_case
+            .execute(query_part_quotes_for_parts_request)
+            .await
+            .map_err(|_| PaymentsError::QueryPartsError)?;
+        let selected_quote_per_part = query_part_quotes_for_parts_response
+            .part_quotes_by_part_id
+            .iter()
+            .map(|(part_id, part_quotes)| {
+                let target_part_quote_id =
+                    request.selected_quotes_per_part[&part_id.clone()].clone();
+                let target_part_quote = part_quotes
+                    .iter()
+                    .find(|part_quote| part_quote.id == target_part_quote_id)
+                    .unwrap()
+                    .clone();
+                (part_id.clone(), target_part_quote)
+            })
+            .collect::<HashMap<String, PartQuote>>();
+
         let url = self
             .payments_processor
             .create_checkout_session(
@@ -52,6 +87,7 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Paymen
                 request.project_id,
                 request.quotation_id,
                 query_parts_for_quotation_response.parts,
+                selected_quote_per_part,
             )
             .await?;
 

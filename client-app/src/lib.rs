@@ -6,6 +6,7 @@ use leptos_router::*;
 use api::auth::AuthorizedClient;
 use api::models::auth::UserInfo;
 use clients::parts::PartsClient;
+use clients::quotations::QuotationsClient;
 
 use crate::api::auth::UnauthorizedClient;
 use crate::pages::home::Home;
@@ -30,8 +31,10 @@ pub fn App() -> impl IntoView {
     // -- clients -- //
 
     let parts_client = PartsClient::new(API_URL);
+    let quotations_client = QuotationsClient::new(API_URL);
 
     provide_context(parts_client);
+    provide_context(quotations_client);
 
     // -- signals -- //
 
@@ -54,7 +57,7 @@ pub fn App() -> impl IntoView {
     // -- init API -- //
     let unauthorized_api = UnauthorizedClient::new();
     let logging_in = create_action(move |_| async move {
-        // Try to login. If there is a session id in the cookies we can skip the login page.
+        // Try to log in. If there is a session id in the cookies we can skip the login page.
         if let Ok((authorized_api, user_info)) =
             unauthorized_api.try_login_with_session_cookie().await
         {

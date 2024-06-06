@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use stripe::{
     CheckoutSession, CheckoutSessionMode, Client, CreateCheckoutSession,
     CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsPriceData,
     CreateCheckoutSessionLineItemsPriceDataProductData, Currency,
 };
 
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{Part, PartQuote};
 
 use crate::payments::domain::errors::PaymentsError;
 
@@ -32,8 +33,9 @@ impl StripePaymentsProcessor {
         project_id: String,
         quotation_id: String,
         parts: Vec<Part>,
+        selected_quote_per_part: HashMap<String, PartQuote>,
     ) -> Result<String, PaymentsError> {
-        let line_items = Self::line_items_from_parts_data(&parts);
+        let line_items = Self::line_items_from_parts_data(&parts, selected_quote_per_part);
         let success_url = format!(
             "{}/projects/{}/quotations/{}/parts",
             self.success_url, project_id, quotation_id
@@ -61,7 +63,10 @@ impl StripePaymentsProcessor {
         }
     }
 
-    fn line_items_from_parts_data(parts: &Vec<Part>) -> Vec<CreateCheckoutSessionLineItems> {
+    fn line_items_from_parts_data(
+        parts: &Vec<Part>,
+        selected_quote_per_part: HashMap<String, PartQuote>,
+    ) -> Vec<CreateCheckoutSessionLineItems> {
         parts.iter().map(|part| CreateCheckoutSessionLineItems {
             adjustable_quantity: None,
             dynamic_tax_rates: None,
@@ -83,7 +88,7 @@ impl StripePaymentsProcessor {
                 }),
                 recurring: None,
                 tax_behavior: None,
-                unit_amount: Some(part.sub_total.unwrap() as i64),
+                unit_amount: Some(selected_quote_per_part[&part.id].unit_price.amount),
                 unit_amount_decimal: None,
             }),
             quantity: Some(part.quantity),

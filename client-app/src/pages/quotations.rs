@@ -4,9 +4,9 @@ use thaw::{Breadcrumb, BreadcrumbItem, Button};
 
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::CreateQuotationRequest;
+use clients::quotations::QuotationsClient;
 
 use crate::api::models::auth::UserInfo;
-use crate::api::quotations::QuotationsClient;
 use crate::components::quotations::quotation_button::QuotationButton;
 
 #[derive(Params, PartialEq)]
@@ -22,6 +22,9 @@ pub fn QuotationsContainer() -> impl IntoView {
 #[component]
 pub fn Quotations() -> impl IntoView {
     let navigate = use_navigate();
+
+    // -- clients -- //
+    let quotations_client = use_context::<QuotationsClient>().unwrap();
 
     // -- context -- //
 
@@ -47,7 +50,6 @@ pub fn Quotations() -> impl IntoView {
 
     let query_quotations = create_action(move |_| {
         async move {
-            let quotations_client = QuotationsClient::new();
             let result = quotations_client
                 .query_quotations_for_project(
                     user_info.get_untracked().id,
@@ -72,7 +74,6 @@ pub fn Quotations() -> impl IntoView {
             project_id().unwrap_or_default(),
         );
         async move {
-            let quotations_client = QuotationsClient::new();
             let result = quotations_client.create_quotation(request).await;
 
             match result {

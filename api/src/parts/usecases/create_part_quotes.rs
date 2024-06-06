@@ -28,7 +28,12 @@ impl UseCase<CreatePartQuotesRequest, (), PartsError> for CreatePartQuotesUseCas
             .data
             .into_iter()
             .map(|quote_data| {
-                PartQuote::new(quote_data.part_id, quote_data.price, quote_data.deadline)
+                PartQuote::new(
+                    quote_data.part_id,
+                    quote_data.unit_price,
+                    quote_data.sub_total,
+                    quote_data.deadline,
+                )
             })
             .collect::<Vec<PartQuote>>();
 

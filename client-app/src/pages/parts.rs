@@ -8,8 +8,9 @@ use web_sys::FileList;
 use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::{CreatePartsRequest, QueryPartQuotesForPartsRequest};
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
+use api_boundary::quotations::models::Quotation;
 use clients::parts::PartsClient;
+use clients::quotations::QuotationsClient;
 
 use crate::api::models::auth::UserInfo;
 use crate::api::payments::PaymentsClient;
@@ -31,6 +32,7 @@ pub fn Parts() -> impl IntoView {
     // -- clients -- //
 
     let parts_client = use_context::<PartsClient>().unwrap();
+    let quotations_client = use_context::<QuotationsClient>().unwrap();
 
     // -- context -- //
 
@@ -40,12 +42,16 @@ pub fn Parts() -> impl IntoView {
 
     let quotation = create_rw_signal(None::<Quotation>);
     let parts = create_rw_signal(Vec::<Part>::default());
+    let selected_quote_per_part =
+        create_rw_signal(HashMap::<String, RwSignal<Option<String>>>::new());
     let part_quotes_by_part =
         create_rw_signal(HashMap::<String, RwSignal<Vec<PartQuote>>>::default());
     let checkout_button_disabled = Signal::derive(move || {
-        quotation.get_untracked().is_none()
-            || quotation.get_untracked().unwrap().status != QuotationStatus::PendingPayment
-            || parts.get().is_empty()
+        selected_quote_per_part.get().is_empty()
+            || selected_quote_per_part
+                .get()
+                .iter()
+                .any(|(_, selected_quote)| selected_quote.get().is_none())
     });
 
     // -- params -- //
@@ -70,6 +76,24 @@ pub fn Parts() -> impl IntoView {
     };
 
     // -- action -- //
+
+    let _query_quotation = create_action(move |_| {
+        let client_id = user_info.get_untracked().id;
+        let project_id = project_id().unwrap();
+        let quotation_id = quotation_id().unwrap();
+        async move {
+            match quotations_client
+                .get_quotaiton_by_id(client_id, project_id, quotation_id)
+                .await
+            {
+                Ok(quotation_response) => {
+                    quotation.update(|quotation| *quotation = Some(quotation_response))
+                }
+                Err(_) => (),
+            }
+        }
+    })
+    .dispatch(());
 
     let query_part_quotes_for_parts = create_action(move |_| {
         let part_ids = parts
@@ -118,7 +142,14 @@ pub fn Parts() -> impl IntoView {
                         .map(|part| (part.id.clone(), create_rw_signal(Vec::default())))
                         .collect();
                 });
-                parts.update(|p| *p = response.parts);
+                selected_quote_per_part.update(|selected_quote_per_part| {
+                    *selected_quote_per_part = response
+                        .parts
+                        .iter()
+                        .map(|part| (part.id.clone(), create_rw_signal(None)))
+                        .collect()
+                });
+                parts.update(|p| *p = response.parts.clone());
                 query_part_quotes_for_parts.dispatch(());
             }
             Err(_) => (), // TODO: Handle error.
@@ -168,10 +199,16 @@ pub fn Parts() -> impl IntoView {
 
     let create_checkout_session = create_action(move |_| async move {
         let payments_client = PaymentsClient::new();
+        let selected_quotes_per_part = selected_quote_per_part
+            .get_untracked()
+            .iter()
+            .map(|(part_id, quote_id)| (part_id.clone(), quote_id.get_untracked().unwrap()))
+            .collect();
         let request = CreateCheckoutSessionRequest {
             client_id: user_info.get_untracked().id,
             project_id: project_id().unwrap(),
             quotation_id: quotation_id().unwrap(),
+            selected_quotes_per_part,
         };
 
         let response = payments_client.create_checkout_session(request).await;
@@ -232,6 +269,6 @@ pub fn Parts() -> impl IntoView {
         </div>
 
         <div class="mt-8"></div>
-        <PartsTable parts part_quotes_by_part/>
+        <PartsTable parts part_quotes_by_part selected_quote_per_part quotation/>
     }
 }

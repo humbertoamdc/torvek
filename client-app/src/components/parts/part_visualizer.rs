@@ -1,8 +1,5 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
-use clients::parts::PartsClient;
-use leptos::*;
 use three_d::{
     degrees, pick, vec3, AmbientLight, Camera, ClearState, DirectionalLight, Event,
     FrameInputGenerator, Model, MouseButton, OrbitControl, PhysicalMaterial, Srgba, Viewport,

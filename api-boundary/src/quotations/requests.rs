@@ -31,6 +31,13 @@ impl QueryQuotationsForProjectRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct GetQuotationByIdRequest {
+    pub client_id: String,
+    pub project_id: String,
+    pub quotation_id: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct AdminQueryQuotationsByStatusRequest {
     pub status: QuotationStatus,
 }
