@@ -80,9 +80,15 @@ pub fn PartQuotesTable(
                 .into_iter()
                 .zip(parts_deadlines_map.get(&part.id).unwrap())
                 .for_each(|(price_option, deadline)| {
+                    let mut unit_price = price_option.get_untracked().unwrap();
+                    unit_price.amount = unit_price.amount / part.quantity as i64;
+                    let mut sub_total = unit_price.clone();
+                    sub_total.amount = sub_total.amount * part.quantity as i64;
+
                     price_data.push(CreatePartQuotesRequestData {
                         part_id: part.id.clone(),
-                        price: price_option.get_untracked().unwrap(),
+                        unit_price,
+                        sub_total,
                         deadline: deadline.get_untracked().unwrap(),
                     });
                 });

@@ -9,6 +9,7 @@ pub struct CreateCheckoutSessionRequest {
     pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
+    pub selected_quotes_per_part: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

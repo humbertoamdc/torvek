@@ -1,6 +1,7 @@
 use leptos::*;
 
 use crate::api::auth::AuthorizedClient;
+use crate::api::models::auth::UserInfo;
 use crate::pages::Page;
 
 #[component]
@@ -8,7 +9,15 @@ pub fn Sidebar(
     auth_client: AuthorizedClient,
     #[prop(into)] on_logout: Callback<()>,
 ) -> impl IntoView {
+    // -- context -- //
+
+    let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
+
+    // -- signals -- //
+
     let (_, set_wait_for_response) = create_signal(false);
+
+    // -- actions -- //
 
     let logout_action = create_action(move |_| async move {
         set_wait_for_response.update(|waiting| *waiting = true);
@@ -111,15 +120,15 @@ pub fn Sidebar(
                             </li>
                         </ul>
                         <div class="py-4 px-4 border-t">
-                            <div class="flex items-center gap-x-4">
+                            <div class="flex items-center w-40 gap-x-2">
                                 <img
                                     src="https://cdn1.iconfinder.com/data/icons/monsters-avatars/512/50_Monsters_Avatar_Icons_49-512.png"
-                                    class="w-12 h-12 rounded-full"
+                                    class="w-10 h-10 rounded-full"
                                 />
-                                <div>
-                                    <span class="block text-gray-700 text-sm font-semibold">
-                                        John Doe
-                                    </span>
+                                <div class="w-40">
+                                    <p class="text-gray-700 text-xs font-semibold truncate">
+                                        {user_info.get_untracked().email}
+                                    </p>
                                     <a
                                         href="some other ref"
                                         class="block mt-px text-gray-600 hover:text-indigo-600 text-xs"

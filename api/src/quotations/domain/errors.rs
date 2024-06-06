@@ -4,6 +4,8 @@ pub enum QuotationsError {
     CreateQuotationError,
     #[error("error while querying quotations")]
     QueryQuotationsError,
+    #[error("the quotation doesn't exist")]
+    GetQuotationItemNotFoundError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }

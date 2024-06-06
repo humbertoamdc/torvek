@@ -89,7 +89,8 @@ pub struct CreatePartQuotesRequest {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartQuotesRequestData {
     pub part_id: String,
-    pub price: Money,
+    pub unit_price: Money,
+    pub sub_total: Money,
     pub deadline: NaiveDate,
 }
 

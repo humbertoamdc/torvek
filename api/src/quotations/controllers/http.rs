@@ -4,12 +4,14 @@ use axum::Json;
 use http::StatusCode;
 
 use api_boundary::quotations::requests::{
-    AdminQueryQuotationsByStatusRequest, CreateQuotationRequest, QueryQuotationsForProjectRequest,
+    AdminQueryQuotationsByStatusRequest, CreateQuotationRequest, GetQuotationByIdRequest,
+    QueryQuotationsForProjectRequest,
 };
 
 use crate::app_state::AppState;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatusUseCase;
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
+use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
 use crate::shared::usecase::UseCase;
 
@@ -36,6 +38,19 @@ pub async fn query_quotations_for_project(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn get_quotation_by_id(
+    State(app_state): State<AppState>,
+    Path(request): Path<GetQuotationByIdRequest>,
+) -> impl IntoResponse {
+    let usecase = GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(quotation) => Ok((StatusCode::OK, Json(quotation))),
         Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

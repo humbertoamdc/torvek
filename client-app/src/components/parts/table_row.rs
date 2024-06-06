@@ -2,10 +2,6 @@ use http::StatusCode;
 use leptos::html::Canvas;
 use leptos::wasm_bindgen::JsCast;
 use leptos::*;
-use leptos_use::use_element_visibility;
-use std::collections::HashMap;
-use std::thread::sleep;
-use std::time::Duration;
 use web_sys::{HtmlCanvasElement, HtmlInputElement};
 #[cfg(target_arch = "wasm32")]
 use winit::platform::web::WindowBuilderExtWebSys;
@@ -15,6 +11,7 @@ use api_boundary::common::file::File;
 use api_boundary::parts::models::PartQuote;
 use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::parts::requests::UpdatePartRequest;
+use api_boundary::quotations::models::{Quotation, QuotationStatus};
 use clients::parts::PartsClient;
 
 use crate::api::models::auth::UserInfo;
@@ -29,6 +26,7 @@ pub fn PartsTableRow(
     #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
     #[prop(into)] insert_window: Callback<(WindowBuilder, three_d_asset::Model)>,
     #[prop(into)] selected_part_quote: RwSignal<Option<String>>,
+    #[prop(into)] quotation: RwSignal<Option<Quotation>>,
 ) -> impl IntoView {
     let part_id = reactive_part.id.clone();
 
@@ -36,7 +34,7 @@ pub fn PartsTableRow(
 
     let parts_client = use_context::<PartsClient>().unwrap();
 
-    // -- context -- //
+    // -- user data -- //
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
 
@@ -44,7 +42,6 @@ pub fn PartsTableRow(
 
     let (canvas_id, _) = create_signal(format!("canvas-part-{part_id}"));
     let canvas_ref = create_node_ref::<Canvas>();
-    let is_visible = use_element_visibility(canvas_ref);
 
     let selected_part_quote_cards = create_rw_signal(Vec::<RwSignal<bool>>::new());
 
@@ -270,38 +267,67 @@ pub fn PartsTableRow(
 
                 </div>
             </div>
-            <div class="flex flex-col w-80 space-y-2">
-                <For
-                    each=move || part_quotes.get().into_iter()
-                    key=|part_quote| part_quote.id.clone()
-                    children=move |part_quote| {
-                        let is_selected = create_rw_signal(false);
-                        let part_id_clone = part_id.clone();
-                        let part_quote_clone = part_quote.clone();
-                        let on_select = move |_| {
-                            selected_part_quote_cards
-                                .with(|selected_part_quote_cards| {
-                                    selected_part_quote_cards
-                                        .iter()
-                                        .for_each(|selected_card| {
-                                            selected_card.update(|selected_card| *selected_card = false)
-                                        })
-                                });
-                            selected_part_quote
-                                .update(|selected_part_quote| {
-                                    *selected_part_quote = Some(part_quote_clone.id.clone());
-                                });
-                            is_selected.update(|is_selected| *is_selected = true);
-                        };
-                        selected_part_quote_cards
-                            .update(|selected_part_quote_cards| {
-                                selected_part_quote_cards.push(is_selected)
-                            });
-                        view! { <PartQuoteCard part_quote is_selected on_select/> }
-                    }
-                />
 
-            </div>
+            {move || {
+                if let Some(quotation) = quotation.get() {
+                    match quotation.status {
+                        QuotationStatus::Created => view! { <div></div> },
+                        QuotationStatus::PendingPayment => {
+                            view! {
+                                <div class="flex flex-col w-80 space-y-2">
+                                    <PartQuoteOptionView
+                                        part_quotes
+                                        selected_part_quote
+                                        selected_part_quote_cards
+                                    />
+                                </div>
+                            }
+                        }
+                        QuotationStatus::Payed => view! { <div>Payed</div> },
+                    }
+                } else {
+                    view! { <div></div> }
+                }
+            }}
+
         </div>
+    }
+}
+
+#[component]
+fn PartQuoteOptionView(
+    #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
+    #[prop(into)] selected_part_quote: RwSignal<Option<String>>,
+    #[prop(into)] selected_part_quote_cards: RwSignal<Vec<RwSignal<bool>>>,
+) -> impl IntoView {
+    view! {
+        <For
+            each=move || part_quotes.get().into_iter()
+            key=|part_quote| part_quote.id.clone()
+            children=move |part_quote| {
+                let is_selected = create_rw_signal(false);
+                let part_quote_clone = part_quote.clone();
+                let on_select = move |_| {
+                    selected_part_quote_cards
+                        .with(|selected_part_quote_cards| {
+                            selected_part_quote_cards
+                                .iter()
+                                .for_each(|selected_card| {
+                                    selected_card.update(|selected_card| *selected_card = false)
+                                })
+                        });
+                    selected_part_quote
+                        .update(|selected_part_quote| {
+                            *selected_part_quote = Some(part_quote_clone.id.clone());
+                        });
+                    is_selected.update(|is_selected| *is_selected = true);
+                };
+                selected_part_quote_cards
+                    .update(|selected_part_quote_cards| {
+                        selected_part_quote_cards.push(is_selected)
+                    });
+                view! { <PartQuoteCard part_quote is_selected on_select/> }
+            }
+        />
     }
 }
