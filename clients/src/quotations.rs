@@ -40,7 +40,7 @@ impl QuotationsClient {
         send(request).await
     }
 
-    pub async fn get_quotaiton_by_id(
+    pub async fn get_quotation_by_id(
         &self,
         client_id: String,
         project_id: String,

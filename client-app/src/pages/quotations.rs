@@ -1,9 +1,11 @@
+use api_boundary::projects::models::Project;
 use leptos::*;
 use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button};
 
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::CreateQuotationRequest;
+use clients::projects::ProjectsClient;
 use clients::quotations::QuotationsClient;
 
 use crate::api::models::auth::UserInfo;
@@ -24,6 +26,8 @@ pub fn Quotations() -> impl IntoView {
     let navigate = use_navigate();
 
     // -- clients -- //
+
+    let projects_client = use_context::<ProjectsClient>().unwrap();
     let quotations_client = use_context::<QuotationsClient>().unwrap();
 
     // -- context -- //
@@ -32,6 +36,7 @@ pub fn Quotations() -> impl IntoView {
 
     // -- signals -- //
 
+    let project = create_rw_signal(None::<Project>);
     let quotations = create_rw_signal(Vec::<Quotation>::default());
 
     // -- params -- //
@@ -47,6 +52,21 @@ pub fn Quotations() -> impl IntoView {
     };
 
     // -- actions -- //
+
+    let _query_project = create_action(move |_| {
+        let client_id = user_info.get_untracked().id;
+        let project_id = project_id().unwrap();
+        async move {
+            match projects_client
+                .get_project_by_id(client_id, project_id)
+                .await
+            {
+                Ok(project_response) => project.update(|project| *project = Some(project_response)),
+                Err(_) => (),
+            }
+        }
+    })
+    .dispatch(());
 
     let query_quotations = create_action(move |_| {
         async move {
@@ -101,7 +121,20 @@ pub fn Quotations() -> impl IntoView {
         </Breadcrumb>
 
         <header class="flex justify-between items-center py-4">
-            <h1 class="text-3xl font-bold text-gray-900">Quotations</h1>
+            <h1 class="text-4xl font-bold text-gray-900">
+                {
+                    move || {
+                        match project.get() {
+                            Some(project) => project.name,
+                            None => String::default(),
+                        }
+                    }
+                }
+            </h1>
+        </header>
+
+        <header class="flex justify-between items-center py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Quotations</h1>
         </header>
 
         <Button loading=is_creating_quotation on_click=move |_| create_quotation.dispatch(())>

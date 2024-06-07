@@ -83,7 +83,7 @@ pub fn Parts() -> impl IntoView {
         let quotation_id = quotation_id().unwrap();
         async move {
             match quotations_client
-                .get_quotaiton_by_id(client_id, project_id, quotation_id)
+                .get_quotation_by_id(client_id, project_id, quotation_id)
                 .await
             {
                 Ok(quotation_response) => {
@@ -246,8 +246,22 @@ pub fn Parts() -> impl IntoView {
         </Breadcrumb>
 
         <header class="flex justify-between items-center py-4">
-            <h1 class="text-3xl font-bold text-gray-900">Parts</h1>
+            <h1 class="text-4xl font-bold text-gray-900">
+                {
+                    move || {
+                        match quotation.get() {
+                            Some(quotation) => quotation.name,
+                            None => String::default(),
+                        }
+                    }
+                }
+            </h1>
         </header>
+
+        <header class="flex justify-between items-center py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Parts</h1>
+        </header>
+
 
         <div class="flex justify-between">
 

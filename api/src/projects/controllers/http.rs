@@ -1,8 +1,11 @@
 use crate::app_state::AppState;
 use crate::projects::usecases::create_project::CreateProjectUseCase;
+use crate::projects::usecases::get_project_by_id::GetProjectByIdUseCase;
 use crate::projects::usecases::query_projects_for_client::QueryProjectsForClientUseCase;
-use crate::projects::usecases::UseCase;
-use api_boundary::projects::requests::{CreateProjectRequest, QueryProjectsForClientRequest};
+use crate::shared::usecase::UseCase;
+use api_boundary::projects::requests::{
+    CreateProjectRequest, GetProjectByIdRequest, QueryProjectsForClientRequest,
+};
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -27,6 +30,19 @@ pub async fn query_projects_for_client(
 ) -> impl IntoResponse {
     let usecase = QueryProjectsForClientUseCase::new(app_state.projects.projects_repository);
     let request = QueryProjectsForClientRequest::new(client_id);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+pub async fn get_project_by_id(
+    State(app_state): State<AppState>,
+    Path(request): Path<GetProjectByIdRequest>,
+) -> impl IntoResponse {
+    let usecase = GetProjectByIdUseCase::new(app_state.projects.projects_repository);
     let result = usecase.execute(request).await;
 
     match result {

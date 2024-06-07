@@ -9,4 +9,9 @@ pub trait ProjectsRepository: Send + Sync + 'static {
         &self,
         client_id: String,
     ) -> Result<Vec<Project>, ProjectsError>;
+    async fn get_project_by_id(
+        &self,
+        client_id: String,
+        project_id: String,
+    ) -> Result<Project, ProjectsError>;
 }

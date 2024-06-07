@@ -6,6 +6,7 @@ use leptos_router::*;
 use api::auth::AuthorizedClient;
 use api::models::auth::UserInfo;
 use clients::parts::PartsClient;
+use clients::projects::ProjectsClient;
 use clients::quotations::QuotationsClient;
 
 use crate::api::auth::UnauthorizedClient;
@@ -30,11 +31,13 @@ pub const API_URL: &'static str = env!("API_URL");
 pub fn App() -> impl IntoView {
     // -- clients -- //
 
-    let parts_client = PartsClient::new(API_URL);
+    let projects_client = ProjectsClient::new(API_URL);
     let quotations_client = QuotationsClient::new(API_URL);
+    let parts_client = PartsClient::new(API_URL);
 
-    provide_context(parts_client);
+    provide_context(projects_client);
     provide_context(quotations_client);
+    provide_context(parts_client);
 
     // -- signals -- //
 
