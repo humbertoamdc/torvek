@@ -4,6 +4,8 @@ pub enum ProjectsError {
     CreateProjectError,
     #[error("error while querying projects")]
     QueryProjectsError,
+    #[error("the project doesn't exist")]
+    GetProjectItemNotFoundError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }

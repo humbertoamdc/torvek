@@ -4,9 +4,9 @@ use thaw::Button;
 
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::CreateProjectRequest;
+use clients::projects::ProjectsClient;
 
 use crate::api::models::auth::UserInfo;
-use crate::api::projects::ProjectsClient;
 use crate::components::projects::project_button::ProjectButton;
 
 #[component]
@@ -20,6 +20,10 @@ pub fn Projects() -> impl IntoView {
 
     let user_info = use_context::<RwSignal<UserInfo>>().expect("user info to be provided");
 
+    // -- clients -- //
+
+    let projects_client = use_context::<ProjectsClient>().unwrap();
+
     // -- signals -- //
 
     let projects = create_rw_signal(Vec::<Project>::default());
@@ -28,7 +32,6 @@ pub fn Projects() -> impl IntoView {
 
     let query_projects = create_action(move |_| {
         async move {
-            let projects_client = ProjectsClient::new();
             let result = projects_client
                 .query_projects_for_client(user_info.get_untracked().id)
                 .await;
@@ -47,7 +50,6 @@ pub fn Projects() -> impl IntoView {
     let create_project = create_action(move |_| {
         let request = CreateProjectRequest::new(user_info.get_untracked().id);
         async move {
-            let projects_client = ProjectsClient::new();
             let result = projects_client.create_project(request).await;
 
             match result {

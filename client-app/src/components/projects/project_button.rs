@@ -12,7 +12,9 @@ pub fn ProjectButton(project: Project) -> impl IntoView {
             class="rounded-md bg-neutral-50 hover:bg-neutral-200 w-48 h-48"
             on:click=move |_| navigate(&quotations_for_project_url, Default::default())
         >
-            New Project
+            <p class="font-bold">
+                {project.name}
+            </p>
         </button>
     }
 }

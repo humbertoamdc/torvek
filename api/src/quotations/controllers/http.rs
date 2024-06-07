@@ -65,6 +65,6 @@ pub async fn admin_query_quotations_by_status(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
     }
 }

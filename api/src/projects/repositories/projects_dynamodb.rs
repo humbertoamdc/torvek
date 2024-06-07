@@ -3,7 +3,9 @@ use crate::projects::repositories::projects::ProjectsRepository;
 use api_boundary::projects::models::Project;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
+use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct DynamodbProjects {
@@ -58,6 +60,40 @@ impl ProjectsRepository for DynamodbProjects {
                 }
             }
             Err(_) => Err(ProjectsError::QueryProjectsError),
+        }
+    }
+
+    async fn get_project_by_id(
+        &self,
+        client_id: String,
+        project_id: String,
+    ) -> Result<Project, ProjectsError> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.table)
+            .set_key(Some(HashMap::from([
+                (String::from("client_id"), AttributeValue::S(client_id)),
+                (String::from("id"), AttributeValue::S(project_id)),
+            ])))
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.item {
+                Some(item) => match from_item::<Project>(item) {
+                    Ok(project) => Ok(project),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(ProjectsError::UnknownError)
+                    }
+                },
+                None => Err(ProjectsError::GetProjectItemNotFoundError),
+            },
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(ProjectsError::UnknownError)
+            }
         }
     }
 }

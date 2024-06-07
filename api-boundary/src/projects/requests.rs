@@ -11,6 +11,12 @@ impl CreateProjectRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct GetProjectByIdRequest {
+    pub client_id: String,
+    pub project_id: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct QueryProjectsForClientRequest {
     pub client_id: String,
 }
