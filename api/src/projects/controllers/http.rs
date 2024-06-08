@@ -6,6 +6,7 @@ use crate::shared::usecase::UseCase;
 use api_boundary::projects::requests::{
     CreateProjectRequest, GetProjectByIdRequest, QueryProjectsForClientRequest,
 };
+use api_boundary::ApiError;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -47,6 +48,6 @@ pub async fn get_project_by_id(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err((StatusCode::NOT_FOUND, Json::<ApiError>(err.into()))),
     }
 }

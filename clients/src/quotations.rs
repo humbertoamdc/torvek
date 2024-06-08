@@ -19,7 +19,8 @@ impl QuotationsClient {
         let url = format!("{}/quotations", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
-            .json(&body)?;
+            .json(&body)
+            .unwrap();
 
         send(request).await
     }
@@ -35,7 +36,8 @@ impl QuotationsClient {
         );
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }
@@ -52,7 +54,8 @@ impl QuotationsClient {
         );
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }

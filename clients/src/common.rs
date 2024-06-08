@@ -1,28 +1,23 @@
+use api_boundary::ApiError;
 use gloo_net::http::{Request, Response};
 use http::StatusCode;
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ErrorModel {
-    pub message: String,
-}
+pub type Result<T> = std::result::Result<T, ApiError>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
     Fetch(#[from] gloo_net::Error),
     #[error("{0:?}")]
-    Api(ErrorModel),
+    Api(ApiError),
     #[error("unknown error")]
     UnknownError,
 }
 
-impl From<ErrorModel> for Error {
-    fn from(e: ErrorModel) -> Self {
+impl From<ApiError> for Error {
+    fn from(e: ApiError) -> Self {
         Self::Api(e)
     }
 }
@@ -34,7 +29,7 @@ impl From<serde_json::Error> for Error {
 }
 
 pub async fn send<T: DeserializeOwned>(req: Request) -> Result<T> {
-    let response = req.send().await?;
+    let response = req.send().await.unwrap();
     into_json(response).await
 }
 
@@ -45,12 +40,13 @@ where
     // ensure we've got 2xx status
     if response.ok() {
         if response.status() != StatusCode::NO_CONTENT {
-            Ok(response.json().await?)
+            // println!("{:#?}", response.clone().json());
+            Ok(response.json().await.unwrap())
         } else {
             let default_t: T = serde_json::from_value(Value::from(()))?;
             Ok(default_t)
         }
     } else {
-        Err(response.json::<ErrorModel>().await?.into())
+        Err(response.json::<ApiError>().await.unwrap().into())
     }
 }

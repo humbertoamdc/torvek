@@ -27,7 +27,8 @@ impl PartsClient {
         let url = format!("{}/admin/part_quotes", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
-            .json(&request)?;
+            .json(&request)
+            .unwrap();
 
         send(request).await
     }
@@ -36,7 +37,8 @@ impl PartsClient {
         let url = format!("{}/parts", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
-            .json(&body)?;
+            .json(&body)
+            .unwrap();
 
         send(request).await
     }
@@ -54,9 +56,11 @@ impl PartsClient {
         presigned_url: String,
     ) -> Result<()> {
         Request::put(presigned_url.as_str())
-            .body(JsValue::from(file))?
+            .body(JsValue::from(file))
+            .unwrap()
             .send()
-            .await?;
+            .await
+            .unwrap();
 
         Ok(())
     }
@@ -65,7 +69,8 @@ impl PartsClient {
         let url = format!("{}/parts", self.url);
         let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)
-            .json(&body)?;
+            .json(&body)
+            .unwrap();
 
         send(request).await
     }
@@ -77,7 +82,8 @@ impl PartsClient {
         let url = format!("{}/parts/drawing_upload_url", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
-            .json(&body)?;
+            .json(&body)
+            .unwrap();
 
         send(request).await
     }
@@ -94,7 +100,8 @@ impl PartsClient {
         );
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }
@@ -106,7 +113,8 @@ impl PartsClient {
         let url = format!("{}/parts/quotes", self.url);
         let request = Request::post(&url)
             .credentials(RequestCredentials::Include)
-            .json(&body)?;
+            .json(&body)
+            .unwrap();
 
         send(request).await
     }

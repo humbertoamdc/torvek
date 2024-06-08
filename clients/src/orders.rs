@@ -24,7 +24,8 @@ impl OrdersClient {
         let url = format!("{}/admin/orders/payout", self.url);
         let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)
-            .json(&request)?;
+            .json(&request)
+            .unwrap();
 
         send(request).await
     }
@@ -37,7 +38,8 @@ impl OrdersClient {
         let request = Request::get(&url)
             .query([("status", status.to_string())])
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }

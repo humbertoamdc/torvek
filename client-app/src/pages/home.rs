@@ -36,7 +36,7 @@ pub fn Home(auth_client: AuthorizedClient, #[prop(into)] on_logout: Callback<()>
             }
         >
 
-            <Layout position=LayoutPosition::Static has_sider=true>
+            <Layout class="select-none" position=LayoutPosition::Static has_sider=true>
 
                 <LayoutSider>
                     <Sidebar auth_client=auth_client on_logout/>

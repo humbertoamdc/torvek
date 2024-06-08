@@ -96,8 +96,8 @@ pub fn Sidebar(
                     <div>
                         <ul class="px-4 pb-4 text-sm font-medium text-red-600">
                             <li key="logout">
-                                <a
-                                    class="flex items-center gap-x-2  p-2 rounded-lg cursor-pointer hover:bg-gray-50 active:bg-gray-100 duration-150"
+                                <button
+                                    class="flex w-full items-center gap-x-2  p-2 rounded-lg cursor-pointer hover:bg-gray-50 active:bg-gray-100 duration-150"
                                     on:click=move |_| logout_action.dispatch(())
                                 >
                                     <svg
@@ -116,7 +116,7 @@ pub fn Sidebar(
                                     </svg>
 
                                     Logout
-                                </a>
+                                </button>
                             </li>
                         </ul>
                         <div class="py-4 px-4 border-t">

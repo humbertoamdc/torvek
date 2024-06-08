@@ -62,7 +62,9 @@ pub fn Quotations() -> impl IntoView {
                 .await
             {
                 Ok(project_response) => project.update(|project| *project = Some(project_response)),
-                Err(_) => (),
+                Err(err) => {
+                    log::error!("{:#?}", err)
+                }
             }
         }
     })

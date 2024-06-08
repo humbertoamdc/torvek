@@ -1,5 +1,5 @@
-use crate::projects::domain::errors::ProjectsError;
 use crate::projects::repositories::projects::ProjectsRepository;
+use api_boundary::projects::errors::ProjectsError;
 use api_boundary::projects::models::Project;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
