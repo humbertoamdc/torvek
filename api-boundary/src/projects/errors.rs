@@ -1,5 +1,5 @@
+use crate::common::api_error::{ApiError, ErrorCode};
 use crate::projects::errors::ProjectsError::*;
-use crate::{ApiError, ErrorCode};
 use http::StatusCode;
 
 #[derive(thiserror::Error, Debug)]

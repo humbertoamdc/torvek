@@ -1,4 +1,4 @@
-use api_boundary::ApiError;
+use api_boundary::common::api_error::ApiError;
 use axum::Json;
 use http::StatusCode;
 
