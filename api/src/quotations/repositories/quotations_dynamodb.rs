@@ -39,7 +39,7 @@ impl QuotationsRepository for DynamodbQuotations {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(QuotationsError::CreateQuotationError),
+            Err(_) => Err(QuotationsError::UnknownError),
         }
     }
 
@@ -81,7 +81,7 @@ impl QuotationsRepository for DynamodbQuotations {
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(QuotationsError::QueryQuotationsError)
+                Err(QuotationsError::UnknownError)
             }
         }
     }
@@ -116,7 +116,7 @@ impl QuotationsRepository for DynamodbQuotations {
                     Err(_) => Err(QuotationsError::UnknownError),
                 }
             }
-            Err(_) => Err(QuotationsError::QueryQuotationsError),
+            Err(_) => Err(QuotationsError::UnknownError),
         }
     }
 

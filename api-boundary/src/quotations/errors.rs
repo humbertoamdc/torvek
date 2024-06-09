@@ -4,10 +4,6 @@ use http::StatusCode;
 
 #[derive(thiserror::Error, Debug)]
 pub enum QuotationsError {
-    #[error("error while creating quotation")]
-    CreateQuotationError,
-    #[error("error while querying quotations")]
-    QueryQuotationsError,
     #[error("the quotation doesn't exist")]
     GetQuotationItemNotFoundError,
     #[error("an unexpected error occurred")]
@@ -17,8 +13,6 @@ pub enum QuotationsError {
 impl Into<ApiError> for QuotationsError {
     fn into(self) -> ApiError {
         match self {
-            CreateQuotationError => ApiError::default(),
-            QueryQuotationsError => ApiError::default(),
             GetQuotationItemNotFoundError => ApiError {
                 status_code: StatusCode::NOT_FOUND.as_u16(),
                 code: ErrorCode::ItemNotFound,
