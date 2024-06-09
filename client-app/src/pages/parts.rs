@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_boundary::ErrorCode;
 use leptos::*;
 use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button, Upload};
@@ -15,6 +16,7 @@ use clients::quotations::QuotationsClient;
 use crate::api::models::auth::UserInfo;
 use crate::api::payments::PaymentsClient;
 use crate::components::parts::table::PartsTable;
+use crate::pages::Page;
 
 #[derive(Params, PartialEq)]
 struct PartsParams {
@@ -89,7 +91,12 @@ pub fn Parts() -> impl IntoView {
                 Ok(quotation_response) => {
                     quotation.update(|quotation| *quotation = Some(quotation_response))
                 }
-                Err(_) => (),
+                Err(err) => {
+                    if err.code == ErrorCode::ItemNotFound {
+                        let navigate = use_navigate();
+                        navigate(Page::Home.path(), Default::default())
+                    }
+                }
             }
         }
     })

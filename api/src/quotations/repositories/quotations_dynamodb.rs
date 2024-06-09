@@ -1,3 +1,4 @@
+use api_boundary::quotations::errors::QuotationsError;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -6,7 +7,6 @@ use std::collections::HashMap;
 
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
 
-use crate::quotations::domain::errors::QuotationsError;
 use crate::quotations::domain::models::DynamodbQuotationItem;
 use crate::quotations::repositories::quotations::QuotationsRepository;
 

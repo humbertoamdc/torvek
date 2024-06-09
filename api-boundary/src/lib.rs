@@ -11,15 +11,14 @@ pub mod quotations;
 
 #[derive(thiserror::Error, Debug, Default, Deserialize, Serialize)]
 pub struct ApiError {
-    status_code: u16,
-    code: ErrorCode,
-    message: String,
+    pub status_code: u16,
+    pub code: ErrorCode,
+    pub message: String,
 }
 
 impl Display for ApiError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", serde_json::to_string(self).unwrap())
-        // write!(f, "{}, {}, {}", self.status_code, self.code, self.message)
     }
 }
 

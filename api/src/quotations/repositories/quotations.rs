@@ -1,8 +1,7 @@
+use api_boundary::quotations::errors::QuotationsError;
 use axum::async_trait;
 
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
-
-use crate::quotations::domain::errors::QuotationsError;
 
 #[async_trait]
 pub trait QuotationsRepository: Send + Sync + 'static {

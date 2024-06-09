@@ -1,4 +1,5 @@
 use api_boundary::projects::models::Project;
+use api_boundary::ErrorCode;
 use leptos::*;
 use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button};
@@ -10,6 +11,7 @@ use clients::quotations::QuotationsClient;
 
 use crate::api::models::auth::UserInfo;
 use crate::components::quotations::quotation_button::QuotationButton;
+use crate::pages::Page;
 
 #[derive(Params, PartialEq)]
 struct QuotationsParams {
@@ -63,7 +65,10 @@ pub fn Quotations() -> impl IntoView {
             {
                 Ok(project_response) => project.update(|project| *project = Some(project_response)),
                 Err(err) => {
-                    log::error!("{:#?}", err)
+                    if err.code == ErrorCode::ItemNotFound {
+                        let navigate = use_navigate();
+                        navigate(Page::Home.path(), Default::default())
+                    }
                 }
             }
         }
