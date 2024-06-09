@@ -6,8 +6,7 @@ use stripe::{
 };
 
 use api_boundary::parts::models::{Part, PartQuote};
-
-use crate::payments::domain::errors::PaymentsError;
+use api_boundary::payments::errors::PaymentsError;
 
 const CLIENT_ID: &'static str = "client_id";
 const PROJECT_ID: &'static str = "project_id";
@@ -58,7 +57,7 @@ impl StripePaymentsProcessor {
             Ok(checkout_session) => Ok(checkout_session.url.unwrap()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PaymentsError::CreateCheckoutSessionError)
+                Err(PaymentsError::UnknownError)
             }
         }
     }

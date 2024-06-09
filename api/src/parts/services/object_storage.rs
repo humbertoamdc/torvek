@@ -1,8 +1,7 @@
 use std::time::Duration;
 
+use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
-
-use crate::parts::domain::errors::PartsError;
 
 #[async_trait]
 pub trait ObjectStorage: Send + Sync + 'static {

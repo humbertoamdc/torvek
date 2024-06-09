@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
+use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 
 use api_boundary::parts::models::PartQuote;
 use api_boundary::parts::requests::CreatePartQuotesRequest;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::shared::usecase::UseCase;
 

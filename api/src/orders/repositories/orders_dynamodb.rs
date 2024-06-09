@@ -7,9 +7,9 @@ use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
 use api_boundary::common::money::Money;
+use api_boundary::orders::errors::OrdersError;
 use api_boundary::orders::models::{Order, OrderStatus};
 
-use crate::orders::domain::errors::OrdersError;
 use crate::orders::repositories::orders::OrdersRepository;
 
 static ORDERS_BY_STATUS_INDEX: &'static str = "OrdersByStatus";
@@ -53,7 +53,7 @@ impl OrdersRepository for DynamodbOrders {
             }
             Err(err) => {
                 log::error!("{:?}", err);
-                Err(OrdersError::QueryOrdersError)
+                Err(OrdersError::UnknownError)
             }
         }
     }
@@ -98,7 +98,7 @@ impl OrdersRepository for DynamodbOrders {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{:?}", err);
-                Err(OrdersError::UpdateOrderPayoutError)
+                Err(OrdersError::UnknownError)
             }
         }
     }

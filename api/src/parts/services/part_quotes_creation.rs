@@ -1,8 +1,7 @@
+use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 
 use api_boundary::parts::models::PartQuote;
-
-use crate::parts::domain::errors::PartsError;
 
 #[async_trait]
 pub trait PartQuotesCreation: Send + Sync + 'static {

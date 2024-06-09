@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_boundary::parts::errors::PartsError;
 use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
@@ -7,7 +8,6 @@ use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use api_boundary::parts::models::PartQuote;
 use api_boundary::quotations::models::QuotationStatus;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 
 pub struct DynamodbParQuotesCreation {
@@ -62,7 +62,7 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
             Ok(_) => Ok(()),
             Err(error) => {
                 log::error!("{:?}", error);
-                Err(PartsError::CreatePartsQuotesError)
+                Err(PartsError::UnknownError)
             }
         }
     }

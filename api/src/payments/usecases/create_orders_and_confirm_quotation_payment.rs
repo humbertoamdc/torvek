@@ -5,10 +5,10 @@ use chrono::Utc;
 
 use api_boundary::orders::models::{Order, OrderStatus};
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
+use api_boundary::payments::errors::PaymentsError;
 use api_boundary::payments::requests::CompleteCheckoutSessionWebhookRequest;
 
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::payments::domain::errors::PaymentsError;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::shared::usecase::UseCase;
 
@@ -46,7 +46,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
             .query_parts_for_quotation_usecase
             .execute(query_parts_for_quotation_request)
             .await
-            .map_err(|_| PaymentsError::QueryPartsError)?;
+            .map_err(|_| PaymentsError::UnknownError)?;
 
         let orders = query_parts_for_quotation_response
             .parts

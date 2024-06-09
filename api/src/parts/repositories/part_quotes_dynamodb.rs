@@ -1,10 +1,10 @@
+use api_boundary::parts::errors::PartsError;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use serde_dynamo::from_items;
 
 use api_boundary::parts::models::PartQuote;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::repositories::part_quotes::PartQuotesRepository;
 
 pub struct DynamodbPartQuotes {
@@ -46,7 +46,7 @@ impl PartQuotesRepository for DynamodbPartQuotes {
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::QueryPartQuotesError)
+                Err(PartsError::UnknownError)
             }
         }
     }

@@ -1,9 +1,9 @@
 use std::time::Duration;
 
+use api_boundary::parts::errors::PartsError;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::async_trait;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::services::object_storage::ObjectStorage;
 
 #[derive(Clone)]
@@ -35,7 +35,7 @@ impl ObjectStorage for S3ObjectStorage {
 
         match result {
             Ok(presigned_url) => Ok(presigned_url.uri().to_string()),
-            Err(_) => Err(PartsError::PresignedUrlGenerationError),
+            Err(_) => Err(PartsError::UnknownError),
         }
     }
 
@@ -54,7 +54,7 @@ impl ObjectStorage for S3ObjectStorage {
 
         match result {
             Ok(presigned_url) => Ok(presigned_url.uri().to_string()),
-            Err(_) => Err(PartsError::PresignedUrlGenerationError),
+            Err(_) => Err(PartsError::UnknownError),
         }
     }
 }

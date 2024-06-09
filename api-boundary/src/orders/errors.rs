@@ -1,19 +1,13 @@
 use crate::common::api_error::ApiError;
-use crate::payments::errors::PaymentsError::UnknownError;
-
-#[derive(Debug)]
-pub enum WebhookRequestError {
-    MissingMetadata,
-    MissingField,
-}
+use crate::orders::errors::OrdersError::UnknownError;
 
 #[derive(thiserror::Error, Debug)]
-pub enum PaymentsError {
+pub enum OrdersError {
     #[error("an unexpected error occurred")]
     UnknownError,
 }
 
-impl Into<ApiError> for PaymentsError {
+impl Into<ApiError> for OrdersError {
     fn into(self) -> ApiError {
         match self {
             UnknownError => ApiError::default(),
