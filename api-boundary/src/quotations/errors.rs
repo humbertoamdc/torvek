@@ -18,11 +18,7 @@ impl Into<ApiError> for QuotationsError {
                 code: ErrorCode::ItemNotFound,
                 message: GetQuotationItemNotFoundError.to_string(),
             },
-            UnknownError => ApiError {
-                status_code: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-                code: ErrorCode::UnknownError,
-                message: String::from("an unexpected error occurred"),
-            },
+            UnknownError => ApiError::default(),
         }
     }
 }

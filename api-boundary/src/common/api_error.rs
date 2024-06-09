@@ -1,8 +1,9 @@
+use http::StatusCode;
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use std::fmt::{Display, Formatter};
 
-#[derive(thiserror::Error, Debug, Default, Deserialize, Serialize)]
+#[derive(thiserror::Error, Debug, Deserialize, Serialize)]
 pub struct ApiError {
     pub status_code: u16,
     pub code: ErrorCode,
@@ -18,6 +19,16 @@ impl Display for ApiError {
 impl From<serde_json::Error> for ApiError {
     fn from(_: serde_json::Error) -> Self {
         ApiError::default()
+    }
+}
+
+impl Default for ApiError {
+    fn default() -> Self {
+        Self {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            code: ErrorCode::UnknownError,
+            message: String::from("an unexpected error occurred"),
+        }
     }
 }
 
