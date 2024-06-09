@@ -68,6 +68,7 @@ pub fn App() -> impl IntoView {
             let _ = user_info_signal.update(|u| *u = Some(user_info));
         }
     });
+
     logging_in.dispatch(());
 
     view! {

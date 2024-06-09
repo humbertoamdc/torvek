@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_boundary::common::api_error::ErrorCode;
 use leptos::*;
 use leptos_router::*;
 use thaw::{Breadcrumb, BreadcrumbItem, Button, Upload};
@@ -15,6 +16,7 @@ use clients::quotations::QuotationsClient;
 use crate::api::models::auth::UserInfo;
 use crate::api::payments::PaymentsClient;
 use crate::components::parts::table::PartsTable;
+use crate::pages::Page;
 
 #[derive(Params, PartialEq)]
 struct PartsParams {
@@ -89,7 +91,12 @@ pub fn Parts() -> impl IntoView {
                 Ok(quotation_response) => {
                     quotation.update(|quotation| *quotation = Some(quotation_response))
                 }
-                Err(_) => (),
+                Err(err) => {
+                    if err.code == ErrorCode::ItemNotFound {
+                        let navigate = use_navigate();
+                        navigate(Page::Home.path(), Default::default())
+                    }
+                }
             }
         }
     })
@@ -220,10 +227,7 @@ pub fn Parts() -> impl IntoView {
         }
     });
 
-    // -- derived signals -- //
-
-    let is_creating_checkout_session =
-        Signal::derive(move || create_checkout_session.pending().get());
+    // -- init -- //
 
     query_parts.dispatch(());
 
@@ -274,7 +278,7 @@ pub fn Parts() -> impl IntoView {
             </Upload>
 
             <Button
-                loading=is_creating_checkout_session
+                loading=create_checkout_session.pending()
                 disabled=checkout_button_disabled
                 on_click=move |_| create_checkout_session.dispatch(())
             >

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_boundary::parts::errors::PartsError;
 use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
@@ -8,7 +9,6 @@ use serde_dynamo::{from_items, to_item};
 use api_boundary::parts::models::Part;
 
 use crate::parts::domain::dynamodb_part_item::DynamodbPartItem;
-use crate::parts::domain::errors::PartsError;
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
 
@@ -55,7 +55,7 @@ impl PartsRepository for DynamodbParts {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::CreatePartsBatchError)
+                Err(PartsError::UnknownError)
             }
         }
     }
@@ -105,7 +105,7 @@ impl PartsRepository for DynamodbParts {
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::QueryPartsError)
+                Err(PartsError::UnknownError)
             }
         }
     }
@@ -195,7 +195,7 @@ impl PartsRepository for DynamodbParts {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::UpdatePartError)
+                Err(PartsError::UnknownError)
             }
         }
     }

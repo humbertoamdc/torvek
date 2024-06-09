@@ -1,5 +1,5 @@
-use crate::projects::domain::errors::ProjectsError;
 use crate::projects::repositories::projects::ProjectsRepository;
+use api_boundary::projects::errors::ProjectsError;
 use api_boundary::projects::models::Project;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
@@ -33,7 +33,7 @@ impl ProjectsRepository for DynamodbProjects {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(ProjectsError::CreateProjectError),
+            Err(_) => Err(ProjectsError::UnknownError),
         }
     }
 
@@ -59,7 +59,7 @@ impl ProjectsRepository for DynamodbProjects {
                     Err(_) => Err(ProjectsError::UnknownError),
                 }
             }
-            Err(_) => Err(ProjectsError::QueryProjectsError),
+            Err(_) => Err(ProjectsError::UnknownError),
         }
     }
 

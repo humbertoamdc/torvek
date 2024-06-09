@@ -1,9 +1,8 @@
 use axum::async_trait;
 
 use api_boundary::common::money::Money;
+use api_boundary::orders::errors::OrdersError;
 use api_boundary::orders::models::{Order, OrderStatus};
-
-use crate::orders::domain::errors::OrdersError;
 
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {

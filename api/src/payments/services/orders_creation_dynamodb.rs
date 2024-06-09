@@ -5,9 +5,9 @@ use axum::async_trait;
 use serde_dynamo::to_item;
 
 use api_boundary::orders::models::Order;
+use api_boundary::payments::errors::PaymentsError;
 use api_boundary::quotations::models::QuotationStatus;
 
-use crate::payments::domain::errors::PaymentsError;
 use crate::payments::services::orders_creation::OrdersCreationService;
 
 #[derive(Clone)]
@@ -63,7 +63,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PaymentsError::CreateOrdersAndConfirmQuotationPaymentTransactionError)
+                Err(PaymentsError::UnknownError)
             }
         }
     }

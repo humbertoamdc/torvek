@@ -1,4 +1,4 @@
-use crate::projects::domain::errors::ProjectsError;
+use api_boundary::projects::errors::ProjectsError;
 use api_boundary::projects::models::Project;
 use axum::async_trait;
 

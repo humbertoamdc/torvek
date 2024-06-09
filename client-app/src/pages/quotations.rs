@@ -1,3 +1,4 @@
+use api_boundary::common::api_error::ErrorCode;
 use api_boundary::projects::models::Project;
 use leptos::*;
 use leptos_router::*;
@@ -10,6 +11,7 @@ use clients::quotations::QuotationsClient;
 
 use crate::api::models::auth::UserInfo;
 use crate::components::quotations::quotation_button::QuotationButton;
+use crate::pages::Page;
 
 #[derive(Params, PartialEq)]
 struct QuotationsParams {
@@ -62,7 +64,12 @@ pub fn Quotations() -> impl IntoView {
                 .await
             {
                 Ok(project_response) => project.update(|project| *project = Some(project_response)),
-                Err(_) => (),
+                Err(err) => {
+                    if err.code == ErrorCode::ItemNotFound {
+                        let navigate = use_navigate();
+                        navigate(Page::Home.path(), Default::default())
+                    }
+                }
             }
         }
     })
@@ -103,9 +110,7 @@ pub fn Quotations() -> impl IntoView {
         }
     });
 
-    // -- derived signals -- //
-
-    let is_creating_quotation = Signal::derive(move || create_quotation.pending().get());
+    // -- init -- //
 
     query_quotations.dispatch(());
 
@@ -137,7 +142,7 @@ pub fn Quotations() -> impl IntoView {
             <h1 class="text-2xl font-bold text-gray-900">Quotations</h1>
         </header>
 
-        <Button loading=is_creating_quotation on_click=move |_| create_quotation.dispatch(())>
+        <Button loading=create_quotation.pending() on_click=move |_| create_quotation.dispatch(())>
             "New Quotation"
         </Button>
 

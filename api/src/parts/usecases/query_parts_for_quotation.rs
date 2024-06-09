@@ -3,11 +3,11 @@ use std::time::Duration;
 
 use axum::async_trait;
 
+use api_boundary::parts::errors::PartsError;
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 use url::Url;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::shared::usecase::UseCase;

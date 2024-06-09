@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
+use api_boundary::orders::errors::OrdersError;
 use axum::async_trait;
 
 use api_boundary::orders::requests::QueryOrdersByStatusRequest;
 use api_boundary::orders::responses::QueryOrdersByStatusResponse;
 
-use crate::orders::domain::errors::OrdersError;
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::shared::usecase::UseCase;
 

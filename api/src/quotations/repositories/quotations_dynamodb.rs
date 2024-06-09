@@ -1,3 +1,4 @@
+use api_boundary::quotations::errors::QuotationsError;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -6,7 +7,6 @@ use std::collections::HashMap;
 
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
 
-use crate::quotations::domain::errors::QuotationsError;
 use crate::quotations::domain::models::DynamodbQuotationItem;
 use crate::quotations::repositories::quotations::QuotationsRepository;
 
@@ -39,7 +39,7 @@ impl QuotationsRepository for DynamodbQuotations {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(QuotationsError::CreateQuotationError),
+            Err(_) => Err(QuotationsError::UnknownError),
         }
     }
 
@@ -81,7 +81,7 @@ impl QuotationsRepository for DynamodbQuotations {
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(QuotationsError::QueryQuotationsError)
+                Err(QuotationsError::UnknownError)
             }
         }
     }
@@ -116,7 +116,7 @@ impl QuotationsRepository for DynamodbQuotations {
                     Err(_) => Err(QuotationsError::UnknownError),
                 }
             }
-            Err(_) => Err(QuotationsError::QueryQuotationsError),
+            Err(_) => Err(QuotationsError::UnknownError),
         }
     }
 

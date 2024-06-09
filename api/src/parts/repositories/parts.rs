@@ -1,8 +1,8 @@
+use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 
 use api_boundary::parts::models::Part;
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::domain::updatable_part::UpdatablePart;
 
 #[async_trait]

@@ -1,6 +1,6 @@
-use crate::projects::domain::errors::ProjectsError;
 use crate::projects::repositories::projects::ProjectsRepository;
 use crate::shared::usecase::UseCase;
+use api_boundary::projects::errors::ProjectsError;
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::GetProjectByIdRequest;
 use axum::async_trait;

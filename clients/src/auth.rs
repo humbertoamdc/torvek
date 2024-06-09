@@ -18,7 +18,8 @@ impl AuthClient {
         let url = format!("{}/sessions/whoami", self.url);
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }
@@ -28,7 +29,8 @@ impl AuthClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .header(ACCEPT.as_str(), "application/json")
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }
@@ -49,7 +51,8 @@ impl AuthClient {
         let url = format!("{}/self-service/logout/browser", self.url);
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
-            .build()?;
+            .build()
+            .unwrap();
 
         send(request).await
     }

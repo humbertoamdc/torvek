@@ -1,8 +1,7 @@
 use axum::async_trait;
 
 use api_boundary::orders::models::Order;
-
-use crate::payments::domain::errors::PaymentsError;
+use api_boundary::payments::errors::PaymentsError;
 
 #[async_trait]
 pub trait OrdersCreationService: Send + Sync + 'static {

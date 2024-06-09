@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 
 use api_boundary::parts::models::PartQuote;
@@ -8,7 +9,6 @@ use api_boundary::parts::requests::{
     QueryPartQuotesForPartsRequest, QueryPartQuotesForPartsResponse,
 };
 
-use crate::parts::domain::errors::PartsError;
 use crate::parts::repositories::part_quotes::PartQuotesRepository;
 use crate::shared::usecase::UseCase;
 
@@ -26,7 +26,7 @@ impl QueryPartQuotesForPartsUseCase {
 
 #[async_trait]
 impl UseCase<QueryPartQuotesForPartsRequest, QueryPartQuotesForPartsResponse, PartsError>
-for QueryPartQuotesForPartsUseCase
+    for QueryPartQuotesForPartsUseCase
 {
     async fn execute(
         &self,
@@ -35,10 +35,15 @@ for QueryPartQuotesForPartsUseCase
         let mut part_quotes_by_part_id = HashMap::<String, Vec<PartQuote>>::new();
 
         for part_id in request.part_ids.into_iter() {
-            let part_quotes = self.part_quotes_repository.query_part_quotes_for_part(part_id.clone()).await?;
+            let part_quotes = self
+                .part_quotes_repository
+                .query_part_quotes_for_part(part_id.clone())
+                .await?;
             part_quotes_by_part_id.insert(part_id, part_quotes);
         }
 
-        Ok(QueryPartQuotesForPartsResponse { part_quotes_by_part_id })
+        Ok(QueryPartQuotesForPartsResponse {
+            part_quotes_by_part_id,
+        })
     }
 }

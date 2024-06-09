@@ -6,11 +6,11 @@ use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForParts
 use api_boundary::parts::requests::{
     QueryPartQuotesForPartsRequest, QueryPartsForQuotationRequest,
 };
+use api_boundary::payments::errors::PaymentsError;
 use api_boundary::payments::requests::CreateCheckoutSessionRequest;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::payments::domain::errors::PaymentsError;
 use crate::payments::services::stripe::StripePaymentsProcessor;
 use crate::shared::usecase::UseCase;
 
@@ -51,7 +51,7 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Paymen
             .query_parts_for_quotation_usecase
             .execute(query_parts_for_quotation_request)
             .await
-            .map_err(|_| PaymentsError::QueryPartsError)?;
+            .map_err(|_| PaymentsError::UnknownError)?;
 
         let part_ids = request
             .selected_quotes_per_part
@@ -64,7 +64,7 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Paymen
             .query_part_quotes_for_parts_use_case
             .execute(query_part_quotes_for_parts_request)
             .await
-            .map_err(|_| PaymentsError::QueryPartsError)?;
+            .map_err(|_| PaymentsError::UnknownError)?;
         let selected_quote_per_part = query_part_quotes_for_parts_response
             .part_quotes_by_part_id
             .iter()
