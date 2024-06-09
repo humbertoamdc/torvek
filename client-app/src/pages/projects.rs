@@ -59,9 +59,7 @@ pub fn Projects() -> impl IntoView {
         }
     });
 
-    // -- derived signals -- //
-
-    let is_creating_project = Signal::derive(move || create_project.pending().get());
+    // -- init -- //
 
     query_projects.dispatch(());
 
@@ -70,7 +68,7 @@ pub fn Projects() -> impl IntoView {
             <h1 class="text-3xl font-bold text-gray-900">Projects</h1>
         </header>
 
-        <Button loading=is_creating_project on_click=move |_| create_project.dispatch(())>
+        <Button loading=create_project.pending() on_click=move |_| create_project.dispatch(())>
             "New Project"
         </Button>
 

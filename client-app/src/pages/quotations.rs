@@ -110,9 +110,7 @@ pub fn Quotations() -> impl IntoView {
         }
     });
 
-    // -- derived signals -- //
-
-    let is_creating_quotation = Signal::derive(move || create_quotation.pending().get());
+    // -- init -- //
 
     query_quotations.dispatch(());
 
@@ -144,7 +142,7 @@ pub fn Quotations() -> impl IntoView {
             <h1 class="text-2xl font-bold text-gray-900">Quotations</h1>
         </header>
 
-        <Button loading=is_creating_quotation on_click=move |_| create_quotation.dispatch(())>
+        <Button loading=create_quotation.pending() on_click=move |_| create_quotation.dispatch(())>
             "New Quotation"
         </Button>
 

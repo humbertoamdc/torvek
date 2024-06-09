@@ -36,6 +36,7 @@ AWS_ACCESS_KEY_ID=test \
 AWS_SECRET_ACCESS_KEY=test \
 AWS_ENDPOINT_URL=http://127.0.0.1:4566 \
 RUST_LOG=debug \
+RUST_BACKTRACE=1 \
 cargo-watch -x run
 
 # If the server fails to start or CTRL+C is pressed, cleanup

@@ -21,7 +21,7 @@ pub async fn create_project(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err(api_error_to_response(err.into())),
     }
 }
 
@@ -35,7 +35,7 @@ pub async fn query_projects_for_client(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err(api_error_to_response(err.into())),
     }
 }
 
