@@ -227,10 +227,7 @@ pub fn Parts() -> impl IntoView {
         }
     });
 
-    // -- derived signals -- //
-
-    let is_creating_checkout_session =
-        Signal::derive(move || create_checkout_session.pending().get());
+    // -- init -- //
 
     query_parts.dispatch(());
 
@@ -281,7 +278,7 @@ pub fn Parts() -> impl IntoView {
             </Upload>
 
             <Button
-                loading=is_creating_checkout_session
+                loading=create_checkout_session.pending()
                 disabled=checkout_button_disabled
                 on_click=move |_| create_checkout_session.dispatch(())
             >
