@@ -25,7 +25,7 @@ pub async fn create_quotation(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err(api_error_to_response(err.into())),
     }
 }
 
@@ -39,7 +39,7 @@ pub async fn query_quotations_for_project(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err(api_error_to_response(err.into())),
     }
 }
 
@@ -66,6 +66,6 @@ pub async fn admin_query_quotations_by_status(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(_) => Err(StatusCode::BAD_REQUEST),
+        Err(err) => Err(api_error_to_response(err.into())),
     }
 }
