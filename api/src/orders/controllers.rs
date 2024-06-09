@@ -1,3 +1,4 @@
+use api_boundary::common::into_error_response::IntoErrorResponse;
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -8,7 +9,6 @@ use api_boundary::orders::requests::{AdminUpdateOrderPayoutRequest, QueryOrdersB
 use crate::app_state::AppState;
 use crate::orders::usecases::admin_update_order_payout::AdminUpdateOrderPayoutUsecase;
 use crate::orders::usecases::query_orders_by_status::QueryOrdersByStatusUseCase;
-use crate::shared::mappers::api_error_to_response::api_error_to_response;
 use crate::shared::usecase::UseCase;
 
 pub async fn query_orders_by_status(
@@ -20,7 +20,7 @@ pub async fn query_orders_by_status(
 
     match result {
         Ok(response) => Ok(Json(response)),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -33,6 +33,6 @@ pub async fn admin_update_order_payout(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }

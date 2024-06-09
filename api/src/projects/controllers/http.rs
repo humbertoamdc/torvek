@@ -2,8 +2,8 @@ use crate::app_state::AppState;
 use crate::projects::usecases::create_project::CreateProjectUseCase;
 use crate::projects::usecases::get_project_by_id::GetProjectByIdUseCase;
 use crate::projects::usecases::query_projects_for_client::QueryProjectsForClientUseCase;
-use crate::shared::mappers::api_error_to_response::api_error_to_response;
 use crate::shared::usecase::UseCase;
+use api_boundary::common::into_error_response::IntoErrorResponse;
 use api_boundary::projects::requests::{
     CreateProjectRequest, GetProjectByIdRequest, QueryProjectsForClientRequest,
 };
@@ -21,7 +21,7 @@ pub async fn create_project(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -35,7 +35,7 @@ pub async fn query_projects_for_client(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -48,6 +48,6 @@ pub async fn get_project_by_id(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }

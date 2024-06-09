@@ -1,3 +1,4 @@
+use api_boundary::common::into_error_response::IntoErrorResponse;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -13,7 +14,6 @@ use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuo
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
-use crate::shared::mappers::api_error_to_response::api_error_to_response;
 use crate::shared::usecase::UseCase;
 
 pub async fn create_quotation(
@@ -25,7 +25,7 @@ pub async fn create_quotation(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -39,7 +39,7 @@ pub async fn query_quotations_for_project(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -52,7 +52,7 @@ pub async fn get_quotation_by_id(
 
     match result {
         Ok(quotation) => Ok((StatusCode::OK, Json(quotation))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -66,6 +66,6 @@ pub async fn admin_query_quotations_by_status(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
