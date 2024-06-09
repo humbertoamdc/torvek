@@ -1,3 +1,4 @@
+use api_boundary::common::into_error_response::IntoErrorResponse;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -17,7 +18,6 @@ use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForPartsUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
-use crate::shared::mappers::api_error_to_response::api_error_to_response;
 use crate::shared::usecase::UseCase;
 
 pub async fn admin_update_part(
@@ -29,7 +29,7 @@ pub async fn admin_update_part(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -42,7 +42,7 @@ pub async fn admin_create_part_quotes(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -58,7 +58,7 @@ pub async fn create_parts(
 
     match result {
         Ok(response) => Ok((StatusCode::CREATED, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -75,7 +75,7 @@ pub async fn query_parts_for_quotation(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -88,7 +88,7 @@ pub async fn update_part(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -101,7 +101,7 @@ pub async fn create_drawing_upload_url(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -114,6 +114,6 @@ pub async fn query_part_quotes_for_parts(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }

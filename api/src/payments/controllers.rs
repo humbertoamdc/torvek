@@ -1,3 +1,4 @@
+use api_boundary::common::into_error_response::IntoErrorResponse;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -14,7 +15,6 @@ use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUse
 use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
 use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPaymentUseCase;
 use crate::shared::extractors::stripe_event::StripeEvent;
-use crate::shared::mappers::api_error_to_response::api_error_to_response;
 use crate::shared::usecase::UseCase;
 
 pub async fn create_checkout_session(
@@ -36,7 +36,7 @@ pub async fn create_checkout_session(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(api_error_to_response(err.into())),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
