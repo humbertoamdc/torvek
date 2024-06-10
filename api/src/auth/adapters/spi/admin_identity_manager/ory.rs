@@ -60,7 +60,7 @@ impl AdminIdentityManager for OryAdminIdentityManager {
     }
 
     async fn get_admin_session(&self, session_token: String) -> Result<Session, AuthError> {
-        let response = to_session(&self.config, Some(&session_token), None).await;
+        let response = to_session(&self.config, Some(&session_token), None, None).await;
 
         match response {
             Ok(session) => {
@@ -76,7 +76,8 @@ impl AdminIdentityManager for OryAdminIdentityManager {
 
 impl OryAdminIdentityManager {
     async fn init_admin_login_flow(&self) -> Result<LoginFlow, AuthError> {
-        let response = create_native_login_flow(&self.config, None, None, None, None, None).await;
+        let response =
+            create_native_login_flow(&self.config, None, None, None, None, None, None).await;
 
         match response {
             Ok(login_flow) => Ok(login_flow),
