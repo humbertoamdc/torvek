@@ -174,7 +174,10 @@ impl OryIdentityManager {
 
         match response {
             Ok(login_flow) => Ok(login_flow),
-            Err(_) => Err(AuthError::InitializingLoginFlowError),
+            Err(err) => {
+                log::error!("{:#?}", err);
+                Err(AuthError::InitializingLoginFlowError)
+            }
         }
     }
 

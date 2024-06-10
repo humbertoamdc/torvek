@@ -6,7 +6,7 @@ use axum::Router;
 use http::header::{CONTENT_TYPE, ORIGIN};
 use http::{HeaderValue, Method};
 use tower_http::compression::CompressionLayer;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
 
 use crate::app_state::AppState;
 use crate::config::Config;
@@ -66,21 +66,23 @@ async fn run_local(app: Router<AppState>) {
             .unwrap(),
     ];
     let cors_layer = CorsLayer::new()
-        .allow_headers([CONTENT_TYPE, ORIGIN])
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::PUT])
+        .allow_headers::<AllowHeaders>([CONTENT_TYPE, ORIGIN].into())
+        .allow_methods::<AllowMethods>(
+            [Method::GET, Method::POST, Method::PATCH, Method::PUT].into(),
+        )
         .allow_credentials(true)
-        .allow_origin(origins);
+        .allow_origin::<AllowOrigin>(origins.into());
 
     // Setup
-    let app = app.layer(cors_layer).with_state(app_state);
+    let app = app
+        .layer::<CorsLayer>(cors_layer.into())
+        .with_state(app_state);
 
     // Run
     let addr = SocketAddr::from(([127, 0, 0, 1], app_config.app.port));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     log::info!("listening on {addr}");
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(listener, app).await.unwrap()
 }
 
 async fn run_lambda(app: Router<AppState>) {
