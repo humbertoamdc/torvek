@@ -3,20 +3,6 @@ name = "admin-app"
 version = "0.1.0"
 edition = "2021"
 
-[profile.dev]
-# Potential to opt-in on higher optimization for our code. This may increase incremental compilation times, but will reduce binaty size.
-opt-level = 0
-[profile.dev.package."*"]
-# High optimization for our dependencies. This should increase performance drastically whithout hitting our incremental compilation times.
-# This will lead to obscure error messages from third party libraries. Comment this out when experiencing a tricky bug.
-opt-level = 3
-
-[profile.release]
-opt-level = "z"
-lto = "fat"
-debug = 0
-strip = true
-codegen-units = 1
 
 [dependencies]
 api-boundary = { path = "../api-boundary" }
@@ -31,9 +17,9 @@ ory-kratos-client = { path = "../ory-kratos-client" }
 serde = { version = "1.0.193", features = ["derive"] }
 serde_derive = "1.0.193"
 thiserror = "1.0.50"
-web-sys = { version = "0.3.66", features = ["FileList", "HtmlInputElement", "File"] }
+web-sys = { version = "0.3.69", features = ["FileList", "HtmlInputElement", "File"] }
 serde_json = "1.0.108"
 iso_currency = "0.4.4"
 http = "1.0.0"
-thaw = { version = "0.2.0-beta", features = ["csr"] }
-leptos-use = "0.10.2"
+thaw = { version = "0.3.2", features = ["csr"] }
+leptos-use = "0.10.10"

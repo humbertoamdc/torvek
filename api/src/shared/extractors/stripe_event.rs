@@ -24,7 +24,10 @@ where
         }
     */
     // Notice that the order matters.
-    async fn from_request(req: Request<B>, state: &AppState) -> Result<Self, Self::Rejection> {
+    async fn from_request(
+        req: Request<axum::body::Body>,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
         let signature = if let Some(sig) = req.headers().get("stripe-signature") {
             sig.to_owned()
         } else {
