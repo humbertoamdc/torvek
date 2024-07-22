@@ -127,14 +127,14 @@ pub fn Quotations() -> impl IntoView {
 
         <header class="flex justify-between items-center py-4">
             <h1 class="text-4xl font-bold text-gray-900">
-                {
-                    move || {
-                        match project.get() {
-                            Some(project) => project.name,
-                            None => String::default(),
-                        }
+
+                {move || {
+                    match project.get() {
+                        Some(project) => project.name,
+                        None => String::default(),
                     }
-                }
+                }}
+
             </h1>
         </header>
 

@@ -46,4 +46,3 @@ ory-kratos-client = { path = "../ory-kratos-client" }
 [target.x86_64-unknown-linux-gnu.dependencies]
 openssl = { version = "0.10.59", features = ["vendored"] }
 openssl-sys = { version = "0.9.95", features = ["vendored"] }
-

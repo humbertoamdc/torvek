@@ -54,10 +54,12 @@ def fetch_messages_from_sqs():
 
                 download_file_from_s3(s3_key, tmp_storage_path + file_name_with_format)
 
+                # convert_step_to_stl(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.stl')
                 convert_step_to_obj(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.obj')
                 convert_obj_to_glb(tmp_storage_path + file_name + '.obj', tmp_storage_path + file_name + '.glb')
 
                 write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.glb')
+                # write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.stl')
 
                 sqs.delete_message(
                     QueueUrl=queue_url,
@@ -74,6 +76,17 @@ def download_file_from_s3(s3_file_key, local_file_path):
         s3.download_file(Bucket=s3_bucket, Key=s3_file_key, Filename=local_file_path)
     except Exception as e:
         print(f"Error downloading file: {e}")
+
+
+def convert_step_to_stl(input_file, output_file):
+    # Load the STEP file
+    shape = Part.Shape()
+    shape.read(input_file)
+
+    # Export to STL
+    mesh = Mesh.Mesh()
+    mesh.addFacets(shape.tessellate(2.0))
+    mesh.write(output_file)
 
 
 def convert_step_to_obj(input_file, output_file):
