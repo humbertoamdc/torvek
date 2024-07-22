@@ -1,7 +1,7 @@
-use http::StatusCode;
 use leptos::html::Canvas;
 use leptos::wasm_bindgen::JsCast;
 use leptos::*;
+use thaw::{Spinner, SpinnerSize};
 use web_sys::{HtmlCanvasElement, HtmlInputElement};
 #[cfg(target_arch = "wasm32")]
 use winit::platform::web::WindowBuilderExtWebSys;
@@ -23,6 +23,7 @@ use crate::models::reactive_part::ReactivePart;
 #[component]
 pub fn PartsTableRow(
     #[prop(into)] reactive_part: ReactivePart,
+    #[prop(into)] part_model: RwSignal<Option<three_d_asset::Model>>,
     #[prop(into)] part_quotes: RwSignal<Vec<PartQuote>>,
     #[prop(into)] insert_window: Callback<(WindowBuilder, three_d_asset::Model)>,
     #[prop(into)] selected_part_quote: RwSignal<Option<String>>,
@@ -106,38 +107,10 @@ pub fn PartsTableRow(
         }
     });
 
-    let load_part_model: Action<(), three_d_asset::Model> = create_action(move |_| async move {
-        loop {
-            let resp = parts_client
-                .get_file_from_presigned_url(
-                    reactive_part
-                        .render_file
-                        .get_untracked()
-                        .presigned_url
-                        .unwrap(),
-                )
-                .await;
-
-            if resp.is_ok() && resp.unwrap().status() == StatusCode::OK {
-                break;
-            }
-            gloo_timers::future::TimeoutFuture::new(1_000).await;
-        }
-
-        // TODO: Use presigned url to render file. We are double fetching the file, we can use the result obtained
-        //       in the loop and create the RawAssets manually since using the `load_async` function is not working
-        //       with presigned urls.
-        let mut result =
-            three_d_asset::io::load_async(&[reactive_part.render_file.get_untracked().url]).await;
-
-        result.unwrap().deserialize("/").unwrap()
-    });
-    load_part_model.dispatch(());
-
     // -- effects -- //
 
     let _ = create_effect(move |_| {
-        if load_part_model.value().get().is_some() {
+        if let Some(part_model) = part_model.get() {
             let window = web_sys::window().expect("should have a window in this context");
             let document = window.document().expect("window should have a document");
 
@@ -153,18 +126,25 @@ pub fn PartsTableRow(
                 .with_inner_size(winit::dpi::LogicalSize::new(288, 288))
                 .with_prevent_default(true);
 
-            let model = load_part_model.value().get().unwrap();
-
-            insert_window.call((window_builder, model));
+            insert_window.call((window_builder, part_model));
         }
     });
 
     view! {
         <div class="flex shadow my-2 p-4 h-80 bg-white rounded-xl overflow-hidden space-x-4">
-            <div class="flex flex-col items-center justify-left">
-                <div class="flex-shrink-0 w-72 space-y-1">
-                    <canvas id=canvas_id class="rounded" ref=canvas_ref></canvas>
-                </div>
+            <div class="w-72 flex flex-col items-center justify-center">
+                {move || {
+                    if part_model.get().is_none() {
+                        view! {
+                            <div class="absolute">
+                                <Spinner size=SpinnerSize::Large/>
+                            </div>
+                        }
+                    } else {
+                        view! { <div></div> }
+                    }
+                }}
+                <canvas id=canvas_id class="rounded" ref=canvas_ref></canvas>
             </div>
             <div class="flex-col grow grow">
                 <div class="flex space-x-2">

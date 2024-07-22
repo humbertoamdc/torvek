@@ -251,21 +251,20 @@ pub fn Parts() -> impl IntoView {
 
         <header class="flex justify-between items-center py-4">
             <h1 class="text-4xl font-bold text-gray-900">
-                {
-                    move || {
-                        match quotation.get() {
-                            Some(quotation) => quotation.name,
-                            None => String::default(),
-                        }
+
+                {move || {
+                    match quotation.get() {
+                        Some(quotation) => quotation.name,
+                        None => String::default(),
                     }
-                }
+                }}
+
             </h1>
         </header>
 
         <header class="flex justify-between items-center py-4">
             <h1 class="text-2xl font-bold text-gray-900">Parts</h1>
         </header>
-
 
         <div class="flex justify-between">
 

@@ -23,7 +23,7 @@ create-stack:
 
 lambda:
 	make create-stack stack=lambda
-	cargo lambda build --release;
+	cargo lambda build --release --target x86_64-unknown-linux-gnu.2.17;
 	cargo lambda deploy --profile $(PROFILE) --region $(REGION) api \
 		--iam-role arn:aws:iam::120386585975:role/ApiLambdaRole
 	sleep 5
