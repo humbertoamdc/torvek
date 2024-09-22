@@ -5,8 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UpdatablePart {
     pub id: String,
-    pub client_id: String,
-    pub project_id: String,
+    pub customer_id: String,
     pub quotation_id: String,
     pub drawing_file: Option<File>,
     pub process: Option<String>,
@@ -20,9 +19,8 @@ pub struct UpdatablePart {
 impl From<&UpdatePartRequest> for UpdatablePart {
     fn from(request: &UpdatePartRequest) -> Self {
         Self {
-            id: request.id.clone(),
-            client_id: request.client_id.clone(),
-            project_id: request.project_id.clone(),
+            id: request.part_id.clone(),
+            customer_id: request.customer_id.clone(),
             quotation_id: request.quotation_id.clone(),
             drawing_file: request.drawing_file.clone(),
             process: request.process.clone(),
@@ -39,8 +37,7 @@ impl From<&AdminUpdatePartRequest> for UpdatablePart {
     fn from(request: &AdminUpdatePartRequest) -> Self {
         Self {
             id: request.id.clone(),
-            client_id: request.client_id.clone(),
-            project_id: request.project_id.clone(),
+            customer_id: request.customer_id.clone(),
             quotation_id: request.quotation_id.clone(),
             drawing_file: None,
             process: None,

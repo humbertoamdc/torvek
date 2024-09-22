@@ -25,7 +25,11 @@ impl UseCase<GetQuotationByIdRequest, Quotation, QuotationsError> for GetQuotati
         request: GetQuotationByIdRequest,
     ) -> Result<Quotation, QuotationsError> {
         self.quotations_repository
-            .get_quotation_by_id(request.client_id, request.project_id, request.quotation_id)
+            .get_quotation_by_id(
+                request.customer_id,
+                request.project_id,
+                request.quotation_id,
+            )
             .await
     }
 }

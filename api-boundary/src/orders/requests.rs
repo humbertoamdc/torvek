@@ -3,11 +3,10 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::common::file::File;
 use crate::common::money::Money;
-use crate::orders::models::OrderStatus;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AdminCreateOrdersRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
     pub data: Vec<AdminCreateOrdersRequestData>,
@@ -22,8 +21,12 @@ pub struct AdminCreateOrdersRequestData {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct QueryOrdersByStatusRequest {
-    pub status: OrderStatus,
+pub struct QueryOpenOrdersRequest {}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryOrdersForCustomerRequest {
+    pub customer_id: String,
+    pub with_part_data: bool,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

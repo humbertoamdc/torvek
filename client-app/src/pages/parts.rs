@@ -212,7 +212,7 @@ pub fn Parts() -> impl IntoView {
             .map(|(part_id, quote_id)| (part_id.clone(), quote_id.get_untracked().unwrap()))
             .collect();
         let request = CreateCheckoutSessionRequest {
-            client_id: user_info.get_untracked().id,
+            customer_id: user_info.get_untracked().id,
             project_id: project_id().unwrap(),
             quotation_id: quotation_id().unwrap(),
             selected_quotes_per_part,

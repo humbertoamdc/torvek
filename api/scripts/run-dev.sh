@@ -35,6 +35,7 @@ lsof -i :3000 -t | xargs kill
 AWS_ACCESS_KEY_ID=test \
 AWS_SECRET_ACCESS_KEY=test \
 AWS_ENDPOINT_URL=http://127.0.0.1:4566 \
+AWS_S3_ENDPOINT_URL=http://s3.localhost.localstack.cloud:4566 \
 RUST_LOG=debug \
 RUST_BACKTRACE=1 \
 cargo-watch -x run

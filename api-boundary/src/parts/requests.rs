@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
+use url::Url;
 
 use crate::common::file::File;
 use crate::common::money::Money;
@@ -9,7 +10,7 @@ use crate::parts::models::PartQuote;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
     pub file_names: Vec<String>,
@@ -17,13 +18,13 @@ pub struct CreatePartsRequest {
 
 impl CreatePartsRequest {
     pub const fn new(
-        client_id: String,
+        customer_id: String,
         project_id: String,
         quotation_id: String,
         file_names: Vec<String>,
     ) -> Self {
         Self {
-            client_id,
+            customer_id,
             project_id,
             quotation_id,
             file_names,
@@ -32,28 +33,30 @@ impl CreatePartsRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct QueryPartsForQuotationRequest {
-    pub client_id: String,
+pub struct GetPartRequest {
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
+    pub part_id: String,
 }
 
-impl QueryPartsForQuotationRequest {
-    pub const fn new(client_id: String, project_id: String, quotation_id: String) -> Self {
-        Self {
-            client_id,
-            project_id,
-            quotation_id,
-        }
-    }
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryPartsForQuotationRequest {
+    pub quotation_id: String,
+    pub with_quotation_subtotal: bool,
+}
+
+#[derive(Deserialize)]
+pub struct QueryPartsForQuotationQueryParameters {
+    pub with_quotation_subtotal: Option<bool>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdatePartRequest {
-    pub id: String,
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
+    pub part_id: String,
     pub drawing_file: Option<File>,
     pub process: Option<String>,
     pub material: Option<String>,
@@ -63,15 +66,23 @@ pub struct UpdatePartRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateDrawingUploadUrlRequest {
-    pub client_id: String,
+    pub customer_id: String,
+    pub quotation_id: String,
+    pub part_id: String,
     pub file_name: String,
-    pub file_url: Option<String>,
+    pub file_url: Option<Url>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateModelUploadUrlRequest {
+    pub quotation_id: String,
+    pub part_id: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AdminUpdatePartRequest {
     pub id: String,
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
     pub unit_price: u64,
@@ -80,7 +91,7 @@ pub struct AdminUpdatePartRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartQuotesRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
     pub data: Vec<CreatePartQuotesRequestData>,

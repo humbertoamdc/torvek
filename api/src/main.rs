@@ -91,9 +91,7 @@ async fn run_lambda(app: Router<AppState>) {
     let config_key = "prod.toml";
 
     // Retrieve config from S3
-    let shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09())
-        .load()
-        .await;
+    let shared_config = aws_config::defaults(BehaviorVersion::latest()).load().await;
     let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
     let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
     let result = s3_client

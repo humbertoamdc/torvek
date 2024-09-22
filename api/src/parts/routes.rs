@@ -1,10 +1,10 @@
-use axum::Router;
 use axum::routing::{get, patch, post};
+use axum::Router;
 
 use crate::app_state::AppState;
 use crate::parts::controllers::{
-    admin_create_part_quotes, admin_update_part, create_drawing_upload_url, create_parts,
-    query_part_quotes_for_parts, query_parts_for_quotation, update_part,
+    admin_create_part_quotes, admin_update_part, create_drawing_upload_url,
+    create_model_file_upload_url, create_parts, get_part, query_parts_for_quotation, update_part,
 };
 
 pub fn create_router() -> Router<AppState> {
@@ -13,10 +13,17 @@ pub fn create_router() -> Router<AppState> {
         .route("/admin/part_quotes", post(admin_create_part_quotes))
         .route("/parts", post(create_parts))
         .route(
-            "/clients/:client_id/projects/:project_id/quotations/:quotation_id/parts",
+            "/customers/:customer_id/projects/:project_id/quotations/:quotation_id/parts",
             get(query_parts_for_quotation),
         )
+        .route(
+            "/customers/:customer_id/projects/:project_id/quotations/:quotation_id/parts/:part_id",
+            get(get_part),
+        )
         .route("/parts", patch(update_part))
+        .route(
+            "/parts/model_upload_url",
+            post(create_model_file_upload_url),
+        )
         .route("/parts/drawing_upload_url", post(create_drawing_upload_url))
-        .route("/parts/quotes", post(query_part_quotes_for_parts))
 }

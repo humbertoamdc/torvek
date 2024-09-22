@@ -45,7 +45,7 @@ pub fn App() -> impl IntoView {
     let logging_in = create_action(move |_| async move {
         // Try to login. If there is a session id in the cookies we can skip the login page.
         if let Ok((authorized_api, user_info)) =
-            unauthorized_api.try_login_with_session_cookie().await
+            { unauthorized_api.try_login_with_session_cookie().await }
         {
             let _ = authorized_api_signal.update(|a| *a = Some(authorized_api));
             let _ = user_info_signal.update(|u| *u = Some(user_info));

@@ -9,11 +9,11 @@ pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/projects", post(create_project))
         .route(
-            "/clients/:client_id/projects",
+            "/customers/:customer_id/projects",
             get(query_projects_for_client),
         )
         .route(
-            "/clients/:client_id/projects/:project_id",
+            "/customers/:customer_id/projects/:project_id",
             get(get_project_by_id),
         )
 }

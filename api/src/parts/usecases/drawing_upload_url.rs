@@ -1,23 +1,35 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use api_boundary::common::file::File;
 use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
-use uuid::Uuid;
+use uuid::{ContextV7, Timestamp, Uuid};
 
+use crate::parts::domain::updatable_part::UpdatablePart;
+use crate::parts::repositories::parts::PartsRepository;
 use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::parts::responses::CreateDrawingUploadUrlResponse;
 
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::shared::usecase::UseCase;
 
+static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
+
 pub struct CreateDrawingUploadUrlUseCase {
+    parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl CreateDrawingUploadUrlUseCase {
-    pub const fn new(object_storage: Arc<dyn ObjectStorage>) -> Self {
-        Self { object_storage }
+    pub const fn new(
+        parts_repository: Arc<dyn PartsRepository>,
+        object_storage: Arc<dyn ObjectStorage>,
+    ) -> Self {
+        Self {
+            parts_repository,
+            object_storage,
+        }
     }
 }
 
@@ -33,26 +45,16 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Part
         // a file has been previously uploaded, we will use the path for that file,
         // effectively overwriting the file and maintaining one drawing per part.
         let file_path = match request.file_url {
-            Some(file_url) => {
-                let file_url_without_query_parameters =
-                    file_url.split("?").nth(0).unwrap().to_string();
-                let file_path = file_url_without_query_parameters
-                    .split("/")
-                    .collect::<Vec<&str>>()
-                    .iter()
-                    .rev()
-                    .take(2)
-                    .rev()
-                    .map(|s| s.to_string())
-                    .collect::<Vec<String>>()
-                    .join("/");
-
-                file_path
-            }
+            Some(file_url) => file_url.path().strip_prefix("/").unwrap().to_string(),
             None => {
-                let file_id = Uuid::new_v4().to_string();
+                let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
+
+                let file_id = format!("file_{}", bs58::encode(id).into_string());
                 let file_extension = request.file_name.split(".").last().unwrap();
-                let file_path = format!("{}/{}.{}", request.client_id, file_id, file_extension);
+                let file_path = format!(
+                    "{}/{}/{}.{}",
+                    DRAWING_FILES_BASE_FILE_PATH, request.customer_id, file_id, file_extension
+                );
 
                 file_path
             }
@@ -63,6 +65,21 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Part
             .put_object_presigned_url(file_path, Duration::from_secs(300))
             .await?;
         let url = presigned_url.split("?").nth(0).unwrap().to_string();
+
+        let updatable_part = UpdatablePart {
+            id: request.part_id,
+            customer_id: request.customer_id,
+            quotation_id: request.quotation_id,
+            drawing_file: Some(File::new(request.file_name, url.clone())),
+            process: None,
+            material: None,
+            tolerance: None,
+            quantity: None,
+            unit_price: None,
+            sub_total: None,
+        };
+        self.parts_repository.update_part(updatable_part).await?;
+
         Ok(CreateDrawingUploadUrlResponse::new(url, presigned_url))
     }
 }

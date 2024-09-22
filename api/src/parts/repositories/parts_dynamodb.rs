@@ -4,11 +4,11 @@ use api_boundary::parts::errors::PartsError;
 use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
+use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
 
 use api_boundary::parts::models::Part;
 
-use crate::parts::domain::dynamodb_part_item::DynamodbPartItem;
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
 
@@ -26,11 +26,43 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
+    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part, PartsError> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.table)
+            .set_key(Some(HashMap::from([
+                (
+                    String::from("quotation_id"),
+                    AttributeValue::S(quotation_id),
+                ),
+                (String::from("id"), AttributeValue::S(part_id)),
+            ])))
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.item {
+                Some(item) => match from_item::<Part>(item) {
+                    Ok(part) => Ok(part),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(PartsError::UnknownError)
+                    }
+                },
+                None => Err(PartsError::PartItemNotFound),
+            },
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(PartsError::UnknownError)
+            }
+        }
+    }
+
     async fn create_parts(&self, parts: Vec<Part>) -> Result<(), PartsError> {
         let items: Vec<WriteRequest> = parts
             .into_iter()
             .map(|part| {
-                let part = DynamodbPartItem::from(part);
                 WriteRequest::builder()
                     .put_request(
                         PutRequest::builder()
@@ -62,25 +94,13 @@ impl PartsRepository for DynamodbParts {
 
     async fn query_parts_for_quotation(
         &self,
-        client_id: String,
-        project_id: String,
         quotation_id: String,
     ) -> Result<Vec<Part>, PartsError> {
-        let client_project_and_quotation_ids = format!("{client_id}#{project_id}#{quotation_id}");
-
-        // TODO: Get ordered by date.
         let response = self
             .client
             .query()
-            .key_condition_expression("#client_project_and_quotation_ids = :value")
-            .expression_attribute_values(
-                ":value",
-                AttributeValue::S(client_project_and_quotation_ids),
-            )
-            .expression_attribute_names(
-                "#client_project_and_quotation_ids",
-                "client_id#project_id#quotation_id",
-            )
+            .key_condition_expression("quotation_id = :value")
+            .expression_attribute_values(":value", AttributeValue::S(quotation_id))
             .table_name(&self.table)
             .send()
             .await;
@@ -89,14 +109,7 @@ impl PartsRepository for DynamodbParts {
             Ok(output) => {
                 let items = output.items().to_vec();
                 match from_items(items) {
-                    Ok(dynamodb_parts) => {
-                        let parts = dynamodb_parts
-                            .into_iter()
-                            .map(|p: DynamodbPartItem| p.into())
-                            .collect();
-
-                        Ok(parts)
-                    }
+                    Ok(parts) => Ok(parts),
                     Err(err) => {
                         log::error!("{err:?}");
                         Err(PartsError::UnknownError)
@@ -173,17 +186,13 @@ impl PartsRepository for DynamodbParts {
             update_expression.pop();
         }
 
-        let client_project_and_quotation_ids = format!(
-            "{}#{}#{}",
-            updatable_part.client_id, updatable_part.project_id, updatable_part.quotation_id
-        );
         let response = self
             .client
             .update_item()
             .table_name(&self.table)
             .key(
-                "client_id#project_id#quotation_id",
-                AttributeValue::S(client_project_and_quotation_ids),
+                "quotation_id",
+                AttributeValue::S(updatable_part.quotation_id),
             )
             .key("id", AttributeValue::S(updatable_part.id))
             .update_expression(update_expression)

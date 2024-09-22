@@ -4,25 +4,31 @@ Resources:
   ClientPortalCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: www.rusticad.com
+      DomainName: www.torvek.com
       ValidationMethod: DNS
 
   AdminPortalCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: admin.rusticad.com
+      DomainName: admin.torvek.com
       ValidationMethod: DNS
 
   SupplierPortalCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: suppliers.rusticad.com
+      DomainName: suppliers.torvek.com
       ValidationMethod: DNS
 
   SuppliersAuthCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: auth.suppliers.rusticad.com
+      DomainName: auth.suppliers.torvek.com
+      ValidationMethod: DNS
+
+  ApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: api.torvek.com
       ValidationMethod: DNS
 
 Outputs:

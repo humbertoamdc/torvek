@@ -33,21 +33,24 @@ impl ProjectsRepository for DynamodbProjects {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(ProjectsError::UnknownError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(ProjectsError::UnknownError)
+            }
         }
     }
 
     async fn query_projects_for_client(
         &self,
-        client_id: String,
+        customer_id: String,
     ) -> Result<Vec<Project>, ProjectsError> {
-        // TODO: Get ordered by date.
         let response = self
             .client
             .query()
-            .key_condition_expression("client_id = :client_id")
-            .expression_attribute_values(":client_id", AttributeValue::S(client_id))
             .table_name(&self.table)
+            .key_condition_expression("customer_id = :customer_id")
+            .expression_attribute_values(":customer_id", AttributeValue::S(customer_id))
+            .scan_index_forward(false)
             .send()
             .await;
 
@@ -65,7 +68,7 @@ impl ProjectsRepository for DynamodbProjects {
 
     async fn get_project_by_id(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
     ) -> Result<Project, ProjectsError> {
         let response = self
@@ -73,7 +76,7 @@ impl ProjectsRepository for DynamodbProjects {
             .get_item()
             .table_name(&self.table)
             .set_key(Some(HashMap::from([
-                (String::from("client_id"), AttributeValue::S(client_id)),
+                (String::from("customer_id"), AttributeValue::S(customer_id)),
                 (String::from("id"), AttributeValue::S(project_id)),
             ])))
             .send()

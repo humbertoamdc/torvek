@@ -27,11 +27,11 @@ impl QuotationsClient {
 
     pub async fn query_quotations_for_project(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
     ) -> Result<QueryQuotationsForProjectResponse> {
         let url = format!(
-            "{}/clients/{client_id}/projects/{project_id}/quotations",
+            "{}/customers/{customer_id}/projects/{project_id}/quotations",
             self.url
         );
         let request = Request::get(&url)
@@ -44,12 +44,12 @@ impl QuotationsClient {
 
     pub async fn get_quotation_by_id(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> Result<Quotation> {
         let url = format!(
-            "{}/clients/{client_id}/projects/{project_id}/quotations/{quotation_id}",
+            "{}/customers/{customer_id}/projects/{project_id}/quotations/{quotation_id}",
             self.url
         );
         let request = Request::get(&url)

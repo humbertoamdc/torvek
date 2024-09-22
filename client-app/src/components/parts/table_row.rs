@@ -1,6 +1,19 @@
+use bevy::app::{App, Startup, Update};
+use bevy::asset::AssetServer;
+use bevy::gltf::GltfAssetLabel;
+use bevy::math::{EulerRot, Quat, Vec3};
+use bevy::pbr::{
+    CascadeShadowConfigBuilder, DirectionalLight, DirectionalLightBundle, DirectionalLightShadowMap,
+};
+use bevy::prelude::{
+    default, Camera3dBundle, Commands, EnvironmentMapLight, PluginGroup, Query, Res, SceneBundle,
+    Time, Transform, Window, WindowPlugin, With,
+};
+use bevy::DefaultPlugins;
 use leptos::html::Canvas;
 use leptos::wasm_bindgen::JsCast;
 use leptos::*;
+use std::f32::consts::{FRAC_PI_4, PI};
 use thaw::{Spinner, SpinnerSize};
 use web_sys::{HtmlCanvasElement, HtmlInputElement};
 #[cfg(target_arch = "wasm32")]
@@ -49,7 +62,7 @@ pub fn PartsTableRow(
     // -- actions -- //
     let update_part = create_action(move |_| {
         let update_part_request = UpdatePartRequest {
-            id: reactive_part.id.clone(),
+            part_id: reactive_part.id.clone(),
             client_id: reactive_part.client_id.clone(),
             project_id: reactive_part.project_id.clone(),
             quotation_id: reactive_part.quotation_id.clone(),
@@ -79,7 +92,7 @@ pub fn PartsTableRow(
 
         let input_element = input_element.clone();
         let request = CreateDrawingUploadUrlRequest {
-            client_id: user_info.get_untracked().id,
+            customer_id: user_info.get_untracked().id,
             file_name: file_name.clone(),
             file_url,
         };
@@ -130,6 +143,68 @@ pub fn PartsTableRow(
         }
     });
 
+    // let _main_bevy = create_action(move |_| async move {
+    //     App::new()
+    //         .insert_resource(DirectionalLightShadowMap { size: 4096 })
+    //         .add_plugins(DefaultPlugins.set(WindowPlugin {
+    //             primary_window: Some(Window {
+    //                 canvas: Some(format!("#{}", canvas_id.get_untracked())),
+    //                 ..default()
+    //             }),
+    //             ..default()
+    //         }))
+    //         .add_systems(Startup, setup)
+    //         .add_systems(Update, animate_light_direction)
+    //         .run();
+    // })
+    // .dispatch(());
+
+    fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands.spawn((Camera3dBundle {
+            transform: Transform::from_xyz(0.7, 0.7, 1.0)
+                .looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+            ..default()
+        },));
+
+        commands.spawn(DirectionalLightBundle {
+            directional_light: DirectionalLight {
+                shadows_enabled: true,
+                ..default()
+            },
+            // This is a relatively small scene, so use tighter shadow
+            // cascade bounds than the default for better quality.
+            // We also adjusted the shadow map to be larger since we're
+            // only using a single cascade.
+            cascade_shadow_config: CascadeShadowConfigBuilder {
+                num_cascades: 1,
+                maximum_distance: 1.6,
+                ..default()
+            }
+            .into(),
+            ..default()
+        });
+        commands.spawn(SceneBundle {
+            scene: asset_server.load(
+                GltfAssetLabel::Scene(0).from_asset("http://localhost:4566/unnamed-client-files/parts/web_ready/0d872704-8645-4f2a-b1c4-3af74f6bf723/3283f8e7-525a-46ff-9a09-e5dd79c92b73.glb"),
+            ),
+            ..default()
+        });
+    }
+
+    fn animate_light_direction(
+        time: Res<Time>,
+        mut query: Query<&mut Transform, With<DirectionalLight>>,
+    ) {
+        for mut transform in &mut query {
+            transform.rotation = Quat::from_euler(
+                EulerRot::ZYX,
+                0.0,
+                time.elapsed_seconds() * PI / 5.0,
+                -FRAC_PI_4,
+            );
+        }
+    }
+
     view! {
         <div class="flex shadow my-2 p-4 h-80 bg-white rounded-xl overflow-hidden space-x-4">
             <div class="w-72 flex flex-col items-center justify-center">
@@ -144,7 +219,7 @@ pub fn PartsTableRow(
                         view! { <div></div> }
                     }
                 }}
-                <canvas id=canvas_id class="rounded" ref=canvas_ref></canvas>
+                <canvas id=canvas_id selector="#part_1" class="rounded" ref=canvas_ref></canvas>
             </div>
             <div class="flex-col grow grow">
                 <div class="flex space-x-2">

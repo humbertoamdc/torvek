@@ -2,36 +2,42 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use axum::async_trait;
-use uuid::Uuid;
+use uuid::{ContextV7, Timestamp, Uuid};
 
 use api_boundary::common::file::File;
 use api_boundary::parts::errors::PartsError;
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
+use api_boundary::quotations::models::QuotationStatus;
+use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
+use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::usecase::UseCase;
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
 static ORIGINAL_FILES_BASE_FILE_PATH: &'static str = "parts/originals";
 static RENDER_FILES_BASE_FILE_PATH: &'static str = "parts/web_ready";
-static RENDER_FILE_FORMAT: &'static str = ".glb";
+static RENDER_FILE_FORMAT: &'static str = ".stl";
 
 pub struct CreatePartsUseCase {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
+    update_quotation_status_usecase: UpdateQuotationStatusUseCase,
 }
 
 impl CreatePartsUseCase {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
+        update_quotation_status_usecase: UpdateQuotationStatusUseCase,
     ) -> Self {
         Self {
             parts_repository,
             object_storage,
+            update_quotation_status_usecase,
         }
     }
 }
@@ -44,7 +50,11 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
     ) -> Result<CreatePartsResponse, PartsError> {
         let file_ids = (0..request.file_names.len())
             .into_iter()
-            .map(|_| Uuid::new_v4().to_string())
+            .map(|_| {
+                let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
+                let encoded_id = format!("file_{}", bs58::encode(id).into_string());
+                encoded_id
+            })
             .collect::<Vec<String>>();
         let original_file_names = request.file_names.clone();
         let render_file_names = request
@@ -62,7 +72,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
                 &original_file_names,
                 &file_ids,
                 ORIGINAL_FILES_BASE_FILE_PATH,
-                request.client_id.clone(),
+                request.customer_id.clone(),
             )
             .await?;
         let render_presigned_urls = self
@@ -70,7 +80,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
                 &render_file_names,
                 &file_ids,
                 RENDER_FILES_BASE_FILE_PATH,
-                request.client_id.clone(),
+                request.customer_id.clone(),
             )
             .await?;
 
@@ -90,7 +100,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
                 let render_file = File::new(render_file_names[i].clone(), render_url);
 
                 Part::new(
-                    request.client_id.clone(),
+                    request.customer_id.clone(),
                     request.project_id.clone(),
                     request.quotation_id.clone(),
                     original_file,
@@ -98,6 +108,17 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
                 )
             })
             .collect();
+
+        let update_quotation_status_request = UpdateQuotationStatusRequest {
+            project_id: request.project_id,
+            quotation_id: request.quotation_id,
+            status: QuotationStatus::Created,
+        };
+
+        self.update_quotation_status_usecase
+            .execute(update_quotation_status_request)
+            .await
+            .map_err(|_| PartsError::UnknownError)?;
 
         self.parts_repository.create_parts(parts).await?;
 
@@ -111,7 +132,7 @@ impl CreatePartsUseCase {
         file_names: &Vec<String>,
         file_ids: &Vec<String>,
         file_path: &str,
-        client_id: String,
+        customer_id: String,
     ) -> Result<Vec<String>, PartsError> {
         let file_extensions = file_names
             .iter()
@@ -122,7 +143,7 @@ impl CreatePartsUseCase {
         for (i, file_extension) in file_extensions.into_iter().enumerate() {
             let file_path = format!(
                 "{}/{}/{}.{}",
-                file_path, client_id, file_ids[i], file_extension
+                file_path, customer_id, file_ids[i], file_extension
             );
             let presigned_url = self
                 .object_storage

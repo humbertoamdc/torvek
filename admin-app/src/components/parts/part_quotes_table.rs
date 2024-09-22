@@ -21,7 +21,7 @@ pub fn PartQuotesTable(
 ) -> impl IntoView {
     // -- variables --//
 
-    let client_id = quotation.client_id.clone();
+    let customer_id = quotation.customer_id.clone();
     let project_id = quotation.project_id.clone();
     let quotation_id = quotation.id.clone();
 
@@ -40,17 +40,17 @@ pub fn PartQuotesTable(
     // -- actions -- //
 
     let query_parts_for_quotation = create_action(move |_| {
-        let client_id = quotation.client_id.clone();
+        let customer_id = quotation.customer_id.clone();
         let project_id = quotation.project_id.clone();
         let quotation_id = quotation.id.clone();
         async move {
             let result = parts_client
-                .query_parts_for_quotation(client_id, project_id, quotation_id)
+                .query_parts_for_quotation(customer_id, project_id, quotation_id)
                 .await;
 
             match result {
                 Ok(response) => {
-                    parts.update(|parts| *parts = response.parts.clone());
+                    parts.update(|parts| *parts = response.parts);
                 }
                 Err(_) => (), // TODO: Handle error.
             }
@@ -80,10 +80,9 @@ pub fn PartQuotesTable(
                 .into_iter()
                 .zip(parts_deadlines_map.get(&part.id).unwrap())
                 .for_each(|(price_option, deadline)| {
-                    let mut unit_price = price_option.get_untracked().unwrap();
-                    unit_price.amount = unit_price.amount / part.quantity as i64;
-                    let mut sub_total = unit_price.clone();
-                    sub_total.amount = sub_total.amount * part.quantity as i64;
+                    let sub_total = price_option.get_untracked().unwrap();
+                    let mut unit_price = sub_total.clone();
+                    unit_price.amount = sub_total.amount / part.quantity as i64;
 
                     price_data.push(CreatePartQuotesRequestData {
                         part_id: part.id.clone(),
@@ -95,7 +94,7 @@ pub fn PartQuotesTable(
         });
 
         let request = CreatePartQuotesRequest {
-            client_id: client_id.clone(),
+            customer_id: customer_id.clone(),
             project_id: project_id.clone(),
             quotation_id: quotation_id.clone(),
             data: price_data,
@@ -143,12 +142,8 @@ pub fn PartQuotesTable(
                 children=move |(_, part)| {
                     let price_options = vec![
                         create_rw_signal(None::<Money>),
-                        create_rw_signal(None::<Money>),
-                        create_rw_signal(None::<Money>),
                     ];
                     let deadline_options = vec![
-                        create_rw_signal(None::<NaiveDate>),
-                        create_rw_signal(None::<NaiveDate>),
                         create_rw_signal(None::<NaiveDate>),
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));

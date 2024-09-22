@@ -8,6 +8,6 @@ Resources:
     Properties:
       DkimAttributes:
         SigningEnabled: true
-      EmailIdentity: rusticad.com
+      EmailIdentity: torvek.com
       MailFromAttributes:
-        MailFromDomain: mail.rusticad.com
+        MailFromDomain: mail.torvek.com

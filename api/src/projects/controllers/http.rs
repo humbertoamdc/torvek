@@ -27,10 +27,10 @@ pub async fn create_project(
 
 pub async fn query_projects_for_client(
     State(app_state): State<AppState>,
-    Path(client_id): Path<String>,
+    Path(customer_id): Path<String>,
 ) -> impl IntoResponse {
     let usecase = QueryProjectsForClientUseCase::new(app_state.projects.projects_repository);
-    let request = QueryProjectsForClientRequest::new(client_id);
+    let request = QueryProjectsForClientRequest::new(customer_id);
     let result = usecase.execute(request).await;
 
     match result {

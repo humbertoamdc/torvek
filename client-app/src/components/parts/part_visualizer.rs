@@ -14,14 +14,9 @@ pub(crate) struct Scene {
     control: OrbitControl,
 }
 
-// #[component]
 pub fn part_window(window_builders_and_models: Vec<(WindowBuilder, three_d_asset::Model)>) {
-    // -- variables -- //
-
-    // let canvas_ref = create_node_ref::<Canvas>();
-    // let is_visible = use_element_visibility(canvas_ref);
-
     let event_loop = winit::event_loop::EventLoop::new();
+
     let windows: HashMap<
         WindowId,
         (
@@ -102,7 +97,7 @@ pub fn part_window(window_builders_and_models: Vec<(WindowBuilder, three_d_asset
     // }
 }
 
-fn renderer(
+pub fn renderer(
     event_loop: winit::event_loop::EventLoop<()>,
     mut windows: HashMap<
         WindowId,
@@ -176,6 +171,7 @@ fn renderer(
                                 &directional4,
                             ],
                         );
+                    // control_flow.set_exit();
                 }
 
                 context.swap_buffers().unwrap();

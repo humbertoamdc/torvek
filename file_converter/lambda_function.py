@@ -1,12 +1,12 @@
 import logging
 import sys
 
-import trimesh
+# import trimesh
 
 sys.path.append('/freecad/lib')
 
-# import Part
-# import Mesh
+import Part
+import Mesh
 
 # FILE_PATH = "/tmp/"
 
@@ -32,6 +32,17 @@ def lambda_handler(event, context):
     }
 
     return response
+
+
+def convert_step_to_stl(input_file, output_file):
+    # Load the STEP file
+    shape = Part.Shape()
+    shape.read(input_file)
+
+    # Export to STL
+    mesh = Mesh.Mesh()
+    mesh.addFacets(shape.tessellate(2.0))
+    mesh.write(output_file)
 
 
 # def convert_step_to_obj(input_file, output_file):

@@ -4,32 +4,22 @@
 awslocal dynamodb create-table \
     --table-name Orders \
     --attribute-definitions \
-        AttributeName=id,AttributeType=S \
-        AttributeName=part_id,AttributeType=S \
-        AttributeName=status,AttributeType=S \
-        AttributeName=created_at,AttributeType=S \
+        AttributeName=customer_id,AttributeType=S \
+        AttributeName=status#id,AttributeType=S \
+        AttributeName=is_open,AttributeType=S \
     --key-schema \
-        AttributeName=id,KeyType=HASH \
+        AttributeName=customer_id,KeyType=HASH \
+        AttributeName=status#id,KeyType=RANGE \
     --billing-mod PAY_PER_REQUEST \
     --global-secondary-indexes \
     '[
       {
-        "IndexName": "OrderForPart",
+        "IndexName": "OpenOrders",
         "KeySchema": [
-          {"AttributeName":"part_id","KeyType":"HASH"}
+          {"AttributeName":"is_open","KeyType":"HASH"}
         ],
         "Projection":{
-          "ProjectionType": "KEYS_ONLY"
-        }
-      },
-      {
-        "IndexName": "OrdersByStatus",
-        "KeySchema": [
-          {"AttributeName":"status","KeyType":"HASH"},
-          {"AttributeName":"created_at","KeyType":"RANGE"}
-        ],
-        "Projection":{
-          "ProjectionType":"ALL"
+          "ProjectionType": "ALL"
         }
       }
     ]'

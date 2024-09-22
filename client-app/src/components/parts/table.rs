@@ -12,6 +12,9 @@ use clients::parts::PartsClient;
 use crate::components::parts::table_row::PartsTableRow;
 use crate::models::reactive_part::ReactivePart;
 
+use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
+use bevy::prelude::*;
+
 #[component]
 pub fn PartsTable(
     #[prop(into)] parts: RwSignal<Vec<Part>>,

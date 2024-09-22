@@ -50,11 +50,9 @@ pub fn Dashboard(
         }
     });
 
-    let query_orders_by_status = create_action(move |status: &OrderStatus| {
-        let status = status.clone();
-
+    let query_open_orders = create_action(move |_| {
         async move {
-            let result = orders_client.query_orders_by_status(status).await;
+            let result = orders_client.query_open_orders().await;
 
             match result {
                 Ok(response) => orders.update(|o| *o = response.orders),
@@ -70,7 +68,7 @@ pub fn Dashboard(
             Ok(user_info) => {
                 user_info_signal.update(|u| {
                     query_created_quotations.dispatch(());
-                    query_orders_by_status.dispatch(OrderStatus::PendingPricing);
+                    query_open_orders.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
                 });
             }

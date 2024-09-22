@@ -7,7 +7,7 @@ use api_boundary::payments::errors::PaymentsError;
 pub trait OrdersCreationService: Send + Sync + 'static {
     async fn create_orders_and_update_quotation_status(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
