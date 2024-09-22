@@ -22,7 +22,7 @@ impl GetProjectByIdUseCase {
 impl UseCase<GetProjectByIdRequest, Project, ProjectsError> for GetProjectByIdUseCase {
     async fn execute(&self, request: GetProjectByIdRequest) -> Result<Project, ProjectsError> {
         self.projects_repository
-            .get_project_by_id(request.client_id, request.project_id)
+            .get_project_by_id(request.customer_id, request.project_id)
             .await
     }
 }

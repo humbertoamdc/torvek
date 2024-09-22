@@ -1,11 +1,15 @@
 import logging
 import sys
+import os
+import boto3
 
 # import trimesh
 
 sys.path.append('/usr/lib/freecad/lib')
 
 import FreeCAD
+import Part
+import Mesh
 
 # import Part
 # import Mesh
@@ -14,11 +18,38 @@ import FreeCAD
 
 logger = logging.getLogger(__name__)
 
+base_tmp_storage_path = '/tmp/'
+s3_web_ready_path = 'parts/web_ready/'
+
+s3 = boto3.client("s3")
+
 
 def lambda_handler(event, context):
     logging.basicConfig(level=logging.INFO)
     logger.info("Event:", event)
     logger.info("Context:", context)
+
+    print("Event", event)
+    print("Context:", context)
+
+    for record in event["Records"]:
+        s3_bucket = record["s3"]["bucket"]["name"]
+        s3_key = record["s3"]["object"]["key"]
+
+        file_parts = s3_key.split('/')
+        user_id = file_parts[-2]
+        file_name_with_format = file_parts[-1]
+        file_name, file_format = file_name_with_format.split('.')
+        tmp_storage_path = base_tmp_storage_path + user_id + '/'
+        s3_file_path = s3_web_ready_path + user_id + '/'
+
+        os.makedirs(tmp_storage_path, exist_ok=True)
+
+        download_file_from_s3(s3_bucket, s3_key, tmp_storage_path + file_name_with_format)
+
+        convert_step_to_stl(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.stl')
+
+        write_file_to_s3(tmp_storage_path, s3_bucket, s3_file_path, file_name + '.stl')
 
     body = {
         "message": "Success"
@@ -34,6 +65,31 @@ def lambda_handler(event, context):
     }
 
     return response
+
+
+def download_file_from_s3(s3_bucket, s3_file_key, local_file_path):
+    try:
+        s3.download_file(s3_bucket, s3_file_key, local_file_path)
+    except Exception as e:
+        print(f"Error downloading file: {e}")
+
+
+def convert_step_to_stl(input_file, output_file):
+    # Load the STEP file
+    shape = Part.Shape()
+    shape.read(input_file)
+
+    # Export to STL
+    mesh = Mesh.Mesh()
+    mesh.addFacets(shape.tessellate(2.0))
+    mesh.write(output_file)
+
+
+def write_file_to_s3(local_path, s3_bucket, s3_path, file):
+    try:
+        s3.upload_file(local_path + file, s3_bucket, s3_path + file)
+    except Exception as e:
+        print(f"Something went wrong while saving file to S3: {e}")
 
 # def convert_step_to_obj(input_file, output_file):
 #     # Load the STEP file

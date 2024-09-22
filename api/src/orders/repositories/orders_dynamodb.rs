@@ -6,13 +6,14 @@ use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
+use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use api_boundary::common::money::Money;
 use api_boundary::orders::errors::OrdersError;
 use api_boundary::orders::models::{Order, OrderStatus};
 
 use crate::orders::repositories::orders::OrdersRepository;
 
-static ORDERS_BY_STATUS_INDEX: &'static str = "OrdersByStatus";
+static OPEN_ORDERS_INDEX: &'static str = "OpenOrders";
 
 #[derive(Clone)]
 pub struct DynamodbOrders {
@@ -28,15 +29,17 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn query_orders_by_status(&self, status: OrderStatus) -> Result<Vec<Order>, OrdersError> {
+    async fn query_orders_for_customer(
+        &self,
+        customer_id: String,
+    ) -> Result<Vec<Order>, OrdersError> {
         let response = self
             .client
             .query()
             .table_name(&self.table)
-            .index_name(ORDERS_BY_STATUS_INDEX)
-            .key_condition_expression("#status = :value")
-            .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
-            .expression_attribute_names("#status", "status")
+            .key_condition_expression("customer_id = :value")
+            .expression_attribute_values(":value", AttributeValue::S(customer_id))
+            .scan_index_forward(false)
             .send()
             .await;
 
@@ -44,7 +47,48 @@ impl OrdersRepository for DynamodbOrders {
             Ok(output) => {
                 let items = output.items().to_vec();
                 match from_items(items) {
-                    Ok(orders) => Ok(orders),
+                    Ok(dynamodb_orders) => {
+                        let orders = dynamodb_orders
+                            .into_iter()
+                            .map(|dynamodb_order: DynamodbOrderItem| dynamodb_order.into())
+                            .collect();
+                        Ok(orders)
+                    }
+                    Err(err) => {
+                        log::error!("{:?}", err);
+                        Err(OrdersError::UnknownError)
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("{:?}", err);
+                Err(OrdersError::UnknownError)
+            }
+        }
+    }
+
+    async fn query_open_orders(&self) -> Result<Vec<Order>, OrdersError> {
+        let response = self
+            .client
+            .query()
+            .table_name(&self.table)
+            .index_name(OPEN_ORDERS_INDEX)
+            .key_condition_expression("is_open = :value")
+            .expression_attribute_values(":value", AttributeValue::S(String::from("1")))
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => {
+                let items = output.items().to_vec();
+                match from_items(items) {
+                    Ok(dynamodb_orders) => {
+                        let orders = dynamodb_orders
+                            .into_iter()
+                            .map(|dynamodb_order: DynamodbOrderItem| dynamodb_order.into())
+                            .collect();
+                        Ok(orders)
+                    }
                     Err(err) => {
                         log::error!("{:?}", err);
                         Err(OrdersError::UnknownError)

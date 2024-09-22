@@ -41,11 +41,13 @@ invoke:
 # IMPORTANT: The commands below are the important ones to deploy the lambda. After we have a
 #			 working version in production we can safely delete the commands above.
 lambda-ecr:
-	docker build -t file_converter --platform linux/amd64 .
+	docker build -t file_converter --platform linux/arm64 .
 
-create-ecr:
+ecr-login:
 	aws --profile $(PROFILE) --region $(REGION) ecr get-login-password \
 	| docker login --username AWS --password-stdin 120386585975.dkr.ecr.us-east-1.amazonaws.com
+
+create-ecr:
 	aws --profile $(PROFILE) --region $(REGION) ecr create-repository \
 		--repository-name file_converter \
 		--image-scanning-configuration scanOnPush=true \

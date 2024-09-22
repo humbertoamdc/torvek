@@ -21,7 +21,7 @@ impl CreateProjectUseCase {
 #[async_trait]
 impl UseCase<CreateProjectRequest, (), ProjectsError> for CreateProjectUseCase {
     async fn execute(&self, request: CreateProjectRequest) -> Result<(), ProjectsError> {
-        let project = Project::new(request.client_id);
+        let project = Project::new(request.customer_id);
         self.projects_repository.create_project(project).await
     }
 }

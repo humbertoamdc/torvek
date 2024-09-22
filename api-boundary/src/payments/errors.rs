@@ -6,6 +6,9 @@ use http::StatusCode;
 
 #[derive(Debug)]
 pub enum WebhookRequestError {
+    MissingShippingDetails,
+    MissingShippingRecipientName,
+    MissingShippingAddress,
     MissingMetadata,
     MissingField,
 }

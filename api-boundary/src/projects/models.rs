@@ -1,25 +1,26 @@
 use chrono::{DateTime, Utc};
 use names::Generator;
 use serde_derive::{Deserialize, Serialize};
-use uuid::Uuid;
+use uuid::{ContextV7, Timestamp, Uuid};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Project {
     pub id: String,
-    pub client_id: String,
+    pub customer_id: String,
     pub name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 impl Project {
-    pub fn new(client_id: String) -> Self {
-        let id = Uuid::new_v4().to_string();
+    pub fn new(customer_id: String) -> Self {
+        let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
+        let encoded_id = format!("pro_{}", bs58::encode(id).into_string());
         let name = Generator::default().next().unwrap();
         let now = Utc::now();
 
         Self {
-            id,
-            client_id,
+            id: encoded_id,
+            customer_id,
             name,
             created_at: now,
             updated_at: now,

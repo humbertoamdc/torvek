@@ -2,26 +2,26 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateProjectRequest {
-    pub client_id: String,
+    pub customer_id: String,
 }
 impl CreateProjectRequest {
-    pub const fn new(client_id: String) -> Self {
-        Self { client_id }
+    pub const fn new(customer_id: String) -> Self {
+        Self { customer_id }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GetProjectByIdRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryProjectsForClientRequest {
-    pub client_id: String,
+    pub customer_id: String,
 }
 impl QueryProjectsForClientRequest {
-    pub const fn new(client_id: String) -> Self {
-        Self { client_id }
+    pub const fn new(customer_id: String) -> Self {
+        Self { customer_id }
     }
 }

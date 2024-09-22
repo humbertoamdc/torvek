@@ -4,13 +4,13 @@ use crate::quotations::models::QuotationStatus;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
 }
 impl CreateQuotationRequest {
-    pub const fn new(client_id: String, project_id: String) -> Self {
+    pub const fn new(customer_id: String, project_id: String) -> Self {
         Self {
-            client_id,
+            customer_id,
             project_id,
         }
     }
@@ -18,13 +18,13 @@ impl CreateQuotationRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryQuotationsForProjectRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
 }
 impl QueryQuotationsForProjectRequest {
-    pub const fn new(client_id: String, project_id: String) -> Self {
+    pub const fn new(customer_id: String, project_id: String) -> Self {
         Self {
-            client_id,
+            customer_id,
             project_id,
         }
     }
@@ -32,7 +32,7 @@ impl QueryQuotationsForProjectRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GetQuotationByIdRequest {
-    pub client_id: String,
+    pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
 }
@@ -42,9 +42,8 @@ pub struct AdminQueryQuotationsByStatusRequest {
     pub status: QuotationStatus,
 }
 
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateQuotationStatusRequest {
-    pub client_id: String,
     pub project_id: String,
     pub quotation_id: String,
     pub status: QuotationStatus,

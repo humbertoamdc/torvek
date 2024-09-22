@@ -28,7 +28,7 @@ impl UseCase<QueryProjectsForClientRequest, QueryProjectsForClientResponse, Proj
     ) -> Result<QueryProjectsForClientResponse, ProjectsError> {
         let projects = self
             .projects_repository
-            .query_projects_for_client(request.client_id)
+            .query_projects_for_client(request.customer_id)
             .await?;
 
         Ok(QueryProjectsForClientResponse::new(projects))

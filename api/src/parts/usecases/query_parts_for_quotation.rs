@@ -3,7 +3,9 @@ use std::time::Duration;
 
 use axum::async_trait;
 
+use api_boundary::common::money::Money;
 use api_boundary::parts::errors::PartsError;
+use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 use url::Url;
@@ -41,10 +43,33 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, Part
     ) -> Result<QueryPartsForQuotationResponse, PartsError> {
         let mut parts = self
             .parts_repository
-            .query_parts_for_quotation(request.client_id, request.project_id, request.quotation_id)
+            .query_parts_for_quotation(request.quotation_id)
             .await?;
 
-        // Add render file presigned url.
+        self.sign_part_render_urls(&mut parts).await?;
+
+        let quotation_subtotal: Option<Money> = {
+            match request.with_quotation_subtotal {
+                true => match self.get_quotation_subtotal(&parts).await {
+                    Ok(money) => Ok(Some(money)),
+                    Err(err) => match err {
+                        PartsError::NoSelectedQuoteAvailableForPart(_) => Ok(None),
+                        _ => Err(err),
+                    },
+                },
+                false => Ok(None),
+            }?
+        };
+
+        Ok(QueryPartsForQuotationResponse {
+            parts,
+            quotation_subtotal,
+        })
+    }
+}
+
+impl QueryPartsForQuotationUseCase {
+    async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<(), PartsError> {
         for part in parts.iter_mut() {
             // TODO: Handle error.
             // For both cases, we can recover from the error, we will just leave the presigned url field
@@ -55,9 +80,6 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, Part
                 .path()
                 .strip_prefix("/")
                 .unwrap()
-                .split_once("/")
-                .unwrap()
-                .1
                 .to_string();
             let presigned_url = self
                 .object_storage
@@ -70,6 +92,24 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, Part
             part.render_file.presigned_url = Some(presigned_url);
         }
 
-        Ok(QueryPartsForQuotationResponse::new(parts))
+        Ok(())
+    }
+
+    async fn get_quotation_subtotal(&self, parts: &Vec<Part>) -> Result<Money, PartsError> {
+        let selected_part_quotes = parts
+            .iter()
+            .map(|part| part.part_quotes.clone().unwrap_or_default())
+            .flatten()
+            .collect::<Vec<PartQuote>>();
+
+        let subtotal =
+            selected_part_quotes
+                .iter()
+                .fold(Money::default(), |mut money: Money, part_quote| {
+                    money.amount += part_quote.sub_total.amount;
+                    money
+                });
+
+        Ok(subtotal)
     }
 }

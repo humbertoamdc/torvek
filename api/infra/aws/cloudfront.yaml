@@ -17,7 +17,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - www.rusticad.com
+          - www.torvek.com
         Comment: Distribution for client portal.
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300
@@ -60,7 +60,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - admin.rusticad.com
+          - admin.torvek.com
         Comment: Distribution for admin portal.
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300
@@ -103,7 +103,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - suppliers.rusticad.com
+          - suppliers.torvek.com
         Comment: Distribution for supplier portal.
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300

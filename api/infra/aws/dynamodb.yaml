@@ -7,30 +7,24 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: customer_id
           AttributeType: S
-        - AttributeName: part_id
+        - AttributeName: status#id
           AttributeType: S
-        - AttributeName: status
-          AttributeType: S
-        - AttributeName: created_at
+        - AttributeName: is_open
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: id
+        - AttributeName: customer_id
           KeyType: HASH
+        - AttributeName: status#id
+          KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: OrderForPart
+        - IndexName: OpenOrders
           KeySchema:
-            - AttributeName: part_id
+            - AttributeName: is_open
               KeyType: HASH
-          Projection:
-            ProjectionType: KEYS_ONLY
-        - IndexName: OrdersByStatus
-          KeySchema:
-            - AttributeName: status
-              KeyType: HASH
-            - AttributeName: created_at
+            - AttributeName: status#id
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -48,13 +42,13 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: client_id
+        - AttributeName: customer_id
           AttributeType: S
         - AttributeName: id
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: client_id
+        - AttributeName: customer_id
           KeyType: HASH
         - AttributeName: id
           KeyType: RANGE
@@ -72,7 +66,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: client_id#project_id
+        - AttributeName: project_id
           AttributeType: S
         - AttributeName: id
           AttributeType: S
@@ -82,7 +76,7 @@ Resources:
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: client_id#project_id
+        - AttributeName: project_id
           KeyType: HASH
         - AttributeName: id
           KeyType: RANGE
@@ -109,13 +103,13 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: client_id#project_id#quotation_id
+        - AttributeName: quotation_id
           AttributeType: S
         - AttributeName: id
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema:
-        - AttributeName: client_id#project_id#quotation_id
+        - AttributeName: quotation_id
           KeyType: HASH
         - AttributeName: id
           KeyType: RANGE
@@ -126,30 +120,6 @@ Resources:
         SSEType: KMS
       TableClass: STANDARD
       TableName: Parts
-
-  PartQuotesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: part_id
-          AttributeType: S
-        - AttributeName: id
-          AttributeType: S
-      BillingMode: PAY_PER_REQUEST
-      KeySchema:
-        - AttributeName: part_id
-          KeyType: HASH
-        - AttributeName: id
-          KeyType: RANGE
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      TableName: PartQuotes
 
 Outputs:
   OrdersTableArn:
@@ -175,9 +145,3 @@ Outputs:
     Value: !GetAtt PartsTable.Arn
     Export:
       Name: PartsTableArn
-
-  PartQuotesTableArn:
-    Description: ARN of part quotes dynamodb table.
-    Value: !GetAtt PartQuotesTable.Arn
-    Export:
-      Name: PartQuotesTableArn

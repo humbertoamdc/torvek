@@ -1,6 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 use crate::orders::models::Order;
+use crate::parts::models::Part;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateDrawingUploadUrlResponse {
@@ -14,6 +15,17 @@ impl CreateDrawingUploadUrlResponse {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct QueryOrdersByStatusResponse {
+pub struct QueryOpenOrdersResponse {
     pub orders: Vec<Order>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryOrdersForCustomerResponse {
+    pub data: Vec<QueryOrdersForCustomerResponseData>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryOrdersForCustomerResponseData {
+    pub order: Order,
+    pub part: Option<Part>,
 }

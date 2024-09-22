@@ -32,17 +32,20 @@ impl UnauthorizedApi {
             false => Err(Error::UnknownError),
         }
     }
+
     pub async fn try_login_with_session_cookie(&self) -> Result<(AuthorizedApi, UserInfo)> {
         let url = format!("{}/accounts/admins/session", self.url);
         let req = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()?;
+
         let result = self.send(req).await;
         match result {
             Ok(user_info) => Ok((AuthorizedApi::new(self.url), user_info)),
             Err(err) => Err(err),
         }
     }
+
     async fn send<T: DeserializeOwned>(&self, req: Request) -> Result<T> {
         let response = req.send().await?;
         into_json(response).await
@@ -65,6 +68,7 @@ impl AuthorizedApi {
     pub async fn user_info(&self) -> Result<UserInfo> {
         let url = format!("{}/accounts/admins/session", self.url);
         let req = Request::get(&url).credentials(RequestCredentials::Include);
+
         self.send(req).await
     }
     async fn send<T: DeserializeOwned>(&self, req: RequestBuilder) -> Result<T> {

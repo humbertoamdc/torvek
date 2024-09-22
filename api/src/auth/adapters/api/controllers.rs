@@ -21,7 +21,7 @@ use crate::auth::application::usecases::logout_client::LogoutClientUseCase;
 use crate::auth::application::usecases::register_client::RegisterClientUseCase;
 use crate::auth::domain::errors::AuthError;
 
-static CLIENT_SESSION_TOKEN: &'static str = "client_session_token";
+static CUSTOMER_SESSION_TOKEN: &'static str = "customer_session_token";
 static ADMIN_SESSION_TOKEN: &'static str = "admin_session_token";
 
 pub async fn register_client(
@@ -38,7 +38,7 @@ pub async fn register_client(
             cookies.add(
                 auth_session
                     .session_cookie(
-                        CLIENT_SESSION_TOKEN,
+                        CUSTOMER_SESSION_TOKEN,
                         app_state.env.secure_session_cookie(),
                         app_state.domain,
                     )
@@ -63,7 +63,7 @@ pub async fn login(
             cookies.add(
                 auth_session
                     .session_cookie(
-                        CLIENT_SESSION_TOKEN,
+                        CUSTOMER_SESSION_TOKEN,
                         app_state.env.secure_session_cookie(),
                         app_state.domain,
                     )
@@ -79,7 +79,7 @@ pub async fn get_session(
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
     let usecase = GetSessionUseCase::new(app_state.auth.identity_manager);
-    let session_cookie = cookies.get(CLIENT_SESSION_TOKEN);
+    let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
@@ -104,7 +104,7 @@ pub async fn get_session(
 
 pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> impl IntoResponse {
     let usecase = LogoutClientUseCase::new(app_state.auth.identity_manager);
-    let session_cookie = cookies.get(CLIENT_SESSION_TOKEN);
+    let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
@@ -114,7 +114,7 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
 
     match result {
         Ok(_) => {
-            let cookie = Cookie::build((CLIENT_SESSION_TOKEN, ""))
+            let cookie = Cookie::build((CUSTOMER_SESSION_TOKEN, ""))
                 .path("/")
                 .expires(OffsetDateTime::now_utc())
                 .build();

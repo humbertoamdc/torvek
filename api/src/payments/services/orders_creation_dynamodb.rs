@@ -4,6 +4,7 @@ use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::to_item;
 
+use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use api_boundary::orders::models::Order;
 use api_boundary::payments::errors::PaymentsError;
 use api_boundary::quotations::models::QuotationStatus;
@@ -35,17 +36,23 @@ impl DynamodbOrdersCreationService {
 impl OrdersCreationService for DynamodbOrdersCreationService {
     async fn create_orders_and_update_quotation_status(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
     ) -> Result<(), PaymentsError> {
+        // Parse to DynamoDB format.
+        let items = orders
+            .into_iter()
+            .map(|order| DynamodbOrderItem::from(order))
+            .collect::<Vec<_>>();
+
         // Update quotation status to OrdersCreated.
         let quotation_transaction =
-            self.build_quotation_transaction(client_id, project_id, quotation_id);
+            self.build_quotation_transaction(customer_id, project_id, quotation_id);
 
         // Create orders Dynamodb items.
-        let orders_transactions = self.build_orders_transactions(orders);
+        let orders_transactions = self.build_orders_transactions(items);
 
         // Build transaction request.
         let mut transaction_request = self
@@ -72,21 +79,16 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
 impl DynamodbOrdersCreationService {
     fn build_quotation_transaction(
         &self,
-        client_id: String,
+        _customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> TransactWriteItem {
-        let client_id_and_project_id = format!("{client_id}#{project_id}");
-
         TransactWriteItem::builder()
             .update(
                 Update::builder()
                     .table_name(&self.quotations_table)
                     .set_key(Some(HashMap::from([
-                        (
-                            String::from("client_id#project_id"),
-                            AttributeValue::S(client_id_and_project_id),
-                        ),
+                        (String::from("project_id"), AttributeValue::S(project_id)),
                         (String::from("id"), AttributeValue::S(quotation_id)),
                     ])))
                     .condition_expression("#status = :awaitingPaymentStatus")
@@ -115,7 +117,7 @@ impl DynamodbOrdersCreationService {
             .build()
     }
 
-    fn build_orders_transactions(&self, orders: Vec<Order>) -> Vec<TransactWriteItem> {
+    fn build_orders_transactions(&self, orders: Vec<DynamodbOrderItem>) -> Vec<TransactWriteItem> {
         orders
             .into_iter()
             .map(|order| {

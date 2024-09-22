@@ -39,7 +39,7 @@ impl UseCase<CreatePartQuotesRequest, (), PartsError> for CreatePartQuotesUseCas
 
         self.part_quotes_creation_service
             .create_part_quotes_and_update_quotation_status(
-                request.client_id,
+                request.customer_id,
                 request.project_id,
                 request.quotation_id,
                 part_quotes,

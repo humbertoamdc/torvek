@@ -47,7 +47,7 @@ pub fn AddOrderPayoutsTableRow(
                         />
                     </div>
                     <div class="ml-3">
-                        <p class="text-gray-900 whitespace-no-wrap">{order.model_file.name}</p>
+                        // <p class="text-gray-900 whitespace-no-wrap">{order.model_file.name}</p>
                     </div>
                 </div>
             </td>

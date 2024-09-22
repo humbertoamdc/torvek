@@ -54,12 +54,12 @@ def fetch_messages_from_sqs():
 
                 download_file_from_s3(s3_key, tmp_storage_path + file_name_with_format)
 
-                # convert_step_to_stl(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.stl')
-                convert_step_to_obj(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.obj')
-                convert_obj_to_glb(tmp_storage_path + file_name + '.obj', tmp_storage_path + file_name + '.glb')
+                convert_step_to_stl(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.stl')
+                # convert_step_to_obj(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.obj')
+                # convert_obj_to_glb(tmp_storage_path + file_name + '.obj', tmp_storage_path + file_name + '.glb')
 
-                write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.glb')
-                # write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.stl')
+                # write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.glb')
+                write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.stl')
 
                 sqs.delete_message(
                     QueueUrl=queue_url,

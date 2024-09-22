@@ -27,9 +27,9 @@ impl ProjectsClient {
 
     pub async fn query_projects_for_client(
         &self,
-        client_id: String,
+        customer_id: String,
     ) -> Result<QueryProjectsForClientResponse> {
-        let url = format!("{}/clients/{client_id}/projects", self.url);
+        let url = format!("{}/customers/{customer_id}/projects", self.url);
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()
@@ -40,10 +40,10 @@ impl ProjectsClient {
 
     pub async fn get_project_by_id(
         &self,
-        client_id: String,
+        customer_id: String,
         project_id: String,
     ) -> Result<Project> {
-        let url = format!("{}/clients/{client_id}/projects/{project_id}", self.url);
+        let url = format!("{}/customers/{customer_id}/projects/{project_id}", self.url);
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()

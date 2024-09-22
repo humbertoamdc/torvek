@@ -1,3 +1,4 @@
+use crate::common::money::Money;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::parts::models::Part;
@@ -15,15 +16,17 @@ impl CreatePartsResponse {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryPartsForQuotationResponse {
     pub parts: Vec<Part>,
-}
-impl QueryPartsForQuotationResponse {
-    pub fn new(parts: Vec<Part>) -> Self {
-        Self { parts }
-    }
+    pub quotation_subtotal: Option<Money>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateDrawingUploadUrlResponse {
+    pub url: String,
+    pub presigned_url: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateModelUploadUrlResponse {
     pub url: String,
     pub presigned_url: String,
 }

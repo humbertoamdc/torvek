@@ -72,3 +72,11 @@ Resources:
                 - ""
                 - - arn:aws:cloudfront::120386585975:distribution/
                   - !ImportValue SupplierPortalCloudFrontDistributionId
+
+  S3PermissionForFileConverterLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !ImportValue FileConverterLambdaArn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !ImportValue ClientFilesBucketArn

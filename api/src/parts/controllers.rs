@@ -1,13 +1,13 @@
 use api_boundary::common::into_error_response::IntoErrorResponse;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
-    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreatePartQuotesRequest,
-    CreatePartsRequest, QueryPartQuotesForPartsRequest, QueryPartsForQuotationRequest,
-    UpdatePartRequest,
+    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreateModelUploadUrlRequest,
+    CreatePartQuotesRequest, CreatePartsRequest, GetPartRequest,
+    QueryPartsForQuotationQueryParameters, QueryPartsForQuotationRequest, UpdatePartRequest,
 };
 
 use crate::app_state::AppState;
@@ -15,9 +15,11 @@ use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
-use crate::parts::usecases::query_part_quotes_for_parts::QueryPartQuotesForPartsUseCase;
+use crate::parts::usecases::get_part::GetPartUseCase;
+use crate::parts::usecases::model_upload_url::ModelUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
+use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::usecase::UseCase;
 
 pub async fn admin_update_part(
@@ -46,13 +48,32 @@ pub async fn admin_create_part_quotes(
     }
 }
 
+pub async fn get_part(
+    State(app_state): State<AppState>,
+    Path(request): Path<GetPartRequest>,
+) -> impl IntoResponse {
+    let get_part_usecase = GetPartUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
+    let response = get_part_usecase.execute(request).await;
+
+    match response {
+        Ok(part) => Ok((StatusCode::OK, Json(part))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
 pub async fn create_parts(
     State(app_state): State<AppState>,
     Json(request): Json<CreatePartsRequest>,
 ) -> impl IntoResponse {
+    let update_quotation_status_usecase =
+        UpdateQuotationStatusUseCase::new(app_state.quotations.quotations_repository);
     let usecase = CreatePartsUseCase::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
+        update_quotation_status_usecase,
     );
     let result = usecase.execute(request).await;
 
@@ -64,13 +85,18 @@ pub async fn create_parts(
 
 pub async fn query_parts_for_quotation(
     State(app_state): State<AppState>,
-    Path((client_id, project_id, quotation_id)): Path<(String, String, String)>,
+    Path((_, _, quotation_id)): Path<(String, String, String)>,
+    Query(query_params): Query<QueryPartsForQuotationQueryParameters>,
 ) -> impl IntoResponse {
+    let request = QueryPartsForQuotationRequest {
+        quotation_id,
+        with_quotation_subtotal: query_params.with_quotation_subtotal.unwrap_or(false),
+    };
+
     let usecase = QueryPartsForQuotationUseCase::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
-    let request = QueryPartsForQuotationRequest::new(client_id, project_id, quotation_id);
     let result = usecase.execute(request).await;
 
     match result {
@@ -92,11 +118,14 @@ pub async fn update_part(
     }
 }
 
-pub async fn create_drawing_upload_url(
+pub async fn create_model_file_upload_url(
     State(app_state): State<AppState>,
-    Json(request): Json<CreateDrawingUploadUrlRequest>,
+    Json(request): Json<CreateModelUploadUrlRequest>,
 ) -> impl IntoResponse {
-    let usecase = CreateDrawingUploadUrlUseCase::new(app_state.parts.object_storage);
+    let usecase = ModelUploadUrlUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
     let result = usecase.execute(request).await;
 
     match result {
@@ -105,11 +134,14 @@ pub async fn create_drawing_upload_url(
     }
 }
 
-pub async fn query_part_quotes_for_parts(
+pub async fn create_drawing_upload_url(
     State(app_state): State<AppState>,
-    Json(request): Json<QueryPartQuotesForPartsRequest>,
+    Json(request): Json<CreateDrawingUploadUrlRequest>,
 ) -> impl IntoResponse {
-    let usecase = QueryPartQuotesForPartsUseCase::new(app_state.parts.part_quotes_repository);
+    let usecase = CreateDrawingUploadUrlUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
     let result = usecase.execute(request).await;
 
     match result {

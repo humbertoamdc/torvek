@@ -24,7 +24,7 @@ impl From<&Part> for ReactivePart {
     fn from(part: &Part) -> Self {
         Self {
             id: part.id.clone(),
-            client_id: part.client_id.clone(),
+            client_id: part.customer_id.clone(),
             project_id: part.project_id.clone(),
             quotation_id: part.quotation_id.clone(),
             model_file: create_rw_signal(part.model_file.clone()),

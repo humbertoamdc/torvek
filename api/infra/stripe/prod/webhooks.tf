@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     stripe = {
-      source = "lukasaron/stripe"
+      source  = "lukasaron/stripe"
       version = "1.9.3"
     }
   }
@@ -12,7 +12,7 @@ provider "stripe" {
 }
 
 resource "stripe_webhook_endpoint" "complete_checkout_session_webhook_prod" {
-  url            = "https://api.rusticad.com/api/v1/payments/webhooks/complete_checkout_session"
+  url            = "https://api.torvek.com/api/v1/payments/webhooks/complete_checkout_session"
   description    = "Webhook used by Stripe to confirm when a quotation payment is successful."
   enabled_events = [
     "checkout.session.completed"

@@ -1,9 +1,8 @@
 use gloo_net::http::Request;
 use web_sys::RequestCredentials;
 
-use api_boundary::orders::models::OrderStatus;
 use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
-use api_boundary::orders::responses::QueryOrdersByStatusResponse;
+use api_boundary::orders::responses::QueryOpenOrdersResponse;
 
 use crate::common::{send, Result};
 
@@ -30,13 +29,9 @@ impl OrdersClient {
         send(request).await
     }
 
-    pub async fn query_orders_by_status(
-        &self,
-        status: OrderStatus,
-    ) -> Result<QueryOrdersByStatusResponse> {
-        let url = format!("{}/orders", self.url);
+    pub async fn query_open_orders(&self) -> Result<QueryOpenOrdersResponse> {
+        let url = format!("{}/admin/orders/open", self.url);
         let request = Request::get(&url)
-            .query([("status", status.to_string())])
             .credentials(RequestCredentials::Include)
             .build()
             .unwrap();

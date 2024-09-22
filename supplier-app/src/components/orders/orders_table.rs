@@ -18,9 +18,7 @@ pub fn OrdersTable() -> impl IntoView {
     // -- actions -- //
 
     let query_orders_by_status = create_action(move |_| async move {
-        let result = orders_client
-            .query_orders_by_status(OrderStatus::Open)
-            .await;
+        let result = orders_client.query_open_orders(OrderStatus::Open).await;
 
         match result {
             Ok(response) => {

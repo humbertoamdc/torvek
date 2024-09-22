@@ -13,8 +13,6 @@ use crate::config::{Config, Environment};
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
 use crate::parts;
-use crate::parts::repositories::part_quotes::PartQuotesRepository;
-use crate::parts::repositories::part_quotes_dynamodb::DynamodbPartQuotes;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::repositories::parts_dynamodb::DynamodbParts;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
@@ -63,7 +61,6 @@ pub struct AppStateQuotations {
 #[derive(Clone)]
 pub struct AppStateParts {
     pub parts_repository: Arc<dyn PartsRepository>,
-    pub part_quotes_repository: Arc<dyn PartQuotesRepository>,
     pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
     pub part_quotes_creation: Arc<dyn PartQuotesCreation>,
 }
@@ -193,8 +190,9 @@ impl AppStateQuotations {
 impl AppStateParts {
     async fn from(config: &Config) -> Self {
         // Configs
+        let shared_s3_config = get_s3_shared_config(config).await;
         let shared_config = get_shared_config(config).await;
-        let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
+        let s3_config = aws_sdk_s3::config::Builder::from(&shared_s3_config).build();
         let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
 
         // Clients
@@ -206,23 +204,18 @@ impl AppStateParts {
             dynamodb_client.clone(),
             config.parts.parts_table.clone(),
         ));
-        let part_quotes_repository = Arc::new(DynamodbPartQuotes::new(
-            dynamodb_client.clone(),
-            config.parts.part_quotes_table.clone(),
-        ));
         let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
         ));
         let part_quotes_creation = Arc::new(DynamodbParQuotesCreation::new(
             dynamodb_client,
-            config.parts.part_quotes_table.clone(),
+            config.parts.parts_table.clone(),
             config.quotations.quotations_table.clone(),
         ));
 
         Self {
             parts_repository,
-            part_quotes_repository,
             object_storage,
             part_quotes_creation,
         }
@@ -258,9 +251,17 @@ impl AppStatePayments {
 }
 
 async fn get_shared_config(config: &Config) -> SdkConfig {
-    let mut shared_config = aws_config::defaults(BehaviorVersion::v2023_11_09());
+    let mut shared_config = aws_config::defaults(BehaviorVersion::latest());
     if config.app.env == Environment::Development {
         shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
+    }
+    shared_config.load().await
+}
+
+async fn get_s3_shared_config(config: &Config) -> SdkConfig {
+    let mut shared_config = aws_config::defaults(BehaviorVersion::latest());
+    if config.app.env == Environment::Development {
+        shared_config = shared_config.endpoint_url(env::var("AWS_S3_ENDPOINT_URL").unwrap());
     }
     shared_config.load().await
 }
