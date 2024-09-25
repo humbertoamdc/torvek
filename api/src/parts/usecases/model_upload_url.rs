@@ -3,7 +3,7 @@ use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::shared::usecase::UseCase;
 use api_boundary::parts::errors::PartsError;
-use api_boundary::parts::requests::{CreateModelUploadUrlRequest, UpdatePartRequest};
+use api_boundary::parts::requests::CreateModelUploadUrlRequest;
 use api_boundary::parts::responses::CreateModelUploadUrlResponse;
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::GetQuotationByIdRequest;
