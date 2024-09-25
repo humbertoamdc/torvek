@@ -67,6 +67,7 @@ pub struct UpdatePartRequest {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateDrawingUploadUrlRequest {
     pub customer_id: String,
+    pub project_id: String,
     pub quotation_id: String,
     pub part_id: String,
     pub file_name: String,
@@ -75,6 +76,7 @@ pub struct CreateDrawingUploadUrlRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateModelUploadUrlRequest {
+    pub project_id: String,
     pub quotation_id: String,
     pub part_id: String,
 }
