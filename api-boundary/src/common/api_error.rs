@@ -38,4 +38,7 @@ pub enum ErrorCode {
     #[default]
     UnknownError,
     ItemNotFound,
+    MissingUserInput,
+    NotAllowed,
+    BadInput,
 }

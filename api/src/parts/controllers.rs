@@ -19,6 +19,7 @@ use crate::parts::usecases::get_part::GetPartUseCase;
 use crate::parts::usecases::model_upload_url::ModelUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
+use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::usecase::UseCase;
 
@@ -109,7 +110,12 @@ pub async fn update_part(
     State(app_state): State<AppState>,
     Json(request): Json<UpdatePartRequest>,
 ) -> impl IntoResponse {
-    let usecase = UpdatePartUseCase::new(app_state.parts.parts_repository);
+    let get_quotation_by_id_usecase =
+        GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = UpdatePartUseCase::new(
+        app_state.parts.parts_repository,
+        get_quotation_by_id_usecase,
+    );
     let result = usecase.execute(request).await;
 
     match result {
