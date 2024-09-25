@@ -32,6 +32,18 @@ impl UpdatePartUseCase {
 #[async_trait]
 impl UseCase<UpdatePartRequest, (), PartsError> for UpdatePartUseCase {
     async fn execute(&self, request: UpdatePartRequest) -> Result<(), PartsError> {
+        if self.quotation_is_payed(&request).await? {
+            return Err(PartsError::UpdatePartAfterPayingQuotation);
+        }
+
+        let updatable_part = UpdatablePart::from(&request);
+
+        self.parts_repository.update_part(updatable_part).await
+    }
+}
+
+impl UpdatePartUseCase {
+    async fn quotation_is_payed(&self, request: &UpdatePartRequest) -> Result<bool, PartsError> {
         let get_quotation_request = GetQuotationByIdRequest {
             customer_id: request.customer_id.clone(),
             project_id: request.project_id.clone(),
@@ -43,12 +55,6 @@ impl UseCase<UpdatePartRequest, (), PartsError> for UpdatePartUseCase {
             .await
             .map_err(|_| PartsError::UnknownError)?; // TODO: Handle error properly.
 
-        if quotation.status == QuotationStatus::Payed {
-            return Err(PartsError::UpdatePartAfterPayingQuotation);
-        }
-
-        let updatable_part = UpdatablePart::from(&request);
-
-        self.parts_repository.update_part(updatable_part).await
+        Ok(quotation.status == QuotationStatus::Payed)
     }
 }

@@ -128,9 +128,12 @@ pub async fn create_model_file_upload_url(
     State(app_state): State<AppState>,
     Json(request): Json<CreateModelUploadUrlRequest>,
 ) -> impl IntoResponse {
+    let get_quotation_by_id_usecase =
+        GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
     let usecase = ModelUploadUrlUseCase::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
+        get_quotation_by_id_usecase,
     );
     let result = usecase.execute(request).await;
 
