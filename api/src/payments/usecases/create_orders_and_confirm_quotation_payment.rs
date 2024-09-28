@@ -86,7 +86,6 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
 
         self.orders_creation_service
             .create_orders_and_update_quotation_status(
-                request.customer_id,
                 request.project_id,
                 request.quotation_id,
                 orders,

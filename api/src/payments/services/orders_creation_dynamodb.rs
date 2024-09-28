@@ -36,7 +36,6 @@ impl DynamodbOrdersCreationService {
 impl OrdersCreationService for DynamodbOrdersCreationService {
     async fn create_orders_and_update_quotation_status(
         &self,
-        customer_id: String,
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
@@ -48,8 +47,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
             .collect::<Vec<_>>();
 
         // Update quotation status to OrdersCreated.
-        let quotation_transaction =
-            self.build_quotation_transaction(customer_id, project_id, quotation_id);
+        let quotation_transaction = self.build_quotation_transaction(project_id, quotation_id);
 
         // Create orders Dynamodb items.
         let orders_transactions = self.build_orders_transactions(items);
@@ -79,7 +77,6 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
 impl DynamodbOrdersCreationService {
     fn build_quotation_transaction(
         &self,
-        _customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> TransactWriteItem {

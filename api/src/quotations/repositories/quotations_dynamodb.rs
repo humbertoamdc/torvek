@@ -44,7 +44,6 @@ impl QuotationsRepository for DynamodbQuotations {
 
     async fn query_quotations_for_project(
         &self,
-        _customer_id: String,
         project_id: String,
     ) -> Result<Vec<Quotation>, QuotationsError> {
         let response = self
@@ -104,7 +103,6 @@ impl QuotationsRepository for DynamodbQuotations {
 
     async fn get_quotation_by_id(
         &self,
-        _customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> Result<Quotation, QuotationsError> {
