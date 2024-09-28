@@ -34,14 +34,13 @@ impl DynamodbParQuotesCreation {
 impl PartQuotesCreation for DynamodbParQuotesCreation {
     async fn create_part_quotes_and_update_quotation_status(
         &self,
-        customer_id: String,
         project_id: String,
         quotation_id: String,
         part_quotes: Vec<PartQuote>,
     ) -> Result<(), PartsError> {
         // Update quotation status to PendingPayment..
         let quotation_transaction =
-            self.build_quotation_transaction(customer_id, project_id, quotation_id.clone());
+            self.build_quotation_transaction(project_id, quotation_id.clone());
 
         // Create part quotes Dynamodb transactions for parts table
         let part_quotes_in_parts_transactions =
@@ -72,7 +71,6 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
 impl DynamodbParQuotesCreation {
     fn build_quotation_transaction(
         &self,
-        _customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> TransactWriteItem {

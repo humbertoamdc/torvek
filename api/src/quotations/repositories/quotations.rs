@@ -8,7 +8,6 @@ pub trait QuotationsRepository: Send + Sync + 'static {
     async fn create_quotation(&self, quotation: Quotation) -> Result<(), QuotationsError>;
     async fn query_quotations_for_project(
         &self,
-        customer_id: String,
         project_id: String,
     ) -> Result<Vec<Quotation>, QuotationsError>;
     async fn query_quotations_by_status(
@@ -17,7 +16,6 @@ pub trait QuotationsRepository: Send + Sync + 'static {
     ) -> Result<Vec<Quotation>, QuotationsError>;
     async fn get_quotation_by_id(
         &self,
-        customer_id: String,
         project_id: String,
         quotation_id: String,
     ) -> Result<Quotation, QuotationsError>;
