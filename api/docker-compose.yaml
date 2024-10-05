@@ -1,7 +1,8 @@
+name: torvek
 services:
   localstack:
-    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
-    image: localstack/localstack
+    container_name: localstack
+    image: localstack/localstack:latest
     ports:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559"  # external services port range
@@ -21,6 +22,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   file_converter:
+    container_name: file_converter
     build: ./scripts/local_file_converter
     environment:
       - AWS_ENDPOINT_URL=http://host.docker.internal:4566
@@ -28,3 +30,48 @@ services:
     depends_on:
       - localstack
 
+  kratos-customers:
+    container_name: kratos-customers
+    image: oryd/kratos:v1.3.0
+    ports:
+      - '4433:4433' # public
+      - '4434:4434' # admin
+    restart: unless-stopped
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    entrypoint: [ "sh", "/etc/scripts/kratos/kratos-customers-entrypoint.sh" ]
+    volumes:
+      - type: volume
+        source: kratos-customers-sqlite
+        target: /var/lib/sqlite
+      - type: bind
+        source: ./config/kratos/customers
+        target: /etc/config/kratos
+      - type: bind
+        source: ./scripts/kratos
+        target: /etc/scripts/kratos
+
+  kratos-admins:
+    container_name: kratos-admins
+    image: oryd/kratos:v1.3.0
+    ports:
+      - '4435:4435' # public
+      - '4436:4436' # admin
+    restart: unless-stopped
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    entrypoint: [ "sh", "/etc/scripts/kratos/kratos-admins-entrypoint.sh" ]
+    volumes:
+      - type: volume
+        source: kratos-admins-sqlite
+        target: /var/lib/sqlite
+      - type: bind
+        source: ./config/kratos/admins
+        target: /etc/config/kratos
+      - type: bind
+        source: ./scripts/kratos
+        target: /etc/scripts/kratos
+
+volumes:
+  kratos-customers-sqlite:
+  kratos-admins-sqlite:

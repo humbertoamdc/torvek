@@ -90,7 +90,7 @@ impl AppState {
 impl AppStateAuth {
     async fn from(config: &Config) -> Self {
         // Clients
-        let reqwest_client = Self::reqwest_client();
+        let reqwest_client = Self::reqwest_client(&config);
 
         // Services & Repositories
         let identity_manager = Arc::new(OryIdentityManager::new(
@@ -110,12 +110,12 @@ impl AppStateAuth {
         }
     }
 
-    fn reqwest_client() -> reqwest::Client {
+    fn reqwest_client(config: &Config) -> reqwest::Client {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         reqwest::Client::builder()
             .default_headers(headers)
-            .https_only(true)
+            .https_only(config.app.env != Environment::Development)
             .build()
             .unwrap()
     }
@@ -125,18 +125,12 @@ impl AppStateOrders {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
-        // let s3_config = aws_sdk_s3::config::Builder::from(&shared_config).build();
         let dynamodb_config = aws_sdk_dynamodb::config::Builder::from(&shared_config).build();
 
         // Clients
-        // let s3_client = aws_sdk_s3::Client::from_conf(s3_config);
         let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services & Repositories
-        // let object_storage = Arc::new(S3ObjectStorage::new(
-        //     s3_client,
-        //     config.orders.s3_bucket.clone(),
-        // ));
         let orders_repository = Arc::new(DynamodbOrders::new(
             dynamodb_client.clone(),
             config.orders.orders_table.clone(),

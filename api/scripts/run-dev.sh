@@ -28,6 +28,9 @@ docker compose build
 echo -e "[$(date '+%Y-%m-%d %H:%M:%S') ${Yellow}INIT${NoColor}] Starting local AWS infra"
 docker compose up -d --wait
 
+# Create an admin user.
+./scripts/kratos/create-admin-identity.sh
+
 # Kill anything running on port 3000
 lsof -i :3000 -t | xargs kill
 
