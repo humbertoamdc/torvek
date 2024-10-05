@@ -46,7 +46,7 @@ async fn main() {
 
 async fn run_local(app: Router<AppState>) {
     // Constants
-    let config_path = "./config/dev.toml";
+    let config_path = "./env/dev.toml";
 
     // Parse config
     let config_string = std::fs::read_to_string(config_path).expect("could not find config file");

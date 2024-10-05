@@ -32,5 +32,5 @@ lambda:
         --environment "Variables={RUN_MODE=lambda}" \
         --no-cli-pager
 
-sync-configs:
-	aws --profile $(PROFILE) --region $(REGION) s3 sync config s3://unnamed-config-files
+sync-envs:
+	aws --profile $(PROFILE) --region $(REGION) s3 sync env s3://unnamed-config-files
