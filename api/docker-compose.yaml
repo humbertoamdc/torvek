@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
-    entrypoint: [ "sh", "/etc/scripts/kratos/kratos-customers-entrypoint.sh" ]
+    entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint.sh" ]
     volumes:
       - type: volume
         source: kratos-customers-sqlite
@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
-    entrypoint: [ "sh", "/etc/scripts/kratos/kratos-admins-entrypoint.sh" ]
+    entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint.sh" ]
     volumes:
       - type: volume
         source: kratos-admins-sqlite
