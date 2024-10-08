@@ -35,10 +35,7 @@ impl StripePaymentsProcessor {
         parts: Vec<Part>,
     ) -> Result<String, PaymentsError> {
         let line_items = Self::line_items_from_parts_data(&parts);
-        let success_url = format!(
-            "{}/projects/{}/quotations/{}/parts",
-            self.success_url, project_id, quotation_id
-        );
+        let success_url = format!("{}/orders", self.success_url,);
 
         let mut params = CreateCheckoutSession::new();
         params.line_items = Some(line_items);
