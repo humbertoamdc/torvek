@@ -55,7 +55,10 @@ impl AdminIdentityManager for OryAdminIdentityManager {
         match response {
             Ok(_) => Ok(()),
             // TODO: Handle error.
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(AuthError::UnknownError)
+            }
         }
     }
 
@@ -69,7 +72,10 @@ impl AdminIdentityManager for OryAdminIdentityManager {
                 Ok(session)
             }
             // TODO: Handle error.
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(AuthError::UnknownError)
+            }
         }
     }
 }
@@ -81,7 +87,10 @@ impl OryAdminIdentityManager {
 
         match response {
             Ok(login_flow) => Ok(login_flow),
-            Err(_) => Err(AuthError::InitializingLoginFlowError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(AuthError::InitializingLoginFlowError)
+            }
         }
     }
 
@@ -121,7 +130,10 @@ impl OryAdminIdentityManager {
 
                 Err(Self::match_error(&error_messages))
             }
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(AuthError::UnknownError)
+            }
         }
     }
     fn match_error(error_messages: &Vec<UiText>) -> AuthError {
