@@ -18,6 +18,7 @@ pub struct Part {
     pub material: String,  // TODO: Extract to enum in api-boundary.
     pub tolerance: String, // TODO: Extract to enum in api-boudnary.
     pub quantity: u64,
+    pub selected_part_quote_id: Option<String>,
     pub part_quotes: Option<Vec<PartQuote>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -46,6 +47,7 @@ impl Part {
             material: String::from("Aluminum 6061-T6"),
             tolerance: String::from("+/- .005\" (+/- 0.13mm)"),
             quantity: 1,
+            selected_part_quote_id: None,
             part_quotes: None,
             created_at: now,
             updated_at: now,
@@ -60,7 +62,6 @@ pub struct PartQuote {
     pub unit_price: Money,
     pub sub_total: Money,
     pub deadline: NaiveDate,
-    pub selected: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -77,7 +78,6 @@ impl PartQuote {
             unit_price,
             sub_total,
             deadline,
-            selected: true,
             created_at: now,
             updated_at: now,
         }

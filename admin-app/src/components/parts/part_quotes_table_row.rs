@@ -93,6 +93,8 @@ pub fn PartQuotesTableRow(
             </div>
             <div class="flex flex-col w-96 space-y-2">
                 <PartQuoteCard price_option=price_options[0] deadline_option=deadline_options[0]/>
+                <PartQuoteCard price_option=price_options[1] deadline_option=deadline_options[1]/>
+                <PartQuoteCard price_option=price_options[2] deadline_option=deadline_options[2]/>
             </div>
         </div>
     }

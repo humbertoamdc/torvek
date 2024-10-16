@@ -58,9 +58,9 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
                     // TODO: Safely unwrap.
                     part.part_quotes
                         .clone()
-                        .unwrap_or(Vec::new())
+                        .expect("expecting part quotes")
                         .into_iter()
-                        .find(|part_quote| part_quote.selected)
+                        .find(|part_quote| part_quote.id == part.id)
                         .unwrap(),
                 )
             })

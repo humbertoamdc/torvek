@@ -142,8 +142,12 @@ pub fn PartQuotesTable(
                 children=move |(_, part)| {
                     let price_options = vec![
                         create_rw_signal(None::<Money>),
+                        create_rw_signal(None::<Money>),
+                        create_rw_signal(None::<Money>),
                     ];
                     let deadline_options = vec![
+                        create_rw_signal(None::<NaiveDate>),
+                        create_rw_signal(None::<NaiveDate>),
                         create_rw_signal(None::<NaiveDate>),
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
