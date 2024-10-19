@@ -72,7 +72,7 @@ impl StripePaymentsProcessor {
                 .clone()
                 .expect("expecting part quotes")
                 .into_iter()
-                .find(|part_quote| part_quote.id == part.id)
+                .find(|part_quote| part_quote.id == part.selected_part_quote_id.clone().unwrap())
                 .expect("could not find a selected quote for part");
 
             CreateCheckoutSessionLineItems {
