@@ -126,7 +126,7 @@ impl QuotationsRepository for DynamodbQuotations {
                         Err(Error::UnknownError)
                     }
                 },
-                None => Err(Error::GetQuotationItemNotFoundError),
+                None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");

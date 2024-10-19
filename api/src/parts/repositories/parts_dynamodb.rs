@@ -50,7 +50,7 @@ impl PartsRepository for DynamodbParts {
                         Err(Error::UnknownError)
                     }
                 },
-                None => Err(Error::PartItemNotFound),
+                None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");
@@ -199,7 +199,7 @@ impl PartsRepository for DynamodbParts {
                         Err(Error::UnknownError)
                     }
                 },
-                None => Err(Error::PartItemNotFound),
+                None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");

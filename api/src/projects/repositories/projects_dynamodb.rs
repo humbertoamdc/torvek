@@ -88,7 +88,7 @@ impl ProjectsRepository for DynamodbProjects {
                         Err(Error::UnknownError)
                     }
                 },
-                None => Err(Error::GetProjectItemNotFoundError),
+                None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");
