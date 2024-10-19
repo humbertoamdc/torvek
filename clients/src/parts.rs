@@ -4,8 +4,7 @@ use web_sys::wasm_bindgen::JsValue;
 use web_sys::{File, RequestCredentials};
 
 use api_boundary::parts::requests::{
-    CreateDrawingUploadUrlRequest, CreatePartQuotesRequest, CreatePartsRequest,
-    QueryPartQuotesForPartsRequest, QueryPartQuotesForPartsResponse, UpdatePartRequest,
+    CreateDrawingUploadUrlRequest, CreatePartQuotesRequest, CreatePartsRequest, UpdatePartRequest,
 };
 use api_boundary::parts::responses::{
     CreateDrawingUploadUrlResponse, CreatePartsResponse, QueryPartsForQuotationResponse,
@@ -101,19 +100,6 @@ impl PartsClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()
-            .unwrap();
-
-        send(request).await
-    }
-
-    pub async fn query_part_quotes_for_parts(
-        &self,
-        body: QueryPartQuotesForPartsRequest,
-    ) -> Result<QueryPartQuotesForPartsResponse> {
-        let url = format!("{}/parts/quotes", self.url);
-        let request = Request::post(&url)
-            .credentials(RequestCredentials::Include)
-            .json(&body)
             .unwrap();
 
         send(request).await

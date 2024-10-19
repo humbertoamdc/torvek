@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use api_boundary::parts::errors::PartsError;
@@ -24,24 +25,40 @@ impl CreatePartQuotesUseCase {
 #[async_trait]
 impl UseCase<CreatePartQuotesRequest, (), PartsError> for CreatePartQuotesUseCase {
     async fn execute(&self, request: CreatePartQuotesRequest) -> Result<(), PartsError> {
-        let part_quotes = request
-            .data
-            .into_iter()
-            .map(|quote_data| {
-                PartQuote::new(
-                    quote_data.part_id,
-                    quote_data.unit_price,
-                    quote_data.sub_total,
-                    quote_data.deadline,
-                )
-            })
-            .collect::<Vec<PartQuote>>();
+        let mut part_quotes_by_part: HashMap<String, Vec<PartQuote>> = HashMap::new();
+        let mut selected_part_quote_by_part: HashMap<String, String> = HashMap::new();
+        let mut part_ids_set = HashSet::new();
+
+        request.data.into_iter().for_each(|quote_data| {
+            // Default selected to the first part quote. We might want to revisit this decision
+            // and select by price or by deadline.
+            let selected = !part_ids_set.contains(&quote_data.part_id);
+            part_ids_set.insert(quote_data.part_id.clone());
+
+            let part_quote = PartQuote::new(
+                quote_data.part_id.clone(),
+                quote_data.unit_price,
+                quote_data.sub_total,
+                quote_data.deadline,
+            );
+
+            if selected {
+                selected_part_quote_by_part
+                    .insert(part_quote.part_id.clone(), part_quote.id.clone());
+            }
+
+            part_quotes_by_part
+                .entry(quote_data.part_id.clone())
+                .or_default()
+                .push(part_quote);
+        });
 
         self.part_quotes_creation_service
             .create_part_quotes_and_update_quotation_status(
                 request.project_id,
                 request.quotation_id,
-                part_quotes,
+                part_quotes_by_part,
+                selected_part_quote_by_part,
             )
             .await
     }

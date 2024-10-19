@@ -36,15 +36,19 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
         &self,
         project_id: String,
         quotation_id: String,
-        part_quotes: Vec<PartQuote>,
+        part_quotes_by_part: HashMap<String, Vec<PartQuote>>,
+        selected_part_quote_by_part: HashMap<String, String>,
     ) -> Result<(), PartsError> {
         // Update quotation status to PendingPayment..
         let quotation_transaction =
             self.build_quotation_transaction(project_id, quotation_id.clone());
 
         // Create part quotes Dynamodb transactions for parts table
-        let part_quotes_in_parts_transactions =
-            self.build_part_quotes_transaction_in_parts(quotation_id, part_quotes);
+        let part_quotes_in_parts_transactions = self.build_part_quotes_transaction_in_parts(
+            quotation_id,
+            part_quotes_by_part,
+            selected_part_quote_by_part,
+        );
 
         // Build transaction request.
         let mut transaction_request = self
@@ -108,21 +112,13 @@ impl DynamodbParQuotesCreation {
     fn build_part_quotes_transaction_in_parts(
         &self,
         quotation_id: String,
-        part_quotes: Vec<PartQuote>,
+        part_quotes_by_part_map: HashMap<String, Vec<PartQuote>>,
+        selected_part_quote_by_part: HashMap<String, String>,
     ) -> Vec<TransactWriteItem> {
-        let mut part_quotes_by_part_map = HashMap::<String, Vec<PartQuote>>::new();
-
-        part_quotes.iter().for_each(|part_quote| {
-            part_quotes_by_part_map
-                .entry(part_quote.part_id.clone())
-                .or_default()
-                .push(part_quote.clone());
-        });
-
         part_quotes_by_part_map
             .into_iter()
-            .map(|(part_id, part_quotes)| {
-                let part_quote_items = part_quotes
+            .map(|(part_id, part_quote_tuples)| {
+                let part_quote_items = part_quote_tuples
                     .into_iter()
                     .map(|part_quote| {
                         let item = to_item(part_quote).expect("error converting to dynamodb item");
@@ -130,17 +126,32 @@ impl DynamodbParQuotesCreation {
                     })
                     .collect();
 
+                let selected_part_quote_id = selected_part_quote_by_part
+                    .get(&part_id)
+                    .expect("expecting a selected part quote")
+                    .clone();
+
                 TransactWriteItem::builder()
                     .update(
                         Update::builder()
-                            .expression_attribute_values(
-                                ":part_quotes",
-                                AttributeValue::L(part_quote_items),
-                            )
                             .key("quotation_id", AttributeValue::S(quotation_id.clone()))
                             .key("id", AttributeValue::S(part_id))
                             .table_name(&self.parts_table)
-                            .update_expression("SET part_quotes = :part_quotes")
+                            .set_expression_attribute_values(Some(
+                                [
+                                    (
+                                        String::from(":part_quotes"),
+                                        AttributeValue::L(part_quote_items),
+                                    ),
+                                    (
+                                        String::from(":selected_part_quote_id"),
+                                        AttributeValue::S(selected_part_quote_id),
+                                    ),
+                                ]
+                                    .into_iter()
+                                    .collect::<HashMap<String, AttributeValue>>(),
+                            ))
+                            .update_expression("SET part_quotes = :part_quotes, selected_part_quote_id = :selected_part_quote_id")
                             .build()
                             .unwrap(),
                     )

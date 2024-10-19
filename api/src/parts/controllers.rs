@@ -8,6 +8,7 @@ use api_boundary::parts::requests::{
     AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreateModelUploadUrlRequest,
     CreatePartQuotesRequest, CreatePartsRequest, GetPartRequest,
     QueryPartsForQuotationQueryParameters, QueryPartsForQuotationRequest, UpdatePartRequest,
+    UpdateSelectedPartQuoteRequest,
 };
 
 use crate::app_state::AppState;
@@ -19,6 +20,7 @@ use crate::parts::usecases::get_part::GetPartUseCase;
 use crate::parts::usecases::model_upload_url::ModelUploadUrlUseCase;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::parts::usecases::update_part::UpdatePartUseCase;
+use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuoteUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::usecase::UseCase;
@@ -120,6 +122,19 @@ pub async fn update_part(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn update_selected_part_quote(
+    State(app_state): State<AppState>,
+    Json(request): Json<UpdateSelectedPartQuoteRequest>,
+) -> impl IntoResponse {
+    let usecase = UpdateSelectedPartQuoteUseCase::new(app_state.parts.parts_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(err) => Err(err.into_error_response()),
     }
 }

@@ -67,7 +67,13 @@ impl StripePaymentsProcessor {
 
     fn line_items_from_parts_data(parts: &Vec<Part>) -> Vec<CreateCheckoutSessionLineItems> {
         parts.iter().map(|part| {
-            let selected_part_quote = part.part_quotes.clone().unwrap_or(Vec::new()).into_iter().find(|part_quote| part_quote.selected).expect("could not find a selected quote for part");
+            let selected_part_quote = part
+                .part_quotes
+                .clone()
+                .expect("expecting part quotes")
+                .into_iter()
+                .find(|part_quote| part_quote.id == part.selected_part_quote_id.clone().unwrap())
+                .expect("could not find a selected quote for part");
 
             CreateCheckoutSessionLineItems {
                 adjustable_quantity: None,
