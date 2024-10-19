@@ -6,3 +6,4 @@ pub mod get_part;
 pub mod model_upload_url;
 pub mod query_parts_for_quotation;
 pub mod update_part;
+pub mod update_selected_part_quote;

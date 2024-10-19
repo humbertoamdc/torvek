@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use api_boundary::orders::models::Address;
 use api_boundary::payments::errors::WebhookRequestError;
 use serde_derive::{Deserialize, Serialize};
@@ -10,7 +8,6 @@ pub struct CreateCheckoutSessionRequest {
     pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub selected_quotes_per_part: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

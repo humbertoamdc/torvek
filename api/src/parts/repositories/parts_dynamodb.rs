@@ -161,20 +161,11 @@ impl PartsRepository for DynamodbParts {
                 AttributeValue::N(quantity.to_string()),
             );
         }
-        update_expression.push_str("unit_price = :unit_price, ");
+        update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
         expression_attribute_values.insert(
-            ":unit_price".to_string(),
-            if updatable_part.unit_price.is_some() {
-                AttributeValue::N(updatable_part.unit_price.unwrap().to_string())
-            } else {
-                AttributeValue::Null(true)
-            },
-        );
-        update_expression.push_str("sub_total = :sub_total, ");
-        expression_attribute_values.insert(
-            ":sub_total".to_string(),
-            if updatable_part.sub_total.is_some() {
-                AttributeValue::N(updatable_part.sub_total.unwrap().to_string())
+            ":selected_part_quote_id".to_string(),
+            if updatable_part.selected_part_quote_id.is_some() {
+                AttributeValue::S(updatable_part.selected_part_quote_id.unwrap().to_string())
             } else {
                 AttributeValue::Null(true)
             },

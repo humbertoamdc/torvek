@@ -2,7 +2,7 @@ use api_boundary::common::file::File;
 use api_boundary::parts::requests::{AdminUpdatePartRequest, UpdatePartRequest};
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct UpdatablePart {
     pub id: String,
     pub customer_id: String,
@@ -12,8 +12,16 @@ pub struct UpdatablePart {
     pub material: Option<String>,
     pub tolerance: Option<String>,
     pub quantity: Option<u64>,
-    pub unit_price: Option<u64>,
-    pub sub_total: Option<u64>,
+    pub selected_part_quote_id: Option<String>,
+}
+
+impl UpdatablePart {
+    pub fn partial_new(quotation_id: String, part_id: String) -> Self {
+        let mut updatable_part = Self::default();
+        updatable_part.id = part_id;
+        updatable_part.quotation_id = quotation_id;
+        updatable_part
+    }
 }
 
 impl From<&UpdatePartRequest> for UpdatablePart {
@@ -27,8 +35,7 @@ impl From<&UpdatePartRequest> for UpdatablePart {
             material: request.material.clone(),
             tolerance: request.tolerance.clone(),
             quantity: request.quantity,
-            unit_price: None,
-            sub_total: None,
+            selected_part_quote_id: request.selected_part_quote_id.clone(),
         }
     }
 }
@@ -44,8 +51,7 @@ impl From<&AdminUpdatePartRequest> for UpdatablePart {
             material: None,
             tolerance: None,
             quantity: None,
-            unit_price: Some(request.unit_price),
-            sub_total: Some(request.sub_total),
+            selected_part_quote_id: None,
         }
     }
 }

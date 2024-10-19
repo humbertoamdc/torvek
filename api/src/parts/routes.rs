@@ -5,6 +5,7 @@ use crate::app_state::AppState;
 use crate::parts::controllers::{
     admin_create_part_quotes, admin_update_part, create_drawing_upload_url,
     create_model_file_upload_url, create_parts, get_part, query_parts_for_quotation, update_part,
+    update_selected_part_quote,
 };
 
 pub fn create_router() -> Router<AppState> {
@@ -21,6 +22,10 @@ pub fn create_router() -> Router<AppState> {
             get(get_part),
         )
         .route("/parts", patch(update_part))
+        .route(
+            "/parts/select_part_quote",
+            patch(update_selected_part_quote),
+        )
         .route(
             "/parts/model_upload_url",
             post(create_model_file_upload_url),
