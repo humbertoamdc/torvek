@@ -13,5 +13,5 @@ pub trait PartsRepository: Send + Sync + 'static {
         &self,
         quotation_id: String,
     ) -> Result<Vec<Part>, PartsError>;
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<(), PartsError>;
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part, PartsError>;
 }

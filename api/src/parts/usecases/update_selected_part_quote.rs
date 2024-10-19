@@ -32,23 +32,25 @@ impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse, Pa
             UpdatablePart::partial_new(request.quotation_id.clone(), request.part_id.clone());
         updatable_part.selected_part_quote_id = Some(request.selected_part_quote_id.clone());
 
-        self.parts_repository.update_part(updatable_part).await?;
+        let part = self.parts_repository.update_part(updatable_part).await?;
 
         // Fetch parts for quotation.
-        let parts_for_quotation = self
+        let mut parts_for_quotation = self
             .parts_repository
             .query_parts_for_quotation(request.quotation_id)
             .await?;
 
-        // Find updated part.
-        let part = parts_for_quotation
-            .iter()
-            .find(|part| part.id == request.part_id)
-            .expect(&format!("couldn't find part with id {}", request.part_id))
-            .clone();
+        // At this point it is possible that we get the part values before being updated
+        // because of eventual consistency. To make sure we have the most up-to-date value
+        // use the part returned by the `update_part` method.
+        let old_part = parts_for_quotation
+            .iter_mut()
+            .find(|old_part| old_part.id == part.id)
+            .expect("expecting to find a matching part");
+        let _ = std::mem::replace(old_part, part.clone());
 
         // Calculate quotation subtotal.
-        let quotation_subtotal = self.calculate_quotation_subtotal(parts_for_quotation);
+        let quotation_subtotal = self.calculate_quotation_subtotal(parts_for_quotation.clone());
 
         Ok(UpdateSelectedPartQuoteResponse {
             part,

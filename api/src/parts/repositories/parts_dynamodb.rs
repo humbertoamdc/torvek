@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use api_boundary::parts::errors::PartsError;
-use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, WriteRequest};
+use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, ReturnValue, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -123,7 +123,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<(), PartsError> {
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part, PartsError> {
         let mut update_expression = String::from("SET ");
         let mut expression_attribute_values = HashMap::new();
 
@@ -161,15 +161,13 @@ impl PartsRepository for DynamodbParts {
                 AttributeValue::N(quantity.to_string()),
             );
         }
-        update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
-        expression_attribute_values.insert(
-            ":selected_part_quote_id".to_string(),
-            if updatable_part.selected_part_quote_id.is_some() {
-                AttributeValue::S(updatable_part.selected_part_quote_id.unwrap().to_string())
-            } else {
-                AttributeValue::Null(true)
-            },
-        );
+        if let Some(selected_part_quote_id) = updatable_part.selected_part_quote_id {
+            update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
+            expression_attribute_values.insert(
+                ":selected_part_quote_id".to_string(),
+                AttributeValue::S(selected_part_quote_id.to_string()),
+            );
+        }
 
         // Remove trailing comma and space
         if !update_expression.is_empty() {
@@ -188,11 +186,21 @@ impl PartsRepository for DynamodbParts {
             .key("id", AttributeValue::S(updatable_part.id))
             .update_expression(update_expression)
             .set_expression_attribute_values(Some(expression_attribute_values))
+            .return_values(ReturnValue::AllNew)
             .send()
             .await;
 
         match response {
-            Ok(_) => Ok(()),
+            Ok(output) => match output.attributes {
+                Some(item) => match from_item::<Part>(item) {
+                    Ok(part) => Ok(part),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(PartsError::UnknownError)
+                    }
+                },
+                None => Err(PartsError::PartItemNotFound),
+            },
             Err(err) => {
                 log::error!("{err:?}");
                 Err(PartsError::UnknownError)

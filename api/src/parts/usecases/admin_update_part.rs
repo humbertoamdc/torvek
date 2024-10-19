@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use api_boundary::parts::errors::PartsError;
+use api_boundary::parts::models::Part;
 use axum::async_trait;
 
 use api_boundary::parts::requests::AdminUpdatePartRequest;
@@ -20,8 +21,8 @@ impl AdminUpdatePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<AdminUpdatePartRequest, (), PartsError> for AdminUpdatePartUseCase {
-    async fn execute(&self, request: AdminUpdatePartRequest) -> Result<(), PartsError> {
+impl UseCase<AdminUpdatePartRequest, Part, PartsError> for AdminUpdatePartUseCase {
+    async fn execute(&self, request: AdminUpdatePartRequest) -> Result<Part, PartsError> {
         let updatable_part = UpdatablePart::from(&request);
 
         self.parts_repository.update_part(updatable_part).await
