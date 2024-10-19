@@ -35,7 +35,7 @@ impl From<&UpdatePartRequest> for UpdatablePart {
             material: request.material.clone(),
             tolerance: request.tolerance.clone(),
             quantity: request.quantity,
-            selected_part_quote_id: request.selected_part_quote_id.clone(),
+            selected_part_quote_id: None,
         }
     }
 }

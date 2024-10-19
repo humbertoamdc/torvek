@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use api_boundary::parts::errors::PartsError;
+use api_boundary::parts::models::Part;
 use axum::async_trait;
 
 use api_boundary::parts::requests::UpdatePartRequest;
@@ -30,8 +31,8 @@ impl UpdatePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdatePartRequest, (), PartsError> for UpdatePartUseCase {
-    async fn execute(&self, request: UpdatePartRequest) -> Result<(), PartsError> {
+impl UseCase<UpdatePartRequest, Part, PartsError> for UpdatePartUseCase {
+    async fn execute(&self, request: UpdatePartRequest) -> Result<Part, PartsError> {
         if self.quotation_is_payed(&request).await? {
             return Err(PartsError::UpdatePartAfterPayingQuotation);
         }

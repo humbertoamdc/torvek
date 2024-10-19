@@ -59,7 +59,6 @@ pub struct UpdatePartRequest {
     pub material: Option<String>,
     pub tolerance: Option<String>,
     pub quantity: Option<u64>,
-    pub selected_part_quote_id: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
