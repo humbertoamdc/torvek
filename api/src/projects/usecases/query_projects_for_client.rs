@@ -1,6 +1,5 @@
 use crate::projects::repositories::projects::ProjectsRepository;
-use crate::shared::usecase::UseCase;
-use api_boundary::projects::errors::ProjectsError;
+use crate::shared::usecase::{Result, UseCase};
 use api_boundary::projects::requests::QueryProjectsForClientRequest;
 use api_boundary::projects::responses::QueryProjectsForClientResponse;
 use axum::async_trait;
@@ -19,13 +18,13 @@ impl QueryProjectsForClientUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryProjectsForClientRequest, QueryProjectsForClientResponse, ProjectsError>
+impl UseCase<QueryProjectsForClientRequest, QueryProjectsForClientResponse>
     for QueryProjectsForClientUseCase
 {
     async fn execute(
         &self,
         request: QueryProjectsForClientRequest,
-    ) -> Result<QueryProjectsForClientResponse, ProjectsError> {
+    ) -> Result<QueryProjectsForClientResponse> {
         let projects = self
             .projects_repository
             .query_projects_for_client(request.customer_id)

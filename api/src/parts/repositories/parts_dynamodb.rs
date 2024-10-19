@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use api_boundary::parts::errors::PartsError;
+use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, ReturnValue, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
@@ -26,7 +26,7 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
-    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part, PartsError> {
+    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part, Error> {
         let response = self
             .client
             .get_item()
@@ -47,19 +47,19 @@ impl PartsRepository for DynamodbParts {
                     Ok(part) => Ok(part),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(PartsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 },
-                None => Err(PartsError::PartItemNotFound),
+                None => Err(Error::PartItemNotFound),
             },
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn create_parts(&self, parts: Vec<Part>) -> Result<(), PartsError> {
+    async fn create_parts(&self, parts: Vec<Part>) -> Result<(), Error> {
         let items: Vec<WriteRequest> = parts
             .into_iter()
             .map(|part| {
@@ -87,15 +87,12 @@ impl PartsRepository for DynamodbParts {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn query_parts_for_quotation(
-        &self,
-        quotation_id: String,
-    ) -> Result<Vec<Part>, PartsError> {
+    async fn query_parts_for_quotation(&self, quotation_id: String) -> Result<Vec<Part>, Error> {
         let response = self
             .client
             .query()
@@ -112,18 +109,18 @@ impl PartsRepository for DynamodbParts {
                     Ok(parts) => Ok(parts),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(PartsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part, PartsError> {
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part, Error> {
         let mut update_expression = String::from("SET ");
         let mut expression_attribute_values = HashMap::new();
 
@@ -199,14 +196,14 @@ impl PartsRepository for DynamodbParts {
                     Ok(part) => Ok(part),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(PartsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 },
-                None => Err(PartsError::PartItemNotFound),
+                None => Err(Error::PartItemNotFound),
             },
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PartsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

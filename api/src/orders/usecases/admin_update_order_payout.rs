@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use api_boundary::orders::errors::OrdersError;
 use axum::async_trait;
 
 use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
 
 use crate::orders::repositories::orders::OrdersRepository;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 pub struct AdminUpdateOrderPayoutUsecase {
     pub orders_repository: Arc<dyn OrdersRepository>,
@@ -19,8 +18,8 @@ impl AdminUpdateOrderPayoutUsecase {
 }
 
 #[async_trait]
-impl UseCase<AdminUpdateOrderPayoutRequest, (), OrdersError> for AdminUpdateOrderPayoutUsecase {
-    async fn execute(&self, request: AdminUpdateOrderPayoutRequest) -> Result<(), OrdersError> {
+impl UseCase<AdminUpdateOrderPayoutRequest, ()> for AdminUpdateOrderPayoutUsecase {
+    async fn execute(&self, request: AdminUpdateOrderPayoutRequest) -> Result<()> {
         self.orders_repository
             .update_order_payout(request.order_id, request.payout)
             .await

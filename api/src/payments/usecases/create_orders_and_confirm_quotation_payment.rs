@@ -1,18 +1,18 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use api_boundary::common::error::Error;
 use axum::async_trait;
 use chrono::Utc;
 
 use api_boundary::orders::models::{Order, OrderStatus};
 use api_boundary::parts::models::PartQuote;
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
-use api_boundary::payments::errors::PaymentsError;
 
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::domain::requests::CompleteCheckoutSessionWebhookRequest;
 use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 pub struct CreateOrdersAndConfirmQuotationPaymentUseCase {
     orders_creation_service: Arc<dyn OrdersCreationService>,
@@ -32,13 +32,10 @@ impl CreateOrdersAndConfirmQuotationPaymentUseCase {
 }
 
 #[async_trait]
-impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
+impl UseCase<CompleteCheckoutSessionWebhookRequest, ()>
     for CreateOrdersAndConfirmQuotationPaymentUseCase
 {
-    async fn execute(
-        &self,
-        request: CompleteCheckoutSessionWebhookRequest,
-    ) -> Result<(), PaymentsError> {
+    async fn execute(&self, request: CompleteCheckoutSessionWebhookRequest) -> Result<()> {
         let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
             quotation_id: request.quotation_id.clone(),
             with_quotation_subtotal: false,
@@ -47,7 +44,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, (), PaymentsError>
             .query_parts_for_quotation_usecase
             .execute(query_parts_for_quotation_request)
             .await
-            .map_err(|_| PaymentsError::UnknownError)?;
+            .map_err(|_| Error::UnknownError)?;
 
         let selected_part_quote_for_part = query_parts_for_quotation_response
             .parts

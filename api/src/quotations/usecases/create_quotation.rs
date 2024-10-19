@@ -1,6 +1,5 @@
 use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::shared::usecase::UseCase;
-use api_boundary::quotations::errors::QuotationsError;
+use crate::shared::usecase::{Result, UseCase};
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::CreateQuotationRequest;
 use axum::async_trait;
@@ -19,8 +18,8 @@ impl CreateQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateQuotationRequest, (), QuotationsError> for CreateQuotationUseCase {
-    async fn execute(&self, request: CreateQuotationRequest) -> Result<(), QuotationsError> {
+impl UseCase<CreateQuotationRequest, ()> for CreateQuotationUseCase {
+    async fn execute(&self, request: CreateQuotationRequest) -> Result<()> {
         let quotation = Quotation::new(request.customer_id, request.project_id);
         self.quotations_repository.create_quotation(quotation).await
     }

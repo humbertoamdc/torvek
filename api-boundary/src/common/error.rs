@@ -1,11 +1,15 @@
-use crate::common::api_error::{ApiError, ErrorCode};
-use crate::common::into_error_response::IntoErrorResponse;
-use crate::parts::errors::PartsError::*;
+use crate::common::api_error::ApiError;
+use crate::common::error::Error::{
+    GetProjectItemNotFoundError, GetQuotationItemNotFoundError, InvalidUrl,
+    NoSelectedQuoteAvailableForPart, UpdatePartAfterPayingQuotation,
+};
+use crate::common::into_error_response::IntoError;
 use axum::Json;
 use http::StatusCode;
+use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 
 #[derive(thiserror::Error, Debug)]
-pub enum PartsError {
+pub enum Error {
     #[error("the part doesn't exist")]
     PartItemNotFound,
     #[error("no quote selected for part with id `{0}`")]
@@ -14,11 +18,15 @@ pub enum PartsError {
     UpdatePartAfterPayingQuotation,
     #[error("invalid url couldn't be parsed")]
     InvalidUrl,
+    #[error("the project doesn't exist")]
+    GetProjectItemNotFoundError,
+    #[error("the quotation doesn't exist")]
+    GetQuotationItemNotFoundError,
     #[error("an unexpected error occurred")]
     UnknownError,
 }
 
-impl IntoErrorResponse for PartsError {
+impl IntoError for Error {
     fn into_error_response(self) -> (StatusCode, Json<ApiError>) {
         let (status_code, api_error) = match self {
             NoSelectedQuoteAvailableForPart(message) => (
@@ -45,9 +53,36 @@ impl IntoErrorResponse for PartsError {
                     message: InvalidUrl.to_string(),
                 },
             ),
+            GetProjectItemNotFoundError => (
+                StatusCode::NOT_FOUND,
+                ApiError {
+                    status_code: StatusCode::NOT_FOUND.as_u16(),
+                    code: ErrorCode::ItemNotFound,
+                    message: GetProjectItemNotFoundError.to_string(),
+                },
+            ),
+            GetQuotationItemNotFoundError => (
+                StatusCode::NOT_FOUND,
+                ApiError {
+                    status_code: StatusCode::NOT_FOUND.as_u16(),
+                    code: ErrorCode::ItemNotFound,
+                    message: GetQuotationItemNotFoundError.to_string(),
+                },
+            ),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ApiError::default()),
         };
 
         (status_code, Json(api_error.into()))
     }
+}
+
+#[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ErrorCode {
+    #[default]
+    UnknownError,
+    ItemNotFound,
+    MissingUserInput,
+    NotAllowed,
+    BadInput,
 }

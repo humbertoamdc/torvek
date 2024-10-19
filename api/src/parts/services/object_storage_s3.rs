@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use api_boundary::parts::errors::PartsError;
+use api_boundary::common::error::Error;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::async_trait;
 
@@ -24,7 +24,7 @@ impl ObjectStorage for S3ObjectStorage {
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, PartsError> {
+    ) -> Result<String, Error> {
         let result = self
             .client
             .put_object()
@@ -35,7 +35,7 @@ impl ObjectStorage for S3ObjectStorage {
 
         match result {
             Ok(presigned_url) => Ok(presigned_url.uri().to_string()),
-            Err(_) => Err(PartsError::UnknownError),
+            Err(_) => Err(Error::UnknownError),
         }
     }
 
@@ -43,7 +43,7 @@ impl ObjectStorage for S3ObjectStorage {
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, PartsError> {
+    ) -> Result<String, Error> {
         let result = self
             .client
             .get_object()
@@ -54,7 +54,7 @@ impl ObjectStorage for S3ObjectStorage {
 
         match result {
             Ok(presigned_url) => Ok(presigned_url.uri().to_string()),
-            Err(_) => Err(PartsError::UnknownError),
+            Err(_) => Err(Error::UnknownError),
         }
     }
 }

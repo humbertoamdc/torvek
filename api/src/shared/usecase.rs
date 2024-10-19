@@ -1,6 +1,9 @@
+use api_boundary::common::error::Error;
 use axum::async_trait;
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[async_trait]
-pub trait UseCase<Request, Response, Error> {
-    async fn execute(&self, request: Request) -> Result<Response, Error>;
+pub trait UseCase<Request, Response> {
+    async fn execute(&self, request: Request) -> Result<Response>;
 }

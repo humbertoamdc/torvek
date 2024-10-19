@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use api_boundary::common::error::Error;
 use api_boundary::common::file::File;
-use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
@@ -15,7 +15,7 @@ use api_boundary::quotations::requests::GetQuotationByIdRequest;
 
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
@@ -40,15 +40,15 @@ impl CreateDrawingUploadUrlUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, PartsError>
+impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
     for CreateDrawingUploadUrlUseCase
 {
     async fn execute(
         &self,
         request: CreateDrawingUploadUrlRequest,
-    ) -> Result<CreateDrawingUploadUrlResponse, PartsError> {
+    ) -> Result<CreateDrawingUploadUrlResponse> {
         if self.quotation_is_payed(&request).await? {
-            return Err(PartsError::UpdatePartAfterPayingQuotation);
+            return Err(Error::UpdatePartAfterPayingQuotation);
         }
 
         // We only want to preserve one drawing file per part. In the case where
@@ -94,10 +94,7 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse, Part
 }
 
 impl CreateDrawingUploadUrlUseCase {
-    async fn quotation_is_payed(
-        &self,
-        request: &CreateDrawingUploadUrlRequest,
-    ) -> Result<bool, PartsError> {
+    async fn quotation_is_payed(&self, request: &CreateDrawingUploadUrlRequest) -> Result<bool> {
         let get_quotation_request = GetQuotationByIdRequest {
             customer_id: String::default(),
             project_id: request.project_id.clone(),
@@ -107,7 +104,7 @@ impl CreateDrawingUploadUrlUseCase {
             .get_quotation_by_id_use_case
             .execute(get_quotation_request)
             .await
-            .map_err(|_| PartsError::UnknownError)?; // TODO: Handle error properly.
+            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
 
         Ok(quotation.status == QuotationStatus::Payed)
     }

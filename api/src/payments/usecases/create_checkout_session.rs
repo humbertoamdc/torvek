@@ -1,13 +1,13 @@
+use api_boundary::common::error::Error;
 use axum::async_trait;
 
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
-use api_boundary::payments::errors::PaymentsError;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::domain::requests::CreateCheckoutSessionRequest;
 use crate::payments::services::stripe::StripePaymentsProcessor;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 pub struct CreateCheckoutSessionUseCase {
     payments_processor: StripePaymentsProcessor,
@@ -27,13 +27,13 @@ impl CreateCheckoutSessionUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, PaymentsError>
+impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
     for CreateCheckoutSessionUseCase
 {
     async fn execute(
         &self,
         request: CreateCheckoutSessionRequest,
-    ) -> Result<CreateCheckoutSessionResponse, PaymentsError> {
+    ) -> Result<CreateCheckoutSessionResponse> {
         let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
             quotation_id: request.quotation_id.clone(),
             with_quotation_subtotal: false,
@@ -43,7 +43,7 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse, Paymen
             .query_parts_for_quotation_usecase
             .execute(query_parts_for_quotation_request)
             .await
-            .map_err(|_| PaymentsError::UnknownError)?
+            .map_err(|_| Error::UnknownError)?
             .parts;
 
         let url = self

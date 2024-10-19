@@ -1,7 +1,15 @@
 use api_boundary::orders::models::Address;
-use api_boundary::payments::errors::WebhookRequestError;
 use serde_derive::{Deserialize, Serialize};
 use stripe::CheckoutSession;
+
+#[derive(Debug)]
+pub enum WebhookRequestError {
+    MissingShippingDetails,
+    MissingShippingRecipientName,
+    MissingShippingAddress,
+    MissingMetadata,
+    MissingField,
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateCheckoutSessionRequest {

@@ -7,7 +7,7 @@ use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUse
 use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPaymentUseCase;
 use crate::shared::extractors::stripe_event::StripeEvent;
 use crate::shared::usecase::UseCase;
-use api_boundary::common::into_error_response::IntoErrorResponse;
+use api_boundary::common::into_error_response::IntoError;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;

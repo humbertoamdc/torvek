@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use api_boundary::parts::errors::PartsError;
+use api_boundary::common::error::Error;
 use api_boundary::parts::models::Part;
 use axum::async_trait;
 
@@ -11,7 +11,7 @@ use api_boundary::quotations::requests::GetQuotationByIdRequest;
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 pub struct UpdatePartUseCase {
     parts_repository: Arc<dyn PartsRepository>,
@@ -31,10 +31,10 @@ impl UpdatePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdatePartRequest, Part, PartsError> for UpdatePartUseCase {
-    async fn execute(&self, request: UpdatePartRequest) -> Result<Part, PartsError> {
+impl UseCase<UpdatePartRequest, Part> for UpdatePartUseCase {
+    async fn execute(&self, request: UpdatePartRequest) -> Result<Part> {
         if self.quotation_is_payed(&request).await? {
-            return Err(PartsError::UpdatePartAfterPayingQuotation);
+            return Err(Error::UpdatePartAfterPayingQuotation);
         }
 
         let updatable_part = UpdatablePart::from(&request);
@@ -44,7 +44,7 @@ impl UseCase<UpdatePartRequest, Part, PartsError> for UpdatePartUseCase {
 }
 
 impl UpdatePartUseCase {
-    async fn quotation_is_payed(&self, request: &UpdatePartRequest) -> Result<bool, PartsError> {
+    async fn quotation_is_payed(&self, request: &UpdatePartRequest) -> Result<bool> {
         let get_quotation_request = GetQuotationByIdRequest {
             customer_id: request.customer_id.clone(),
             project_id: request.project_id.clone(),
@@ -54,7 +54,7 @@ impl UpdatePartUseCase {
             .get_quotation_by_id_use_case
             .execute(get_quotation_request)
             .await
-            .map_err(|_| PartsError::UnknownError)?; // TODO: Handle error properly.
+            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
 
         Ok(quotation.status == QuotationStatus::Payed)
     }

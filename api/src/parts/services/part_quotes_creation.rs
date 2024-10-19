@@ -1,4 +1,4 @@
-use api_boundary::parts::errors::PartsError;
+use api_boundary::common::error::Error;
 use axum::async_trait;
 use std::collections::HashMap;
 
@@ -12,5 +12,5 @@ pub trait PartQuotesCreation: Send + Sync + 'static {
         quotation_id: String,
         part_quotes_by_part: HashMap<String, Vec<PartQuote>>,
         selected_part_quote_by_part: HashMap<String, String>,
-    ) -> Result<(), PartsError>;
+    ) -> Result<(), Error>;
 }

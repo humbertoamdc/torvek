@@ -1,6 +1,5 @@
 use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::shared::usecase::UseCase;
-use api_boundary::quotations::errors::QuotationsError;
+use crate::shared::usecase::{Result, UseCase};
 use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 use axum::async_trait;
 use std::sync::Arc;
@@ -18,8 +17,8 @@ impl UpdateQuotationStatusUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdateQuotationStatusRequest, (), QuotationsError> for UpdateQuotationStatusUseCase {
-    async fn execute(&self, request: UpdateQuotationStatusRequest) -> Result<(), QuotationsError> {
+impl UseCase<UpdateQuotationStatusRequest, ()> for UpdateQuotationStatusUseCase {
+    async fn execute(&self, request: UpdateQuotationStatusRequest) -> Result<()> {
         self.quotations_repository
             .update_quotation_status(request.project_id, request.quotation_id, request.status)
             .await

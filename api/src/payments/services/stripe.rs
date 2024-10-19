@@ -1,3 +1,4 @@
+use api_boundary::common::error::Error;
 use stripe::{
     CheckoutSession, CheckoutSessionBillingAddressCollection, CheckoutSessionMode, Client,
     CreateCheckoutSession, CreateCheckoutSessionLineItems, CreateCheckoutSessionLineItemsPriceData,
@@ -7,7 +8,6 @@ use stripe::{
 };
 
 use api_boundary::parts::models::Part;
-use api_boundary::payments::errors::PaymentsError;
 
 const CUSTOMER_ID: &'static str = "customer_id";
 const PROJECT_ID: &'static str = "project_id";
@@ -33,7 +33,7 @@ impl StripePaymentsProcessor {
         project_id: String,
         quotation_id: String,
         parts: Vec<Part>,
-    ) -> Result<String, PaymentsError> {
+    ) -> Result<String, Error> {
         let line_items = Self::line_items_from_parts_data(&parts);
         let success_url = format!("{}/orders", self.success_url,);
 
@@ -60,7 +60,7 @@ impl StripePaymentsProcessor {
             Ok(checkout_session) => Ok(checkout_session.url.unwrap()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PaymentsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

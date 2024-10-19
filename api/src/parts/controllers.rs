@@ -1,4 +1,4 @@
-use api_boundary::common::into_error_response::IntoErrorResponse;
+use api_boundary::common::into_error_response::IntoError;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;

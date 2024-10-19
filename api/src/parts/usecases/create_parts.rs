@@ -1,11 +1,11 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use api_boundary::common::error::Error;
 use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 use api_boundary::common::file::File;
-use api_boundary::parts::errors::PartsError;
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
@@ -15,7 +15,7 @@ use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
 static ORIGINAL_FILES_BASE_FILE_PATH: &'static str = "parts/originals";
@@ -43,11 +43,8 @@ impl CreatePartsUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePartsUseCase {
-    async fn execute(
-        &self,
-        request: CreatePartsRequest,
-    ) -> Result<CreatePartsResponse, PartsError> {
+impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
+    async fn execute(&self, request: CreatePartsRequest) -> Result<CreatePartsResponse> {
         let file_ids = (0..request.file_names.len())
             .into_iter()
             .map(|_| {
@@ -118,7 +115,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse, PartsError> for CreatePart
         self.update_quotation_status_usecase
             .execute(update_quotation_status_request)
             .await
-            .map_err(|_| PartsError::UnknownError)?;
+            .map_err(|_| Error::UnknownError)?;
 
         self.parts_repository.create_parts(parts).await?;
 
@@ -133,7 +130,7 @@ impl CreatePartsUseCase {
         file_ids: &Vec<String>,
         file_path: &str,
         customer_id: String,
-    ) -> Result<Vec<String>, PartsError> {
+    ) -> Result<Vec<String>> {
         let file_extensions = file_names
             .iter()
             .map(|file_name| file_name.split(".").last().unwrap().to_string())

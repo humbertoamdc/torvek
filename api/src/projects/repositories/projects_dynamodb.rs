@@ -1,5 +1,5 @@
 use crate::projects::repositories::projects::ProjectsRepository;
-use api_boundary::projects::errors::ProjectsError;
+use api_boundary::common::error::Error;
 use api_boundary::projects::models::Project;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
@@ -21,7 +21,7 @@ impl DynamodbProjects {
 
 #[async_trait]
 impl ProjectsRepository for DynamodbProjects {
-    async fn create_project(&self, project: Project) -> Result<(), ProjectsError> {
+    async fn create_project(&self, project: Project) -> Result<(), Error> {
         let item = to_item(project).expect("error converting to dynamodb item");
         let response = self
             .client
@@ -35,15 +35,12 @@ impl ProjectsRepository for DynamodbProjects {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(ProjectsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn query_projects_for_client(
-        &self,
-        customer_id: String,
-    ) -> Result<Vec<Project>, ProjectsError> {
+    async fn query_projects_for_client(&self, customer_id: String) -> Result<Vec<Project>, Error> {
         let response = self
             .client
             .query()
@@ -59,10 +56,10 @@ impl ProjectsRepository for DynamodbProjects {
                 let items = output.items().to_vec();
                 match from_items(items) {
                     Ok(projects) => Ok(projects),
-                    Err(_) => Err(ProjectsError::UnknownError),
+                    Err(_) => Err(Error::UnknownError),
                 }
             }
-            Err(_) => Err(ProjectsError::UnknownError),
+            Err(_) => Err(Error::UnknownError),
         }
     }
 
@@ -70,7 +67,7 @@ impl ProjectsRepository for DynamodbProjects {
         &self,
         customer_id: String,
         project_id: String,
-    ) -> Result<Project, ProjectsError> {
+    ) -> Result<Project, Error> {
         let response = self
             .client
             .get_item()
@@ -88,14 +85,14 @@ impl ProjectsRepository for DynamodbProjects {
                     Ok(project) => Ok(project),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(ProjectsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 },
-                None => Err(ProjectsError::GetProjectItemNotFoundError),
+                None => Err(Error::GetProjectItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");
-                Err(ProjectsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

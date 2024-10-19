@@ -1,8 +1,7 @@
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
-use crate::shared::usecase::UseCase;
+use crate::shared::usecase::{Result, UseCase};
 use api_boundary::common::money::Money;
-use api_boundary::parts::errors::PartsError;
 use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::UpdateSelectedPartQuoteRequest;
 use api_boundary::parts::responses::UpdateSelectedPartQuoteResponse;
@@ -20,13 +19,13 @@ impl UpdateSelectedPartQuoteUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse, PartsError>
+impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse>
     for UpdateSelectedPartQuoteUseCase
 {
     async fn execute(
         &self,
         request: UpdateSelectedPartQuoteRequest,
-    ) -> Result<UpdateSelectedPartQuoteResponse, PartsError> {
+    ) -> Result<UpdateSelectedPartQuoteResponse> {
         // Update selected part quote id in part.
         let mut updatable_part =
             UpdatablePart::partial_new(request.quotation_id.clone(), request.part_id.clone());

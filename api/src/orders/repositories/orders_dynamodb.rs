@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use chrono::Utc;
@@ -8,7 +9,6 @@ use serde_dynamo::from_items;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use api_boundary::common::money::Money;
-use api_boundary::orders::errors::OrdersError;
 use api_boundary::orders::models::{Order, OrderStatus};
 
 use crate::orders::repositories::orders::OrdersRepository;
@@ -29,10 +29,7 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn query_orders_for_customer(
-        &self,
-        customer_id: String,
-    ) -> Result<Vec<Order>, OrdersError> {
+    async fn query_orders_for_customer(&self, customer_id: String) -> Result<Vec<Order>, Error> {
         let response = self
             .client
             .query()
@@ -56,18 +53,18 @@ impl OrdersRepository for DynamodbOrders {
                     }
                     Err(err) => {
                         log::error!("{:?}", err);
-                        Err(OrdersError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
                 log::error!("{:?}", err);
-                Err(OrdersError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn query_open_orders(&self) -> Result<Vec<Order>, OrdersError> {
+    async fn query_open_orders(&self) -> Result<Vec<Order>, Error> {
         let response = self
             .client
             .query()
@@ -91,22 +88,18 @@ impl OrdersRepository for DynamodbOrders {
                     }
                     Err(err) => {
                         log::error!("{:?}", err);
-                        Err(OrdersError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
                 log::error!("{:?}", err);
-                Err(OrdersError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn update_order_payout(
-        &self,
-        order_id: String,
-        payout: Money,
-    ) -> Result<(), OrdersError> {
+    async fn update_order_payout(&self, order_id: String, payout: Money) -> Result<(), Error> {
         let response = self
             .client
             .update_item()
@@ -142,7 +135,7 @@ impl OrdersRepository for DynamodbOrders {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{:?}", err);
-                Err(OrdersError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

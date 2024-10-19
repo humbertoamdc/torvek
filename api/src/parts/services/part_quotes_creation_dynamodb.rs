@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use api_boundary::parts::errors::PartsError;
+use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
@@ -38,7 +38,7 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
         quotation_id: String,
         part_quotes_by_part: HashMap<String, Vec<PartQuote>>,
         selected_part_quote_by_part: HashMap<String, String>,
-    ) -> Result<(), PartsError> {
+    ) -> Result<(), Error> {
         // Update quotation status to PendingPayment..
         let quotation_transaction =
             self.build_quotation_transaction(project_id, quotation_id.clone());
@@ -66,7 +66,7 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
             Ok(_) => Ok(()),
             Err(error) => {
                 log::error!("{:?}", error);
-                Err(PartsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
