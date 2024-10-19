@@ -97,13 +97,12 @@ impl QueryPartsForQuotationUseCase {
 
     async fn get_quotation_subtotal(&self, parts: &Vec<Part>) -> Result<Money, PartsError> {
         // TODO: Query quotation and only get the subtotal is quotations is in the right status.
-        if parts
+        match parts
             .iter()
-            .any(|part| part.selected_part_quote_id.is_none())
+            .find(|part| part.selected_part_quote_id.is_none())
         {
-            return Err(PartsError::NoSelectedQuoteAvailableForPart(String::from(
-                "some id",
-            )));
+            Some(part) => return Err(PartsError::NoSelectedQuoteAvailableForPart(part.id.clone())),
+            None => (),
         }
 
         let selected_part_quotes: Vec<PartQuote> = parts
