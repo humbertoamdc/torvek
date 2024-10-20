@@ -1,7 +1,5 @@
 use crate::app_state::AppState;
-use crate::projects::controllers::http::{
-    create_project, get_project_by_id, query_projects_for_client,
-};
+use crate::projects::controllers::{create_project, get_project_by_id, query_projects_for_client};
 use axum::routing::{get, post};
 use axum::Router;
 

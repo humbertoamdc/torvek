@@ -1,6 +1,6 @@
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use api_boundary::common::error::Error;
 use api_boundary::parts::requests::CreateModelUploadUrlRequest;

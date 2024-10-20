@@ -6,7 +6,7 @@ use axum::async_trait;
 use api_boundary::parts::requests::AdminUpdatePartRequest;
 
 use crate::parts::domain::updatable_part::UpdatablePart;
-use crate::parts::repositories::parts::PartsRepository;
+use crate::repositories::parts::PartsRepository;
 use crate::shared::{Result, UseCase};
 
 pub struct AdminUpdatePartUseCase {

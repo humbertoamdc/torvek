@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use axum::async_trait;
 
+use crate::repositories::orders::OrdersRepository;
 use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
 
-use crate::orders::repositories::orders::OrdersRepository;
 use crate::shared::{Result, UseCase};
 
 pub struct AdminUpdateOrderPayoutUsecase {

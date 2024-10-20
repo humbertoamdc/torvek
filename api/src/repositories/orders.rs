@@ -1,4 +1,3 @@
-use api_boundary::common::error::Error;
 use axum::async_trait;
 
 use crate::shared::Result;

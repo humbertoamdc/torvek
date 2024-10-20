@@ -7,10 +7,9 @@ use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
 
-use api_boundary::parts::models::Part;
-
 use crate::parts::domain::updatable_part::UpdatablePart;
-use crate::parts::repositories::parts::PartsRepository;
+use crate::repositories::parts::PartsRepository;
+use api_boundary::parts::models::Part;
 
 #[derive(Clone)]
 pub struct DynamodbParts {

@@ -7,9 +7,8 @@ use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
 use std::collections::HashMap;
 
+use crate::repositories::quotations::QuotationsRepository;
 use api_boundary::quotations::models::{Quotation, QuotationStatus};
-
-use crate::quotations::repositories::quotations::QuotationsRepository;
 
 static QUOTATIONS_BY_STATUS_INDEX: &'static str = "QuotationsByStatus";
 

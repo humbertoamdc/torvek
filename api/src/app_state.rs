@@ -10,20 +10,19 @@ use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityMan
 use crate::auth::adapters::spi::identity_manager::ory::OryIdentityManager;
 use crate::auth::application::services::identity_manager::{AdminIdentityManager, IdentityManager};
 use crate::config::{Config, Environment};
-use crate::orders::repositories::orders::OrdersRepository;
-use crate::orders::repositories::orders_dynamodb::DynamodbOrders;
-use crate::parts;
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::repositories::parts_dynamodb::DynamodbParts;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::parts::services::part_quotes_creation_dynamodb::DynamodbParQuotesCreation;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::payments::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
 use crate::payments::services::stripe::StripePaymentsProcessor;
-use crate::projects::repositories::projects::ProjectsRepository;
-use crate::projects::repositories::projects_dynamodb::DynamodbProjects;
-use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::quotations::repositories::quotations_dynamodb::DynamodbQuotations;
+use crate::repositories::orders::OrdersRepository;
+use crate::repositories::orders_dynamodb::DynamodbOrders;
+use crate::repositories::parts::PartsRepository;
+use crate::repositories::parts_dynamodb::DynamodbParts;
+use crate::repositories::projects::ProjectsRepository;
+use crate::repositories::projects_dynamodb::DynamodbProjects;
+use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotations_dynamodb::DynamodbQuotations;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -61,7 +60,7 @@ pub struct AppStateQuotations {
 #[derive(Clone)]
 pub struct AppStateParts {
     pub parts_repository: Arc<dyn PartsRepository>,
-    pub object_storage: Arc<dyn parts::services::object_storage::ObjectStorage>,
+    pub object_storage: Arc<dyn crate::services::object_storage::ObjectStorage>,
     pub part_quotes_creation: Arc<dyn PartQuotesCreation>,
 }
 
@@ -198,7 +197,7 @@ impl AppStateParts {
             dynamodb_client.clone(),
             config.parts.parts_table.clone(),
         ));
-        let object_storage = Arc::new(parts::services::object_storage_s3::S3ObjectStorage::new(
+        let object_storage = Arc::new(crate::services::object_storage_s3::S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
         ));

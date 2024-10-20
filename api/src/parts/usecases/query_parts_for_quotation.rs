@@ -10,8 +10,8 @@ use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
 use url::Url;
 
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::services::object_storage::ObjectStorage;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;

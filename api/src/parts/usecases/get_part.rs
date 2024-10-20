@@ -1,5 +1,5 @@
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::services::object_storage::ObjectStorage;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::GetPartRequest;
