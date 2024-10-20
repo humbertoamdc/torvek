@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::shared::Result;
 use api_boundary::common::error::Error;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::async_trait;
@@ -24,7 +25,7 @@ impl ObjectStorage for S3ObjectStorage {
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, Error> {
+    ) -> Result<String> {
         let result = self
             .client
             .put_object()
@@ -43,7 +44,7 @@ impl ObjectStorage for S3ObjectStorage {
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, Error> {
+    ) -> Result<String> {
         let result = self
             .client
             .get_object()

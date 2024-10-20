@@ -2,7 +2,7 @@ use crate::app_state::AppState;
 use crate::projects::usecases::create_project::CreateProjectUseCase;
 use crate::projects::usecases::get_project_by_id::GetProjectByIdUseCase;
 use crate::projects::usecases::query_projects_for_client::QueryProjectsForClientUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::UseCase;
 use api_boundary::common::into_error_response::IntoError;
 use api_boundary::projects::requests::{
     CreateProjectRequest, GetProjectByIdRequest, QueryProjectsForClientRequest,

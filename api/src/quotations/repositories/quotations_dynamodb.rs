@@ -1,3 +1,4 @@
+use crate::shared::Result;
 use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
@@ -26,7 +27,7 @@ impl DynamodbQuotations {
 
 #[async_trait]
 impl QuotationsRepository for DynamodbQuotations {
-    async fn create_quotation(&self, quotation: Quotation) -> Result<(), Error> {
+    async fn create_quotation(&self, quotation: Quotation) -> Result<()> {
         let item = to_item(quotation).expect("error converting to dynamodb item");
         let response = self
             .client
@@ -42,10 +43,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn query_quotations_for_project(
-        &self,
-        project_id: String,
-    ) -> Result<Vec<Quotation>, Error> {
+    async fn query_quotations_for_project(&self, project_id: String) -> Result<Vec<Quotation>> {
         let response = self
             .client
             .query()
@@ -74,10 +72,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn query_quotations_by_status(
-        &self,
-        status: QuotationStatus,
-    ) -> Result<Vec<Quotation>, Error> {
+    async fn query_quotations_by_status(&self, status: QuotationStatus) -> Result<Vec<Quotation>> {
         let response = self
             .client
             .query()
@@ -105,7 +100,7 @@ impl QuotationsRepository for DynamodbQuotations {
         &self,
         project_id: String,
         quotation_id: String,
-    ) -> Result<Quotation, Error> {
+    ) -> Result<Quotation> {
         let response = self
             .client
             .get_item()
@@ -140,7 +135,7 @@ impl QuotationsRepository for DynamodbQuotations {
         project_id: String,
         quotation_id: String,
         status: QuotationStatus,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let response = self
             .client
             .update_item()

@@ -15,7 +15,7 @@ use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
 static ORIGINAL_FILES_BASE_FILE_PATH: &'static str = "parts/originals";

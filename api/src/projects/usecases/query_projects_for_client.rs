@@ -1,5 +1,5 @@
 use crate::projects::repositories::projects::ProjectsRepository;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 use api_boundary::projects::requests::QueryProjectsForClientRequest;
 use api_boundary::projects::responses::QueryProjectsForClientResponse;
 use axum::async_trait;

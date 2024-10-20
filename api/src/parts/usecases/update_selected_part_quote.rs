@@ -1,6 +1,6 @@
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 use api_boundary::common::money::Money;
 use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::UpdateSelectedPartQuoteRequest;

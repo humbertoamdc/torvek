@@ -6,7 +6,8 @@ use axum::async_trait;
 use api_boundary::orders::responses::QueryOpenOrdersResponse;
 
 use crate::orders::repositories::orders::OrdersRepository;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
+
 pub struct QueryOpenOrdersUseCase {
     orders_repository: Arc<dyn OrdersRepository>,
 }

@@ -11,7 +11,7 @@ use api_boundary::quotations::requests::GetQuotationByIdRequest;
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::parts::repositories::parts::PartsRepository;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 pub struct UpdatePartUseCase {
     parts_repository: Arc<dyn PartsRepository>,

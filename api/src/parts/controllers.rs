@@ -23,7 +23,7 @@ use crate::parts::usecases::update_part::UpdatePartUseCase;
 use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuoteUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::UseCase;
 
 pub async fn admin_update_part(
     State(app_state): State<AppState>,

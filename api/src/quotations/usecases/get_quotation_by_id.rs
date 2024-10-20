@@ -1,5 +1,5 @@
 use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::GetQuotationByIdRequest;
 use axum::async_trait;

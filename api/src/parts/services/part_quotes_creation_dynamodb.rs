@@ -5,10 +5,10 @@ use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 
+use crate::parts::services::part_quotes_creation::PartQuotesCreation;
+use crate::shared::Result;
 use api_boundary::parts::models::PartQuote;
 use api_boundary::quotations::models::QuotationStatus;
-
-use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 
 pub struct DynamodbParQuotesCreation {
     client: aws_sdk_dynamodb::Client,
@@ -38,7 +38,7 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
         quotation_id: String,
         part_quotes_by_part: HashMap<String, Vec<PartQuote>>,
         selected_part_quote_by_part: HashMap<String, String>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         // Update quotation status to PendingPayment..
         let quotation_transaction =
             self.build_quotation_transaction(project_id, quotation_id.clone());

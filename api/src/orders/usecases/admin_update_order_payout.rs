@@ -5,7 +5,7 @@ use axum::async_trait;
 use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
 
 use crate::orders::repositories::orders::OrdersRepository;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 pub struct AdminUpdateOrderPayoutUsecase {
     pub orders_repository: Arc<dyn OrdersRepository>,

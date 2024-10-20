@@ -1,6 +1,6 @@
-use api_boundary::common::error::Error;
 use axum::async_trait;
 
+use crate::shared::Result;
 use api_boundary::orders::models::Order;
 
 #[async_trait]
@@ -10,5 +10,5 @@ pub trait OrdersCreationService: Send + Sync + 'static {
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 }

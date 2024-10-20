@@ -7,7 +7,7 @@ use api_boundary::parts::models::PartQuote;
 use api_boundary::parts::requests::CreatePartQuotesRequest;
 
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 pub struct CreatePartQuotesUseCase {
     part_quotes_creation_service: Arc<dyn PartQuotesCreation>,

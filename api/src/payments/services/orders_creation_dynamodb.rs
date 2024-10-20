@@ -6,6 +6,7 @@ use axum::async_trait;
 use serde_dynamo::to_item;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
+use crate::shared::Result;
 use api_boundary::orders::models::Order;
 use api_boundary::quotations::models::QuotationStatus;
 
@@ -39,7 +40,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         // Parse to DynamoDB format.
         let items = orders
             .into_iter()

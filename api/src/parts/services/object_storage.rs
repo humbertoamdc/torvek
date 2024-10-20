@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use api_boundary::common::error::Error;
+use crate::shared::Result;
 use axum::async_trait;
 
 #[async_trait]
@@ -9,10 +9,10 @@ pub trait ObjectStorage: Send + Sync + 'static {
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, Error>;
+    ) -> Result<String>;
     async fn get_object_presigned_url(
         &self,
         file_path: String,
         expires_in: Duration,
-    ) -> Result<String, Error>;
+    ) -> Result<String>;
 }

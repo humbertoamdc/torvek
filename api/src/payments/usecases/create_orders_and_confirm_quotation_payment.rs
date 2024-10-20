@@ -12,7 +12,7 @@ use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::domain::requests::CompleteCheckoutSessionWebhookRequest;
 use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 pub struct CreateOrdersAndConfirmQuotationPaymentUseCase {
     orders_creation_service: Arc<dyn OrdersCreationService>,

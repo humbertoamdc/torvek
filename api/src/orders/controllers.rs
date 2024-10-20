@@ -14,7 +14,7 @@ use crate::orders::usecases::admin_update_order_payout::AdminUpdateOrderPayoutUs
 use crate::orders::usecases::query_open_orders::QueryOpenOrdersUseCase;
 use crate::orders::usecases::query_orders_for_customer::QueryOrdersForCustomer;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::UseCase;
 
 #[derive(Deserialize)]
 pub struct QueryParameters {

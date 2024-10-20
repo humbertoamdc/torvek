@@ -12,7 +12,7 @@ use url::Url;
 
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 

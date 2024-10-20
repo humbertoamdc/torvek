@@ -1,6 +1,6 @@
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 use api_boundary::orders::requests::QueryOrdersForCustomerRequest;
 use api_boundary::orders::responses::{
     QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,

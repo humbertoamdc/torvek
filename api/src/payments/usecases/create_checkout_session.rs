@@ -7,7 +7,7 @@ use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::domain::requests::CreateCheckoutSessionRequest;
 use crate::payments::services::stripe::StripePaymentsProcessor;
-use crate::shared::usecase::{Result, UseCase};
+use crate::shared::{Result, UseCase};
 
 pub struct CreateCheckoutSessionUseCase {
     payments_processor: StripePaymentsProcessor,

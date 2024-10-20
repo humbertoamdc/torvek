@@ -8,6 +8,7 @@ use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
+use crate::shared::Result;
 use api_boundary::common::money::Money;
 use api_boundary::orders::models::{Order, OrderStatus};
 
@@ -29,7 +30,7 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn query_orders_for_customer(&self, customer_id: String) -> Result<Vec<Order>, Error> {
+    async fn query_orders_for_customer(&self, customer_id: String) -> Result<Vec<Order>> {
         let response = self
             .client
             .query()
@@ -64,7 +65,7 @@ impl OrdersRepository for DynamodbOrders {
         }
     }
 
-    async fn query_open_orders(&self) -> Result<Vec<Order>, Error> {
+    async fn query_open_orders(&self) -> Result<Vec<Order>> {
         let response = self
             .client
             .query()
@@ -99,7 +100,7 @@ impl OrdersRepository for DynamodbOrders {
         }
     }
 
-    async fn update_order_payout(&self, order_id: String, payout: Money) -> Result<(), Error> {
+    async fn update_order_payout(&self, order_id: String, payout: Money) -> Result<()> {
         let response = self
             .client
             .update_item()
