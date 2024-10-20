@@ -2,7 +2,7 @@ use axum::routing::{get, post};
 use axum::Router;
 
 use crate::app_state::AppState;
-use crate::quotations::controllers::http::{
+use crate::quotations::controllers::{
     admin_query_quotations_by_status, create_quotation, get_quotation_by_id,
     query_quotations_for_project,
 };
