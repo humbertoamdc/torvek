@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
 use axum::async_trait;
 use serde_dynamo::to_item;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
+use crate::shared::Result;
 use api_boundary::orders::models::Order;
-use api_boundary::payments::errors::PaymentsError;
 use api_boundary::quotations::models::QuotationStatus;
 
 use crate::payments::services::orders_creation::OrdersCreationService;
@@ -39,7 +40,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
-    ) -> Result<(), PaymentsError> {
+    ) -> Result<()> {
         // Parse to DynamoDB format.
         let items = orders
             .into_iter()
@@ -68,7 +69,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(PaymentsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

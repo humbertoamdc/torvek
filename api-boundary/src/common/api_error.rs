@@ -1,6 +1,6 @@
+use crate::common::error::ErrorCode;
 use http::StatusCode;
 use serde_derive::{Deserialize, Serialize};
-use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use std::fmt::{Display, Formatter};
 
 #[derive(thiserror::Error, Debug, Deserialize, Serialize)]
@@ -30,15 +30,4 @@ impl Default for ApiError {
             message: String::from("an unexpected error occurred"),
         }
     }
-}
-
-#[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq, Default)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ErrorCode {
-    #[default]
-    UnknownError,
-    ItemNotFound,
-    MissingUserInput,
-    NotAllowed,
-    BadInput,
 }

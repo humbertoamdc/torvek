@@ -1,8 +1,8 @@
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::shared::usecase::UseCase;
-use api_boundary::parts::errors::PartsError;
+use crate::shared::{Result, UseCase};
+use api_boundary::common::error::Error;
 use api_boundary::parts::requests::CreateModelUploadUrlRequest;
 use api_boundary::parts::responses::CreateModelUploadUrlResponse;
 use api_boundary::quotations::models::QuotationStatus;
@@ -33,15 +33,13 @@ impl ModelUploadUrlUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse, PartsError>
-    for ModelUploadUrlUseCase
-{
+impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse> for ModelUploadUrlUseCase {
     async fn execute(
         &self,
         request: CreateModelUploadUrlRequest,
-    ) -> Result<CreateModelUploadUrlResponse, PartsError> {
+    ) -> Result<CreateModelUploadUrlResponse> {
         if self.quotation_is_payed(&request).await? {
-            return Err(PartsError::UpdatePartAfterPayingQuotation);
+            return Err(Error::UpdatePartAfterPayingQuotation);
         }
 
         let part = self
@@ -63,10 +61,7 @@ impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse, PartsErr
 }
 
 impl ModelUploadUrlUseCase {
-    async fn quotation_is_payed(
-        &self,
-        request: &CreateModelUploadUrlRequest,
-    ) -> Result<bool, PartsError> {
+    async fn quotation_is_payed(&self, request: &CreateModelUploadUrlRequest) -> Result<bool> {
         let get_quotation_request = GetQuotationByIdRequest {
             customer_id: String::default(),
             project_id: request.project_id.clone(),
@@ -76,7 +71,7 @@ impl ModelUploadUrlUseCase {
             .get_quotation_by_id_use_case
             .execute(get_quotation_request)
             .await
-            .map_err(|_| PartsError::UnknownError)?; // TODO: Handle error properly.
+            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
 
         Ok(quotation.status == QuotationStatus::Payed)
     }

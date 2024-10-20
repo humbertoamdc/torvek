@@ -3,8 +3,8 @@ use std::time::Duration;
 
 use axum::async_trait;
 
+use api_boundary::common::error::Error;
 use api_boundary::common::money::Money;
-use api_boundary::parts::errors::PartsError;
 use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
@@ -12,7 +12,7 @@ use url::Url;
 
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
-use crate::shared::usecase::UseCase;
+use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
@@ -34,13 +34,13 @@ impl QueryPartsForQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, PartsError>
+impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
     for QueryPartsForQuotationUseCase
 {
     async fn execute(
         &self,
         request: QueryPartsForQuotationRequest,
-    ) -> Result<QueryPartsForQuotationResponse, PartsError> {
+    ) -> Result<QueryPartsForQuotationResponse> {
         let mut parts = self
             .parts_repository
             .query_parts_for_quotation(request.quotation_id)
@@ -53,7 +53,7 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, Part
                 true => match self.get_quotation_subtotal(&parts).await {
                     Ok(money) => Ok(Some(money)),
                     Err(err) => match err {
-                        PartsError::NoSelectedQuoteAvailableForPart(_) => Ok(None),
+                        Error::NoSelectedQuoteAvailableForPart(_) => Ok(None),
                         _ => Err(err),
                     },
                 },
@@ -69,7 +69,7 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse, Part
 }
 
 impl QueryPartsForQuotationUseCase {
-    async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<(), PartsError> {
+    async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
         for part in parts.iter_mut() {
             // TODO: Handle error.
             // For both cases, we can recover from the error, we will just leave the presigned url field
@@ -95,13 +95,13 @@ impl QueryPartsForQuotationUseCase {
         Ok(())
     }
 
-    async fn get_quotation_subtotal(&self, parts: &Vec<Part>) -> Result<Money, PartsError> {
+    async fn get_quotation_subtotal(&self, parts: &Vec<Part>) -> Result<Money> {
         // TODO: Query quotation and only get the subtotal is quotations is in the right status.
         match parts
             .iter()
             .find(|part| part.selected_part_quote_id.is_none())
         {
-            Some(part) => return Err(PartsError::NoSelectedQuoteAvailableForPart(part.id.clone())),
+            Some(part) => return Err(Error::NoSelectedQuoteAvailableForPart(part.id.clone())),
             None => (),
         }
 

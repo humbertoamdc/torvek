@@ -1,7 +1,6 @@
 use crate::parts::repositories::parts::PartsRepository;
 use crate::parts::services::object_storage::ObjectStorage;
-use crate::shared::usecase::UseCase;
-use api_boundary::parts::errors::PartsError;
+use crate::shared::{Result, UseCase};
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::GetPartRequest;
 use axum::async_trait;
@@ -27,8 +26,8 @@ impl GetPartUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetPartRequest, Part, PartsError> for GetPartUseCase {
-    async fn execute(&self, request: GetPartRequest) -> Result<Part, PartsError> {
+impl UseCase<GetPartRequest, Part> for GetPartUseCase {
+    async fn execute(&self, request: GetPartRequest) -> Result<Part> {
         let mut part = self
             .parts_repository
             .get_part(request.quotation_id, request.part_id)

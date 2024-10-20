@@ -1,4 +1,4 @@
-use api_boundary::common::into_error_response::IntoErrorResponse;
+use api_boundary::common::into_error_response::IntoError;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -14,7 +14,7 @@ use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuo
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
-use crate::shared::usecase::UseCase;
+use crate::shared::UseCase;
 
 pub async fn create_quotation(
     State(app_state): State<AppState>,

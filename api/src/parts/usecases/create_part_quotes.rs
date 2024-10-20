@@ -1,14 +1,13 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use api_boundary::parts::errors::PartsError;
 use axum::async_trait;
 
 use api_boundary::parts::models::PartQuote;
 use api_boundary::parts::requests::CreatePartQuotesRequest;
 
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
-use crate::shared::usecase::UseCase;
+use crate::shared::{Result, UseCase};
 
 pub struct CreatePartQuotesUseCase {
     part_quotes_creation_service: Arc<dyn PartQuotesCreation>,
@@ -23,8 +22,8 @@ impl CreatePartQuotesUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreatePartQuotesRequest, (), PartsError> for CreatePartQuotesUseCase {
-    async fn execute(&self, request: CreatePartQuotesRequest) -> Result<(), PartsError> {
+impl UseCase<CreatePartQuotesRequest, ()> for CreatePartQuotesUseCase {
+    async fn execute(&self, request: CreatePartQuotesRequest) -> Result<()> {
         let mut part_quotes_by_part: HashMap<String, Vec<PartQuote>> = HashMap::new();
         let mut selected_part_quote_by_part: HashMap<String, String> = HashMap::new();
         let mut part_ids_set = HashSet::new();

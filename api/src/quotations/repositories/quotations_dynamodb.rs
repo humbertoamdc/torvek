@@ -1,4 +1,5 @@
-use api_boundary::quotations::errors::QuotationsError;
+use crate::shared::Result;
+use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::types::AttributeValue;
 use axum::async_trait;
 use chrono::Utc;
@@ -26,7 +27,7 @@ impl DynamodbQuotations {
 
 #[async_trait]
 impl QuotationsRepository for DynamodbQuotations {
-    async fn create_quotation(&self, quotation: Quotation) -> Result<(), QuotationsError> {
+    async fn create_quotation(&self, quotation: Quotation) -> Result<()> {
         let item = to_item(quotation).expect("error converting to dynamodb item");
         let response = self
             .client
@@ -38,14 +39,11 @@ impl QuotationsRepository for DynamodbQuotations {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(QuotationsError::UnknownError),
+            Err(_) => Err(Error::UnknownError),
         }
     }
 
-    async fn query_quotations_for_project(
-        &self,
-        project_id: String,
-    ) -> Result<Vec<Quotation>, QuotationsError> {
+    async fn query_quotations_for_project(&self, project_id: String) -> Result<Vec<Quotation>> {
         let response = self
             .client
             .query()
@@ -63,21 +61,18 @@ impl QuotationsRepository for DynamodbQuotations {
                     Ok(quotations) => Ok(quotations),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(QuotationsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
                 log::error!("{err:?}");
-                Err(QuotationsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn query_quotations_by_status(
-        &self,
-        status: QuotationStatus,
-    ) -> Result<Vec<Quotation>, QuotationsError> {
+    async fn query_quotations_by_status(&self, status: QuotationStatus) -> Result<Vec<Quotation>> {
         let response = self
             .client
             .query()
@@ -94,10 +89,10 @@ impl QuotationsRepository for DynamodbQuotations {
                 let items = output.items().to_vec();
                 match from_items(items) {
                     Ok(quotations) => Ok(quotations),
-                    Err(_) => Err(QuotationsError::UnknownError),
+                    Err(_) => Err(Error::UnknownError),
                 }
             }
-            Err(_) => Err(QuotationsError::UnknownError),
+            Err(_) => Err(Error::UnknownError),
         }
     }
 
@@ -105,7 +100,7 @@ impl QuotationsRepository for DynamodbQuotations {
         &self,
         project_id: String,
         quotation_id: String,
-    ) -> Result<Quotation, QuotationsError> {
+    ) -> Result<Quotation> {
         let response = self
             .client
             .get_item()
@@ -123,14 +118,14 @@ impl QuotationsRepository for DynamodbQuotations {
                     Ok(quotation) => Ok(quotation),
                     Err(err) => {
                         log::error!("{err:?}");
-                        Err(QuotationsError::UnknownError)
+                        Err(Error::UnknownError)
                     }
                 },
-                None => Err(QuotationsError::GetQuotationItemNotFoundError),
+                None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
                 log::error!("{err:?}");
-                Err(QuotationsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
@@ -140,7 +135,7 @@ impl QuotationsRepository for DynamodbQuotations {
         project_id: String,
         quotation_id: String,
         status: QuotationStatus,
-    ) -> Result<(), QuotationsError> {
+    ) -> Result<()> {
         let response = self
             .client
             .update_item()
@@ -169,7 +164,7 @@ impl QuotationsRepository for DynamodbQuotations {
             Ok(_) => Ok(()),
             Err(err) => {
                 log::error!("{err:?}");
-                Err(QuotationsError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }

@@ -1,6 +1,5 @@
 use crate::quotations::repositories::quotations::QuotationsRepository;
-use crate::shared::usecase::UseCase;
-use api_boundary::quotations::errors::QuotationsError;
+use crate::shared::{Result, UseCase};
 use api_boundary::quotations::requests::QueryQuotationsForProjectRequest;
 use api_boundary::quotations::responses::QueryQuotationsForProjectResponse;
 use axum::async_trait;
@@ -19,13 +18,13 @@ impl QueryQuotationsForProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryQuotationsForProjectRequest, QueryQuotationsForProjectResponse, QuotationsError>
+impl UseCase<QueryQuotationsForProjectRequest, QueryQuotationsForProjectResponse>
     for QueryQuotationsForProjectUseCase
 {
     async fn execute(
         &self,
         request: QueryQuotationsForProjectRequest,
-    ) -> Result<QueryQuotationsForProjectResponse, QuotationsError> {
+    ) -> Result<QueryQuotationsForProjectResponse> {
         let quotations = self
             .quotations_repository
             .query_quotations_for_project(request.project_id)

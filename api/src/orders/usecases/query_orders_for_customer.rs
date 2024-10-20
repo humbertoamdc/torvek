@@ -1,7 +1,6 @@
 use crate::orders::repositories::orders::OrdersRepository;
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::shared::usecase::UseCase;
-use api_boundary::orders::errors::OrdersError;
+use crate::shared::{Result, UseCase};
 use api_boundary::orders::requests::QueryOrdersForCustomerRequest;
 use api_boundary::orders::responses::{
     QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,
@@ -30,13 +29,13 @@ impl QueryOrdersForCustomer {
 }
 
 #[async_trait]
-impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse, OrdersError>
+impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
     for QueryOrdersForCustomer
 {
     async fn execute(
         &self,
         request: QueryOrdersForCustomerRequest,
-    ) -> Result<QueryOrdersForCustomerResponse, OrdersError> {
+    ) -> Result<QueryOrdersForCustomerResponse> {
         let orders = self
             .orders_repository
             .query_orders_for_customer(request.customer_id)

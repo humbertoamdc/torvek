@@ -1,6 +1,5 @@
 use crate::projects::repositories::projects::ProjectsRepository;
-use crate::shared::usecase::UseCase;
-use api_boundary::projects::errors::ProjectsError;
+use crate::shared::{Result, UseCase};
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::CreateProjectRequest;
 use axum::async_trait;
@@ -19,8 +18,8 @@ impl CreateProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateProjectRequest, (), ProjectsError> for CreateProjectUseCase {
-    async fn execute(&self, request: CreateProjectRequest) -> Result<(), ProjectsError> {
+impl UseCase<CreateProjectRequest, ()> for CreateProjectUseCase {
+    async fn execute(&self, request: CreateProjectRequest) -> Result<()> {
         let project = Project::new(request.customer_id);
         self.projects_repository.create_project(project).await
     }
