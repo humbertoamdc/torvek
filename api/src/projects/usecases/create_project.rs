@@ -1,4 +1,4 @@
-use crate::projects::repositories::projects::ProjectsRepository;
+use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::projects::models::Project;
 use api_boundary::projects::requests::CreateProjectRequest;

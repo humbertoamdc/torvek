@@ -1,4 +1,4 @@
-use crate::quotations::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::quotations::requests::QueryQuotationsForProjectRequest;
 use api_boundary::quotations::responses::QueryQuotationsForProjectResponse;

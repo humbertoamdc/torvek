@@ -12,9 +12,9 @@ use api_boundary::parts::responses::CreatePartsResponse;
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 
-use crate::parts::repositories::parts::PartsRepository;
-use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;

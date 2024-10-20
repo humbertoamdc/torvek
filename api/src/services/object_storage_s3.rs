@@ -5,7 +5,7 @@ use api_boundary::common::error::Error;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::async_trait;
 
-use crate::parts::services::object_storage::ObjectStorage;
+use crate::services::object_storage::ObjectStorage;
 
 #[derive(Clone)]
 pub struct S3ObjectStorage {

@@ -5,7 +5,7 @@ use axum::async_trait;
 
 use api_boundary::orders::responses::QueryOpenOrdersResponse;
 
-use crate::orders::repositories::orders::OrdersRepository;
+use crate::repositories::orders::OrdersRepository;
 use crate::shared::{Result, UseCase};
 
 pub struct QueryOpenOrdersUseCase {

@@ -8,11 +8,10 @@ use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
+use crate::repositories::orders::OrdersRepository;
 use crate::shared::Result;
 use api_boundary::common::money::Money;
 use api_boundary::orders::models::{Order, OrderStatus};
-
-use crate::orders::repositories::orders::OrdersRepository;
 
 static OPEN_ORDERS_INDEX: &'static str = "OpenOrders";
 

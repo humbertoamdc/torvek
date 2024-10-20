@@ -1,4 +1,4 @@
-use crate::projects::repositories::projects::ProjectsRepository;
+use crate::repositories::projects::ProjectsRepository;
 use crate::shared::Result;
 use api_boundary::common::error::Error;
 use api_boundary::projects::models::Project;

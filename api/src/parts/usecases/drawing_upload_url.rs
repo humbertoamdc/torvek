@@ -7,14 +7,14 @@ use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 use crate::parts::domain::updatable_part::UpdatablePart;
-use crate::parts::repositories::parts::PartsRepository;
+use crate::repositories::parts::PartsRepository;
 use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::parts::responses::CreateDrawingUploadUrlResponse;
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::GetQuotationByIdRequest;
 
-use crate::parts::services::object_storage::ObjectStorage;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 
 static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
