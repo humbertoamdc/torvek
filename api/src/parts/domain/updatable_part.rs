@@ -1,5 +1,5 @@
 use api_boundary::common::file::File;
-use api_boundary::parts::requests::{AdminUpdatePartRequest, UpdatePartRequest};
+use api_boundary::parts::requests::UpdatePartRequest;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -13,6 +13,7 @@ pub struct UpdatablePart {
     pub tolerance: Option<String>,
     pub quantity: Option<u64>,
     pub selected_part_quote_id: Option<String>,
+    pub clear_part_quotes: Option<bool>,
 }
 
 impl UpdatablePart {
@@ -36,22 +37,7 @@ impl From<&UpdatePartRequest> for UpdatablePart {
             tolerance: request.tolerance.clone(),
             quantity: request.quantity,
             selected_part_quote_id: None,
-        }
-    }
-}
-
-impl From<&AdminUpdatePartRequest> for UpdatablePart {
-    fn from(request: &AdminUpdatePartRequest) -> Self {
-        Self {
-            id: request.id.clone(),
-            customer_id: request.customer_id.clone(),
-            quotation_id: request.quotation_id.clone(),
-            drawing_file: None,
-            process: None,
-            material: None,
-            tolerance: None,
-            quantity: None,
-            selected_part_quote_id: None,
+            clear_part_quotes: Some(true),
         }
     }
 }

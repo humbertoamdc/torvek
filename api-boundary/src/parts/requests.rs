@@ -79,14 +79,6 @@ pub struct CreateModelUploadUrlRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct AdminUpdatePartRequest {
-    pub id: String,
-    pub customer_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartQuotesRequest {
     pub customer_id: String,
     pub project_id: String,

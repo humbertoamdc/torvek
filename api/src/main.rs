@@ -84,7 +84,12 @@ async fn run_local(app: Router<AppState>) {
     let addr = SocketAddr::from(([127, 0, 0, 1], app_config.app.port));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     log::info!("listening on {addr}");
-    axum::serve(listener, app).await.unwrap()
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap()
 }
 
 async fn run_lambda(app: Router<AppState>) {

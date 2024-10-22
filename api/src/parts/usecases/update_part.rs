@@ -6,26 +6,25 @@ use axum::async_trait;
 
 use api_boundary::parts::requests::UpdatePartRequest;
 use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::requests::GetQuotationByIdRequest;
 
 use crate::parts::domain::updatable_part::UpdatablePart;
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
 
 pub struct UpdatePartUseCase {
     parts_repository: Arc<dyn PartsRepository>,
-    get_quotation_by_id_use_case: GetQuotationByIdUseCase,
+    quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
 impl UpdatePartUseCase {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        get_quotation_by_id_use_case: GetQuotationByIdUseCase,
+        quotations_repository: Arc<dyn QuotationsRepository>,
     ) -> Self {
         Self {
             parts_repository,
-            get_quotation_by_id_use_case,
+            quotations_repository,
         }
     }
 }
@@ -33,29 +32,28 @@ impl UpdatePartUseCase {
 #[async_trait]
 impl UseCase<UpdatePartRequest, Part> for UpdatePartUseCase {
     async fn execute(&self, request: UpdatePartRequest) -> Result<Part> {
-        if self.quotation_is_payed(&request).await? {
-            return Err(Error::UpdatePartAfterPayingQuotation);
+        let quotation = self
+            .quotations_repository
+            .get_quotation_by_id(request.project_id.clone(), request.quotation_id.clone())
+            .await?;
+
+        // Check that the quotation is in an updatable status and change status to created after making an update.
+        match quotation.status {
+            QuotationStatus::Created => (),
+            QuotationStatus::PendingPayment => {
+                self.quotations_repository
+                    .update_quotation_status(
+                        request.project_id.clone(),
+                        request.quotation_id.clone(),
+                        QuotationStatus::Created,
+                    )
+                    .await?
+            }
+            QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
         }
 
         let updatable_part = UpdatablePart::from(&request);
 
         self.parts_repository.update_part(updatable_part).await
-    }
-}
-
-impl UpdatePartUseCase {
-    async fn quotation_is_payed(&self, request: &UpdatePartRequest) -> Result<bool> {
-        let get_quotation_request = GetQuotationByIdRequest {
-            customer_id: request.customer_id.clone(),
-            project_id: request.project_id.clone(),
-            quotation_id: request.quotation_id.clone(),
-        };
-        let quotation = self
-            .get_quotation_by_id_use_case
-            .execute(get_quotation_request)
-            .await
-            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
-
-        Ok(quotation.status == QuotationStatus::Payed)
     }
 }
