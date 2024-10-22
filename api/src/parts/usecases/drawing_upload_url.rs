@@ -86,6 +86,7 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
             tolerance: None,
             quantity: None,
             selected_part_quote_id: None,
+            clear_part_quotes: Some(true),
         };
         self.parts_repository.update_part(updatable_part).await?;
 

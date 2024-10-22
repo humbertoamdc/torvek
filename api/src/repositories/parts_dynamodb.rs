@@ -157,15 +157,22 @@ impl PartsRepository for DynamodbParts {
                 AttributeValue::N(quantity.to_string()),
             );
         }
-        // TODO: We actually want to always update the `selected_part_quote_id`. We will also update
-        //       the part quotes to be nil. This is a bigger change because we have to also update the
-        //       quotation status.
-        if let Some(selected_part_quote_id) = updatable_part.selected_part_quote_id {
-            update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
-            expression_attribute_values.insert(
-                ":selected_part_quote_id".to_string(),
-                AttributeValue::S(selected_part_quote_id.to_string()),
-            );
+
+        update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
+        expression_attribute_values.insert(
+            ":selected_part_quote_id".to_string(),
+            match updatable_part.selected_part_quote_id {
+                Some(selected_part_quote_id) => {
+                    AttributeValue::S(selected_part_quote_id.to_string())
+                }
+                None => AttributeValue::Null(true),
+            },
+        );
+
+        if updatable_part.clear_part_quotes.unwrap_or(false) {
+            update_expression.push_str("part_quotes = :part_quotes, ");
+            expression_attribute_values
+                .insert(":part_quotes".to_string(), AttributeValue::Null(true));
         }
 
         // Remove trailing comma and space

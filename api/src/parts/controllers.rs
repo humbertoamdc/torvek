@@ -5,14 +5,12 @@ use axum::Json;
 use http::StatusCode;
 
 use api_boundary::parts::requests::{
-    AdminUpdatePartRequest, CreateDrawingUploadUrlRequest, CreateModelUploadUrlRequest,
-    CreatePartQuotesRequest, CreatePartsRequest, GetPartRequest,
-    QueryPartsForQuotationQueryParameters, QueryPartsForQuotationRequest, UpdatePartRequest,
-    UpdateSelectedPartQuoteRequest,
+    CreateDrawingUploadUrlRequest, CreateModelUploadUrlRequest, CreatePartQuotesRequest,
+    CreatePartsRequest, GetPartRequest, QueryPartsForQuotationQueryParameters,
+    QueryPartsForQuotationRequest, UpdatePartRequest, UpdateSelectedPartQuoteRequest,
 };
 
 use crate::app_state::AppState;
-use crate::parts::usecases::admin_update_part::AdminUpdatePartUseCase;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
@@ -24,19 +22,6 @@ use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuoteU
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::UseCase;
-
-pub async fn admin_update_part(
-    State(app_state): State<AppState>,
-    Json(request): Json<AdminUpdatePartRequest>,
-) -> impl IntoResponse {
-    let usecase = AdminUpdatePartUseCase::new(app_state.parts.parts_repository);
-    let result = usecase.execute(request).await;
-
-    match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
-        Err(err) => Err(err.into_error_response()),
-    }
-}
 
 pub async fn admin_create_part_quotes(
     State(app_state): State<AppState>,
@@ -112,11 +97,9 @@ pub async fn update_part(
     State(app_state): State<AppState>,
     Json(request): Json<UpdatePartRequest>,
 ) -> impl IntoResponse {
-    let get_quotation_by_id_usecase =
-        GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
     let usecase = UpdatePartUseCase::new(
         app_state.parts.parts_repository,
-        get_quotation_by_id_usecase,
+        app_state.quotations.quotations_repository,
     );
     let result = usecase.execute(request).await;
 
