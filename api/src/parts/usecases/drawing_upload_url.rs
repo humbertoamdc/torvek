@@ -72,7 +72,7 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
 
         let presigned_url = self
             .object_storage
-            .put_object_presigned_url(file_path, Duration::from_secs(300))
+            .put_object_presigned_url(&file_path, Duration::from_secs(300))
             .await?;
         let url = presigned_url.split("?").nth(0).unwrap().to_string();
 

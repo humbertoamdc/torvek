@@ -145,7 +145,7 @@ impl CreatePartsUseCase {
             let presigned_url = self
                 .object_storage
                 .put_object_presigned_url(
-                    file_path,
+                    &file_path,
                     Duration::from_secs(PRESIGNED_URLS_PUT_DURATION_SECONDS),
                 )
                 .await?;

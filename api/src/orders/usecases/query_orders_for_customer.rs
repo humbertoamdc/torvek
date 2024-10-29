@@ -1,29 +1,34 @@
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::repositories::orders::OrdersRepository;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use api_boundary::orders::requests::QueryOrdersForCustomerRequest;
 use api_boundary::orders::responses::{
     QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,
 };
 use api_boundary::parts::models::Part;
-use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use axum::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 
+static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 pub struct QueryOrdersForCustomer {
     orders_repository: Arc<dyn OrdersRepository>,
-    query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+    parts_repository: Arc<dyn PartsRepository>,
+    object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl QueryOrdersForCustomer {
     pub fn new(
         orders_repository: Arc<dyn OrdersRepository>,
-        query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+        parts_repository: Arc<dyn PartsRepository>,
+        object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
             orders_repository,
-            query_parts_for_quotation_usecase,
+            parts_repository,
+            object_storage,
         }
     }
 }
@@ -43,17 +48,28 @@ impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
 
         let mut parts_map = HashMap::<String, Part>::new();
         if request.with_part_data && !orders.is_empty() {
-            let quotation_id = orders.first().unwrap().quotation_id.clone();
-            let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
-                quotation_id,
-                with_quotation_subtotal: false,
-            };
+            let order_and_part_ids = orders
+                .iter()
+                .map(|order| (order.quotation_id.clone(), order.part_id.clone()))
+                .collect();
 
-            parts_map = self
-                .query_parts_for_quotation_usecase
-                .execute(query_parts_for_quotation_request)
-                .await?
-                .parts
+            let mut parts = self
+                .parts_repository
+                .get_parts_batch(order_and_part_ids)
+                .await?;
+
+            for part in parts.iter_mut() {
+                part.render_file.presigned_url = Some(
+                    self.object_storage
+                        .get_object_presigned_url(
+                            &part.render_file.url,
+                            Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
+                        )
+                        .await?,
+                );
+            }
+
+            parts_map = parts
                 .into_iter()
                 .map(|part| (part.id.clone(), part))
                 .collect::<HashMap<String, Part>>();

@@ -4,6 +4,7 @@ use crate::shared::Result;
 use api_boundary::common::error::Error;
 use aws_sdk_s3::presigning::PresigningConfig;
 use axum::async_trait;
+use url::Url;
 
 use crate::services::object_storage::ObjectStorage;
 
@@ -23,14 +24,14 @@ impl S3ObjectStorage {
 impl ObjectStorage for S3ObjectStorage {
     async fn put_object_presigned_url(
         &self,
-        file_path: String,
+        filepath: &str,
         expires_in: Duration,
     ) -> Result<String> {
         let result = self
             .client
             .put_object()
             .bucket(self.bucket.clone())
-            .key(file_path)
+            .key(filepath)
             .presigned(PresigningConfig::expires_in(expires_in).unwrap())
             .await;
 
@@ -40,22 +41,33 @@ impl ObjectStorage for S3ObjectStorage {
         }
     }
 
-    async fn get_object_presigned_url(
-        &self,
-        file_path: String,
-        expires_in: Duration,
-    ) -> Result<String> {
+    async fn get_object_presigned_url(&self, url: &str, expires_in: Duration) -> Result<String> {
         let result = self
             .client
             .get_object()
             .bucket(self.bucket.clone())
-            .key(file_path)
+            .key(self.filepath(url)?)
             .presigned(PresigningConfig::expires_in(expires_in).unwrap())
             .await;
 
         match result {
             Ok(presigned_url) => Ok(presigned_url.uri().to_string()),
             Err(_) => Err(Error::UnknownError),
+        }
+    }
+}
+
+impl S3ObjectStorage {
+    fn filepath(&self, url: &str) -> Result<String> {
+        match Url::parse(url) {
+            Ok(parsed_url) => match parsed_url.path().strip_prefix("/") {
+                Some(filepath) => Ok(filepath.to_string()),
+                None => Err(Error::UnknownError),
+            },
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 }

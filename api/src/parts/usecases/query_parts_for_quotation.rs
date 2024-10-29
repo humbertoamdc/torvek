@@ -8,7 +8,6 @@ use api_boundary::common::money::Money;
 use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::parts::responses::QueryPartsForQuotationResponse;
-use url::Url;
 
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
@@ -71,20 +70,10 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
 impl QueryPartsForQuotationUseCase {
     async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
         for part in parts.iter_mut() {
-            // TODO: Handle error.
-            // For both cases, we can recover from the error, we will just leave the presigned url field
-            // as none. In the future we might page to have someone have a look at the url format.
-            let part_render_url =
-                Url::parse(&part.render_file.url).expect("invalid render file url");
-            let part_render_url_path = part_render_url
-                .path()
-                .strip_prefix("/")
-                .unwrap()
-                .to_string();
             let presigned_url = self
                 .object_storage
                 .get_object_presigned_url(
-                    part_render_url_path,
+                    &part.render_file.url,
                     Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
                 )
                 .await?;
