@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create S3 buckets.
 Resources:
-  ClientPortalBucket:
+  LandingPageWebAppBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -11,7 +11,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: unnamed-client-portal
+      BucketName: torvek-landing-page-web
       LifecycleConfiguration:
         Rules:
           - Id: OldVersionsExpiration
@@ -26,7 +26,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  AdminPortalBucket:
+  CustomerWebAppBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -36,7 +36,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: unnamed-admin-portal
+      BucketName: torvek-customer-web
       LifecycleConfiguration:
         Rules:
           - Id: OldVersionsExpiration
@@ -51,7 +51,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  SupplierPortalBucket:
+  AdminWebAppBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -61,7 +61,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: rusticad-supplier-portal
+      BucketName: torvek-admin-web
       LifecycleConfiguration:
         Rules:
           - Id: OldVersionsExpiration
@@ -76,7 +76,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  ClientFilesBucket:
+  SupplierWebAppBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -86,7 +86,32 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: unnamed-client-files
+      BucketName: torvek-supplier-web
+      LifecycleConfiguration:
+        Rules:
+          - Id: OldVersionsExpiration
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  CustomerFilesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: torvek-customer-files
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders:
@@ -131,7 +156,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: unnamed-config-files
+      BucketName: torvek-config-files
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders:
@@ -160,61 +185,81 @@ Resources:
         Status: Enabled
 
 Outputs:
-  ClientPortalBucketName:
-    Description: Name of the client portal bucket.
-    Value: !Ref ClientPortalBucket
+  LandingPageWebAppBucketName:
+    Description: Name of the landing page web app bucket.
+    Value: !Ref LandingPageWebAppBucket
     Export:
-      Name: ClientPortalBucketName
-  ClientPortalBucketArn:
-    Description: ARN of the client portal bucket.
-    Value: !GetAtt ClientPortalBucket.Arn
+      Name: LandingPageWebAppBucketName
+  LandingPageWebAppBucketArn:
+    Description: ARN of the landing page web app bucket.
+    Value: !GetAtt LandingPageWebAppBucket.Arn
     Export:
-      Name: ClientPortalBucketArn
-  ClientPortalBucketDomainName:
-    Description: Domain name of the client portal bucket.
-    Value: !GetAtt ClientPortalBucket.DomainName
+      Name: LandingPageWebAppBucketArn
+  LandingPageWebAppBucketDomainName:
+    Description: Domain name of the landing page web bucket.
+    Value: !GetAtt LandingPageWebAppBucket.DomainName
     Export:
-      Name: ClientPortalBucketDomainName
-  AdminPortalBucketName:
-    Description: Name of the admin portal bucket.
-    Value: !Ref AdminPortalBucket
+      Name: LandingPageWebAppBucketDomainName
+
+  CustomerWebAppBucketName:
+    Description: Name of the customer web app bucket.
+    Value: !Ref CustomerWebAppBucket
     Export:
-      Name: AdminPortalBucketName
-  AdminPortalBucketArn:
-    Description: ARN of the admin portal bucket.
-    Value: !GetAtt AdminPortalBucket.Arn
+      Name: CustomerWebAppBucketName
+  CustomerWebAppBucketArn:
+    Description: ARN of the customer web app bucket.
+    Value: !GetAtt CustomerWebAppBucket.Arn
     Export:
-      Name: AdminPortalBucketArn
-  AdminPortalBucketDomainName:
-    Description: Domain name of the admin portal bucket.
-    Value: !GetAtt AdminPortalBucket.DomainName
+      Name: CustomerWebAppBucketArn
+  CustomerWebAppBucketDomainName:
+    Description: Domain name of the customer web app bucket.
+    Value: !GetAtt CustomerWebAppBucket.DomainName
     Export:
-      Name: AdminPortalBucketDomainName
-  SupplierPortalBucketName:
-    Description: Name of the supplier portal bucket.
-    Value: !Ref SupplierPortalBucket
+      Name: CustomerWebAppBucketDomainName
+
+  AdminWebAppBucketName:
+    Description: Name of the admin web app bucket.
+    Value: !Ref AdminWebAppBucket
     Export:
-      Name: SupplierPortalBucketName
-  SupplierPortalBucketArn:
-    Description: ARN of the supplier portal bucket.
-    Value: !GetAtt SupplierPortalBucket.Arn
+      Name: AdminWebAppBucketName
+  AdminWebAppBucketArn:
+    Description: ARN of the admin web app bucket.
+    Value: !GetAtt AdminWebAppBucket.Arn
     Export:
-      Name: SupplierPortalBucketArn
-  SupplierPortalBucketDomainName:
-    Description: Domain name of the supplier portal bucket.
-    Value: !GetAtt SupplierPortalBucket.DomainName
+      Name: AdminWebAppBucketArn
+  AdminWebAppBucketDomainName:
+    Description: Domain name of the admin web app bucket.
+    Value: !GetAtt AdminWebAppBucket.DomainName
     Export:
-      Name: SupplierPortalBucketDomainName
-  ClientFilesBucketName:
-    Description: Name of bucket to store files from clients.
-    Value: !Ref ClientFilesBucket
+      Name: AdminWebAppBucketDomainName
+
+  SupplierWebAppBucketName:
+    Description: Name of the supplier web app bucket.
+    Value: !Ref SupplierWebAppBucket
     Export:
-      Name: ClientFilesBucketName
-  ClientFilesBucketArn:
-    Description: ARN of bucket to store files from clients.
-    Value: !GetAtt ClientFilesBucket.Arn
+      Name: SupplierWebAppBucketName
+  SupplierWebAppBucketArn:
+    Description: ARN of the supplier web app bucket.
+    Value: !GetAtt SupplierWebAppBucket.Arn
     Export:
-      Name: ClientFilesBucketArn
+      Name: SupplierWebAppBucketArn
+  SupplierWebAppBucketDomainName:
+    Description: Domain name of the supplier web app bucket.
+    Value: !GetAtt SupplierWebAppBucket.DomainName
+    Export:
+      Name: SupplierWebAppBucketDomainName
+
+  CustomerFilesBucketName:
+    Description: Name of bucket to store files from customers.
+    Value: !Ref CustomerFilesBucket
+    Export:
+      Name: CustomerFilesBucketName
+  CustomerFilesBucketArn:
+    Description: ARN of bucket to store files from customers.
+    Value: !GetAtt CustomerFilesBucket.Arn
+    Export:
+      Name: CustomerFilesBucketArn
+
   ConfigFilesBucketName:
     Description: Name of bucket to store app config files.
     Value: !Ref ConfigFilesBucket

@@ -1,10 +1,16 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create TLS/SSL certificates.
 Resources:
-  ClientPortalCertificate:
+  LandingPageWebCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: www.torvek.com
+      ValidationMethod: DNS
+
+  CustomerWebAppCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: app.torvek.com
       ValidationMethod: DNS
 
   AdminPortalCertificate:
@@ -32,11 +38,16 @@ Resources:
       ValidationMethod: DNS
 
 Outputs:
-  ClientPortalCertificateArn:
-    Description: ARN for client portal certificate.
-    Value: !Ref ClientPortalCertificate
+  LandingPageWebCertificateArn:
+    Description: ARN for landing page web certificate.
+    Value: !Ref LandingPageWebCertificate
     Export:
-      Name: ClientPortalCertificateArn
+      Name: LandingPageWebCertificateArn
+  CustomerWebAppCertificateArn:
+    Description: ARN for customer web app certificate.
+    Value: !Ref CustomerWebAppCertificate
+    Export:
+      Name: CustomerWebAppCertificateArn
   AdminPortalCertificateArn:
     Description: ARN for admin portal certificate.
     Value: !Ref AdminPortalCertificate

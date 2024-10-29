@@ -94,7 +94,7 @@ async fn run_local(app: Router<AppState>) {
 
 async fn run_lambda(app: Router<AppState>) {
     // Constants
-    let config_bucket = "unnamed-config-files";
+    let config_bucket = "torvek-config-files";
     let config_key = "prod.toml";
 
     // Retrieve config from S3

@@ -2,23 +2,23 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create CloudFront distribution to serve websites hosted in S3.
 Resources:
 
-  ClientPortalCloudFrontOriginAccessControl:
+  LandingPageWebAppCloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Description: Client Portal Origin Access Control
-        Name: ClientPortalOAC
+        Description: Landing Page Origin Access Control
+        Name: LandingPageWebOAC
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
 
-  ClientPortalCloudFrontDistribution:
+  LandingPageWebAppCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Aliases:
           - www.torvek.com
-        Comment: Distribution for client portal.
+        Comment: Distribution for landing page web app.
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300
             ErrorCode: 403
@@ -31,37 +31,80 @@ Resources:
             - OPTIONS
           ForwardedValues:
             QueryString: false
-          TargetOriginId: ClientPortalOrigin
+          TargetOriginId: LandingPageWebAppOrigin
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
         Enabled: true
         Origins:
-          - DomainName: !ImportValue ClientPortalBucketDomainName
-            Id: ClientPortalOrigin
+          - DomainName: !ImportValue LandingPageWebAppBucketDomainName
+            Id: LandingPageWebAppOrigin
             S3OriginConfig:
               OriginAccessIdentity: ""
-            OriginAccessControlId: !GetAtt ClientPortalCloudFrontOriginAccessControl.Id
+            OriginAccessControlId: !GetAtt LandingPageWebAppCloudFrontOriginAccessControl.Id
         ViewerCertificate:
-          AcmCertificateArn: !ImportValue ClientPortalCertificateArn
+          AcmCertificateArn: !ImportValue LandingPageWebCertificateArn
           SslSupportMethod: sni-only
 
-  AdminPortalCloudFrontOriginAccessControl:
+  CustomerWebAppCloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Description: Admin Portal Origin Access Control
+        Description: Customer Web App Origin Access Control
+        Name: CustomerWebAppOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CustomerWebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - app.torvek.com
+        Comment: Distribution for customer web app.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: CustomerWebAppOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !ImportValue CustomerWebAppBucketDomainName
+            Id: CustomerWebAppOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CustomerWebAppCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue CustomerWebAppCertificateArn
+          SslSupportMethod: sni-only
+
+  AdminWebAppCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Admin Web App Origin Access Control
         Name: AdminPortalOAC
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
 
-  AdminPortalCloudFrontDistribution:
+  AdminWebAppCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Aliases:
           - admin.torvek.com
-        Comment: Distribution for admin portal.
+        Comment: Distribution for admin web app.
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300
             ErrorCode: 403
@@ -74,37 +117,37 @@ Resources:
             - OPTIONS
           ForwardedValues:
             QueryString: false
-          TargetOriginId: AdminPortalOrigin
+          TargetOriginId: AdminWebAppOrigin
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
         Enabled: true
         Origins:
-          - DomainName: !ImportValue AdminPortalBucketDomainName
-            Id: AdminPortalOrigin
+          - DomainName: !ImportValue AdminWebAppBucketDomainName
+            Id: AdminWebAppOrigin
             S3OriginConfig:
               OriginAccessIdentity: ""
-            OriginAccessControlId: !GetAtt AdminPortalCloudFrontOriginAccessControl.Id
+            OriginAccessControlId: !GetAtt AdminWebAppCloudFrontOriginAccessControl.Id
         ViewerCertificate:
           AcmCertificateArn: !ImportValue AdminPortalCertificateArn
           SslSupportMethod: sni-only
 
-  SupplierPortalCloudFrontOriginAccessControl:
+  SupplierWebAppCloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Description: Supplier Portal Origin Access Control
+        Description: Supplier Web App Origin Access Control
         Name: SupplierPortalOAC
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
 
-  SupplierPortalCloudFrontDistribution:
+  SupplierWebAppCloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Aliases:
           - suppliers.torvek.com
-        Comment: Distribution for supplier portal.
+        Comment: Distribution for supplier web app  .
         CustomErrorResponses:
           - ErrorCachingMinTTL: 300
             ErrorCode: 403
@@ -117,33 +160,38 @@ Resources:
             - OPTIONS
           ForwardedValues:
             QueryString: false
-          TargetOriginId: SupplierPortalOrigin
+          TargetOriginId: SupplierWebAppOrigin
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
         Enabled: true
         Origins:
-          - DomainName: !ImportValue SupplierPortalBucketDomainName
-            Id: SupplierPortalOrigin
+          - DomainName: !ImportValue SupplierWebAppBucketDomainName
+            Id: SupplierWebAppOrigin
             S3OriginConfig:
               OriginAccessIdentity: ""
-            OriginAccessControlId: !GetAtt SupplierPortalCloudFrontOriginAccessControl.Id
+            OriginAccessControlId: !GetAtt SupplierWebAppCloudFrontOriginAccessControl.Id
         ViewerCertificate:
           AcmCertificateArn: !ImportValue SupplierPortalCertificateArn
           SslSupportMethod: sni-only
 
 Outputs:
-  ClientPortalCloudFrontDistributionId:
-    Description: Id for the client portal CloudFront distribution
-    Value: !Ref ClientPortalCloudFrontDistribution
+  LandingPageWebAppCloudFrontDistributionId:
+    Description: Id for the landing page web CloudFront distribution
+    Value: !Ref LandingPageWebAppCloudFrontDistribution
     Export:
-      Name: ClientPortalCloudFrontDistributionId
-  AdminPortalCloudFrontDistributionId:
-    Description: Id for the admin portal CloudFront distribution
-    Value: !Ref AdminPortalCloudFrontDistribution
+      Name: LandingPageWebAppCloudFrontDistributionId
+  CustomerWebAppCloudFrontDistributionId:
+    Description: Id for the customer web app CloudFront distribution
+    Value: !Ref CustomerWebAppCloudFrontDistribution
     Export:
-      Name: AdminPortalCloudFrontDistributionId
-  SupplierPortalCloudFrontDistributionId:
-    Description: Id for the supplier portal CloudFront distribution
-    Value: !Ref SupplierPortalCloudFrontDistribution
+      Name: CustomerWebAppCloudFrontDistributionId
+  AdminWebAppCloudFrontDistributionId:
+    Description: Id for the admin web app CloudFront distribution
+    Value: !Ref AdminWebAppCloudFrontDistribution
     Export:
-      Name: SupplierPortalCloudFrontDistributionId
+      Name: AdminWebAppCloudFrontDistributionId
+  SupplierWebAppCloudFrontDistributionId:
+    Description: Id for the supplier web app CloudFront distribution
+    Value: !Ref SupplierWebAppCloudFrontDistribution
+    Export:
+      Name: SupplierWebAppCloudFrontDistributionId

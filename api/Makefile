@@ -1,5 +1,6 @@
-PROFILE := unnamed
+PROFILE := torvek
 REGION := us-east-1
+CONFIG_FILES_S3_BUCKET := s3://torvek-config-files
 
 
 # === App ===
@@ -21,16 +22,17 @@ create-stack:
 		--template-file infra/aws/$$stack.yaml \
 		--stack-name $$stack \
 
+
 lambda:
 	make create-stack stack=lambda
 	cargo lambda build --release --target x86_64-unknown-linux-gnu.2.17;
 	cargo lambda deploy --profile $(PROFILE) --region $(REGION) api \
 		--iam-role arn:aws:iam::120386585975:role/ApiLambdaRole
-	sleep 5
+	sleep 10
 	aws --profile $(PROFILE) --region $(REGION) lambda update-function-configuration \
 		--function-name api \
         --environment "Variables={RUN_MODE=lambda}" \
         --no-cli-pager
 
 sync-envs:
-	aws --profile $(PROFILE) --region $(REGION) s3 sync env s3://unnamed-config-files
+	aws --profile $(PROFILE) --region $(REGION) s3 sync env $(CONFIG_FILES_S3_BUCKET)

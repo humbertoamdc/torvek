@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create S3 permissions.
 Resources:
-  ClientPortalBucketPolicy:
+  LandingPageWebAppBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !ImportValue ClientPortalBucketName
+      Bucket: !ImportValue LandingPageWebAppBucketName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -16,19 +16,19 @@ Resources:
             Service: cloudfront.amazonaws.com
           Resource: !Join
             - ""
-            - - !ImportValue ClientPortalBucketArn
+            - - !ImportValue LandingPageWebAppBucketArn
               - /*
           Condition:
             StringEquals:
               AWS:SourceArn: !Join
                 - ""
                 - - arn:aws:cloudfront::120386585975:distribution/
-                  - !ImportValue ClientPortalCloudFrontDistributionId
+                  - !ImportValue LandingPageWebAppCloudFrontDistributionId
 
-  AdminPortalBucketPolicy:
+  CustomerWebAppBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !ImportValue AdminPortalBucketName
+      Bucket: !ImportValue CustomerWebAppBucketName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -40,19 +40,19 @@ Resources:
             Service: cloudfront.amazonaws.com
           Resource: !Join
             - ""
-            - - !ImportValue AdminPortalBucketArn
+            - - !ImportValue CustomerWebAppBucketArn
               - /*
           Condition:
             StringEquals:
               AWS:SourceArn: !Join
                 - ""
                 - - arn:aws:cloudfront::120386585975:distribution/
-                  - !ImportValue AdminPortalCloudFrontDistributionId
+                  - !ImportValue CustomerWebAppCloudFrontDistributionId
 
-  SupplierPortalBucketPolicy:
+  AdminWebAppBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !ImportValue SupplierPortalBucketName
+      Bucket: !ImportValue AdminWebAppBucketName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -64,14 +64,38 @@ Resources:
             Service: cloudfront.amazonaws.com
           Resource: !Join
             - ""
-            - - !ImportValue SupplierPortalBucketArn
+            - - !ImportValue AdminWebAppBucketArn
               - /*
           Condition:
             StringEquals:
               AWS:SourceArn: !Join
                 - ""
                 - - arn:aws:cloudfront::120386585975:distribution/
-                  - !ImportValue SupplierPortalCloudFrontDistributionId
+                  - !ImportValue AdminWebAppCloudFrontDistributionId
+
+  SupplierWebAppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !ImportValue SupplierWebAppBucketName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Sid: AllowCloudFrontServicePrincipal
+          Action:
+            - 's3:GetObject'
+          Effect: Allow
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Resource: !Join
+            - ""
+            - - !ImportValue SupplierWebAppBucketArn
+              - /*
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Join
+                - ""
+                - - arn:aws:cloudfront::120386585975:distribution/
+                  - !ImportValue SupplierWebAppCloudFrontDistributionId
 
   S3PermissionForFileConverterLambda:
     Type: AWS::Lambda::Permission
@@ -79,4 +103,4 @@ Resources:
       FunctionName: !ImportValue FileConverterLambdaArn
       Action: lambda:InvokeFunction
       Principal: s3.amazonaws.com
-      SourceArn: !ImportValue ClientFilesBucketArn
+      SourceArn: !ImportValue CustomerFilesBucketArn

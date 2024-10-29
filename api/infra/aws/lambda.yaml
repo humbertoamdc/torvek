@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: A CF template to create an IAM role for the api lambda.
+Description: CF template to create an IAM role for the api lambda.
 Resources:
   ApiLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -37,7 +37,7 @@ Resources:
                   - !Sub
                     - "${configFilesBucketArn}/*"
                     - configFilesBucketArn: !ImportValue ConfigFilesBucketArn
-        - PolicyName: S3ClientFilesAccess
+        - PolicyName: S3CustomerFilesAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
@@ -45,10 +45,10 @@ Resources:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
-                  - !ImportValue ClientFilesBucketArn
+                  - !ImportValue CustomerFilesBucketArn
                   - !Sub
-                    - "${clientFilesBucketArn}/*"
-                    - clientFilesBucketArn: !ImportValue ClientFilesBucketArn
+                    - "${customerFilesBucketArn}/*"
+                    - customerFilesBucketArn: !ImportValue CustomerFilesBucketArn
         - PolicyName: DynamoDBAccess
           PolicyDocument:
             Statement:
@@ -116,7 +116,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !GetAtt FileConverterLambdaLogGroup.Arn
-        - PolicyName: S3ClientFilesAccess
+        - PolicyName: S3CustomerFilesAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
@@ -124,10 +124,10 @@ Resources:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
-                  - !ImportValue ClientFilesBucketArn
+                  - !ImportValue CustomerFilesBucketArn
                   - !Sub
-                    - "${clientFilesBucketArn}/*"
-                    - clientFilesBucketArn: !ImportValue ClientFilesBucketArn
+                    - "${customerFilesBucketArn}/*"
+                    - customerFilesBucketArn: !ImportValue CustomerFilesBucketArn
         - PolicyName: LambdaExecutionPolicy
           PolicyDocument:
             Version: '2012-10-17'
