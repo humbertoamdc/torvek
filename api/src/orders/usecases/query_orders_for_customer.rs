@@ -13,6 +13,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
+
 pub struct QueryOrdersForCustomer {
     orders_repository: Arc<dyn OrdersRepository>,
     parts_repository: Arc<dyn PartsRepository>,
