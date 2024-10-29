@@ -13,7 +13,6 @@ use crate::app_state::AppState;
 use crate::orders::usecases::admin_update_order_payout::AdminUpdateOrderPayoutUsecase;
 use crate::orders::usecases::query_open_orders::QueryOpenOrdersUseCase;
 use crate::orders::usecases::query_orders_for_customer::QueryOrdersForCustomer;
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::shared::UseCase;
 
 #[derive(Deserialize)]
@@ -30,13 +29,10 @@ pub async fn query_orders_for_customer(
         customer_id,
         with_part_data: params.with_part_data.unwrap_or(false),
     };
-    let query_parts_for_quotation_usecase = QueryPartsForQuotationUseCase::new(
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
-    );
     let usecase = QueryOrdersForCustomer::new(
         app_state.orders.orders_repository,
-        query_parts_for_quotation_usecase,
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
     );
     let result = usecase.execute(request).await;
 

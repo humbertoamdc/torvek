@@ -12,6 +12,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use url::Url;
 
+static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
+
 pub struct ModelUploadUrlUseCase {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
@@ -48,11 +50,14 @@ impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse> for Mode
             .await?;
 
         let url = part.model_file.url.parse::<Url>().unwrap();
-        let file_path = url.path().strip_prefix("/").unwrap().to_string();
+        let filepath = url.path().strip_prefix("/").unwrap();
 
         let presigned_url = self
             .object_storage
-            .put_object_presigned_url(file_path, Duration::from_secs(300))
+            .put_object_presigned_url(
+                filepath,
+                Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
+            )
             .await?;
         let url = presigned_url.split("?").nth(0).unwrap().to_string();
 

@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use api_boundary::common::error::Error;
-use aws_sdk_dynamodb::types::{AttributeValue, PutRequest, ReturnValue, WriteRequest};
+use aws_sdk_dynamodb::types::{
+    AttributeValue, KeysAndAttributes, PutRequest, ReturnValue, WriteRequest,
+};
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -9,6 +11,7 @@ use serde_dynamo::{from_items, to_item};
 
 use crate::parts::domain::updatable_part::UpdatablePart;
 use crate::repositories::parts::PartsRepository;
+use crate::shared::Result;
 use api_boundary::parts::models::Part;
 
 #[derive(Clone)]
@@ -25,7 +28,7 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
-    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part, Error> {
+    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part> {
         let response = self
             .client
             .get_item()
@@ -58,7 +61,62 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn create_parts(&self, parts: Vec<Part>) -> Result<(), Error> {
+    async fn get_parts_batch(
+        &self,
+        quotation_and_part_ids: Vec<(String, String)>,
+    ) -> Result<Vec<Part>> {
+        let keys_and_attributes = quotation_and_part_ids
+            .into_iter()
+            .fold(
+                KeysAndAttributes::builder(),
+                |mut keys_and_attributes_builder, (quotation_id, part_id)| {
+                    keys_and_attributes_builder =
+                        keys_and_attributes_builder.keys(HashMap::from([
+                            (
+                                String::from("quotation_id"),
+                                AttributeValue::S(quotation_id),
+                            ),
+                            (String::from("id"), AttributeValue::S(part_id)),
+                        ]));
+
+                    keys_and_attributes_builder
+                },
+            )
+            .build()
+            .expect("unable to build batch get request keys and attributes");
+
+        let response = self
+            .client
+            .batch_get_item()
+            .request_items(&self.table, keys_and_attributes)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => {
+                let items = output
+                    .responses
+                    .unwrap()
+                    .into_values()
+                    .flatten()
+                    .collect::<Vec<_>>();
+
+                match from_items(items) {
+                    Ok(parts) => Ok(parts),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                }
+            }
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn create_parts(&self, parts: Vec<Part>) -> Result<()> {
         let items: Vec<WriteRequest> = parts
             .into_iter()
             .map(|part| {
@@ -91,7 +149,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn query_parts_for_quotation(&self, quotation_id: String) -> Result<Vec<Part>, Error> {
+    async fn query_parts_for_quotation(&self, quotation_id: String) -> Result<Vec<Part>> {
         let response = self
             .client
             .query()
@@ -119,7 +177,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part, Error> {
+    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part> {
         let mut update_expression = String::from("SET ");
         let mut expression_attribute_values = HashMap::new();
 
