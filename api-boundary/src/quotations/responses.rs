@@ -1,3 +1,4 @@
+use crate::common::money::Money;
 use crate::quotations::models::Quotation;
 use serde_derive::{Deserialize, Serialize};
 
@@ -19,4 +20,9 @@ impl AdminQueryQuotationsByStatusResponse {
     pub const fn new(quotations: Vec<Quotation>) -> Self {
         Self { quotations }
     }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GetQuotationSubtotalResponse {
+    pub quotation_subtotal: Option<Money>,
 }

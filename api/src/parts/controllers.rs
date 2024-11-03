@@ -6,13 +6,14 @@ use http::StatusCode;
 
 use api_boundary::parts::requests::{
     CreateDrawingUploadUrlRequest, CreateModelUploadUrlRequest, CreatePartQuotesRequest,
-    CreatePartsRequest, GetPartRequest, QueryPartsForQuotationQueryParameters,
+    CreatePartsRequest, DeletePartRequest, GetPartRequest, QueryPartsForQuotationQueryParameters,
     QueryPartsForQuotationRequest, UpdatePartRequest, UpdateSelectedPartQuoteRequest,
 };
 
 use crate::app_state::AppState;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
 use crate::parts::usecases::create_parts::CreatePartsUseCase;
+use crate::parts::usecases::delete_part::DeletePartUseCase;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
 use crate::parts::usecases::get_part::GetPartUseCase;
 use crate::parts::usecases::model_upload_url::ModelUploadUrlUseCase;
@@ -156,6 +157,23 @@ pub async fn create_drawing_upload_url(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn delete_part(
+    State(app_state): State<AppState>,
+    Path(request): Path<DeletePartRequest>,
+) -> impl IntoResponse {
+    let usecase = DeletePartUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.quotations.quotations_repository,
+        app_state.parts.object_storage,
+    );
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(err) => Err(err.into_error_response()),
     }
 }

@@ -100,3 +100,10 @@ pub struct UpdateSelectedPartQuoteRequest {
     pub part_id: String,
     pub selected_part_quote_id: String,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeletePartRequest {
+    pub project_id: String,
+    pub quotation_id: String,
+    pub part_id: String,
+}

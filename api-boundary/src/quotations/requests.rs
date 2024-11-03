@@ -48,3 +48,9 @@ pub struct UpdateQuotationStatusRequest {
     pub quotation_id: String,
     pub status: QuotationStatus,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GetQuotationSubtotalRequest {
+    pub project_id: String,
+    pub quotation_id: String,
+}
