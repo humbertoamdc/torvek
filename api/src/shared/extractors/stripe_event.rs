@@ -45,7 +45,7 @@ where
                 &state.payments.webhook_secret,
             )
             .map_err(|err| {
-                log::error!("stripe webhook error: {err:?}");
+                tracing::error!("stripe webhook error: {err:?}");
                 StatusCode::BAD_REQUEST.into_response()
             })?,
         ))

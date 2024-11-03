@@ -35,7 +35,7 @@ impl ProjectsRepository for DynamodbProjects {
         match response {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -81,14 +81,14 @@ impl ProjectsRepository for DynamodbProjects {
                 Some(item) => match from_item::<Project>(item) {
                     Ok(project) => Ok(project),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 },
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }

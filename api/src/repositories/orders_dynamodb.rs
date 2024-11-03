@@ -52,13 +52,13 @@ impl OrdersRepository for DynamodbOrders {
                         Ok(orders)
                     }
                     Err(err) => {
-                        log::error!("{:?}", err);
+                        tracing::error!("{:?}", err);
                         Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
-                log::error!("{:?}", err);
+                tracing::error!("{:?}", err);
                 Err(Error::UnknownError)
             }
         }
@@ -87,13 +87,13 @@ impl OrdersRepository for DynamodbOrders {
                         Ok(orders)
                     }
                     Err(err) => {
-                        log::error!("{:?}", err);
+                        tracing::error!("{:?}", err);
                         Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
-                log::error!("{:?}", err);
+                tracing::error!("{:?}", err);
                 Err(Error::UnknownError)
             }
         }
@@ -134,7 +134,7 @@ impl OrdersRepository for DynamodbOrders {
         match response {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{:?}", err);
+                tracing::error!("{:?}", err);
                 Err(Error::UnknownError)
             }
         }

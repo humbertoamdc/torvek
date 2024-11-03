@@ -65,7 +65,7 @@ impl PartQuotesCreation for DynamodbParQuotesCreation {
         match response {
             Ok(_) => Ok(()),
             Err(error) => {
-                log::error!("{:?}", error);
+                tracing::error!("{:?}", error);
                 Err(Error::UnknownError)
             }
         }

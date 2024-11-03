@@ -68,7 +68,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
         match response {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }

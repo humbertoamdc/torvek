@@ -26,7 +26,7 @@ mod shared;
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
+    tracing_subscriber::fmt::init();
 
     let app = Router::new()
         .nest("/api/v1", auth::routes::create_router())
@@ -90,7 +90,7 @@ async fn run_local(app: Router<AppState>) {
     // Run
     let addr = SocketAddr::from(([127, 0, 0, 1], app_config.app.port));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    log::info!("listening on {addr}");
+    tracing::info!("listening on {addr}");
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),

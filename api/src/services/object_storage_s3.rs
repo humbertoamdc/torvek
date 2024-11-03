@@ -68,7 +68,7 @@ impl ObjectStorage for S3ObjectStorage {
         match result {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -83,7 +83,7 @@ impl S3ObjectStorage {
                 None => Err(Error::UnknownError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }

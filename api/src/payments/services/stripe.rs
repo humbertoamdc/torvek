@@ -59,7 +59,7 @@ impl StripePaymentsProcessor {
         match result {
             Ok(checkout_session) => Ok(checkout_session.url.unwrap()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }

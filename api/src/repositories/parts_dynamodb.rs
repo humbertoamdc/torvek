@@ -48,14 +48,14 @@ impl PartsRepository for DynamodbParts {
                 Some(item) => match from_item::<Part>(item) {
                     Ok(part) => Ok(part),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 },
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -104,13 +104,13 @@ impl PartsRepository for DynamodbParts {
                 match from_items(items) {
                     Ok(parts) => Ok(parts),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -143,7 +143,7 @@ impl PartsRepository for DynamodbParts {
         match response {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -165,13 +165,13 @@ impl PartsRepository for DynamodbParts {
                 match from_items(items) {
                     Ok(parts) => Ok(parts),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -259,14 +259,14 @@ impl PartsRepository for DynamodbParts {
                 Some(item) => match from_item::<Part>(item) {
                     Ok(part) => Ok(part),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 },
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -288,14 +288,14 @@ impl PartsRepository for DynamodbParts {
                 Some(item) => match from_item::<Part>(item) {
                     Ok(part) => Ok(part),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 },
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }

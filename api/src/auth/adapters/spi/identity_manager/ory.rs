@@ -149,7 +149,7 @@ impl OryIdentityManager {
                 Ok(auth_session)
             }
             Err(Error::ResponseError(response_content)) => {
-                log::error!("Response content {response_content:#?}");
+                tracing::error!("Response content {response_content:#?}");
                 let error_messages = response_content
                     .entity
                     .map(|update_registration_flow_error| {
@@ -176,7 +176,7 @@ impl OryIdentityManager {
         match response {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
-                log::error!("{:#?}", err);
+                tracing::error!("{:#?}", err);
                 Err(AuthError::InitializingLoginFlowError)
             }
         }
@@ -223,7 +223,7 @@ impl OryIdentityManager {
     }
 
     fn match_error(error_messages: &Vec<UiText>) -> AuthError {
-        log::error!("{error_messages:#?}");
+        tracing::error!("{error_messages:#?}");
         // TODO: Map error ids to a custom enum.
         match Self::extract_error_id(&error_messages) {
             4000006 => AuthError::InvalidCredentialsLoginError,

@@ -56,7 +56,7 @@ impl AdminIdentityManager for OryAdminIdentityManager {
             Ok(_) => Ok(()),
             // TODO: Handle error.
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(AuthError::UnknownError)
             }
         }
@@ -73,7 +73,7 @@ impl AdminIdentityManager for OryAdminIdentityManager {
             }
             // TODO: Handle error.
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(AuthError::UnknownError)
             }
         }
@@ -88,7 +88,7 @@ impl OryAdminIdentityManager {
         match response {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(AuthError::InitializingLoginFlowError)
             }
         }
@@ -131,13 +131,13 @@ impl OryAdminIdentityManager {
                 Err(Self::match_error(&error_messages))
             }
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(AuthError::UnknownError)
             }
         }
     }
     fn match_error(error_messages: &Vec<UiText>) -> AuthError {
-        log::error!("{error_messages:#?}");
+        tracing::error!("{error_messages:#?}");
         // TODO: Map error ids to a custom enum.
         match Self::extract_error_id(&error_messages) {
             4000006 => AuthError::InvalidCredentialsLoginError,

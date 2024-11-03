@@ -59,13 +59,13 @@ impl QuotationsRepository for DynamodbQuotations {
                 match from_items(items) {
                     Ok(quotations) => Ok(quotations),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 }
             }
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -116,14 +116,14 @@ impl QuotationsRepository for DynamodbQuotations {
                 Some(item) => match from_item::<Quotation>(item) {
                     Ok(quotation) => Ok(quotation),
                     Err(err) => {
-                        log::error!("{err:?}");
+                        tracing::error!("{err:?}");
                         Err(Error::UnknownError)
                     }
                 },
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -162,7 +162,7 @@ impl QuotationsRepository for DynamodbQuotations {
         match response {
             Ok(_) => Ok(()),
             Err(err) => {
-                log::error!("{err:?}");
+                tracing::error!("{err:?}");
                 Err(Error::UnknownError)
             }
         }
