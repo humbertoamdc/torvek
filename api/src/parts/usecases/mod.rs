@@ -1,5 +1,6 @@
 pub mod create_part_quotes;
 pub mod create_parts;
+pub mod delete_part;
 pub mod drawing_upload_url;
 pub mod get_part;
 pub mod model_upload_url;

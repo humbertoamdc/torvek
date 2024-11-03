@@ -11,4 +11,5 @@ pub trait ObjectStorage: Send + Sync + 'static {
         expires_in: Duration,
     ) -> Result<String>;
     async fn get_object_presigned_url(&self, url: &str, expires_in: Duration) -> Result<String>;
+    async fn delete_object(&self, url: &str) -> Result<()>;
 }

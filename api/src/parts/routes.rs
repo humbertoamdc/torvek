@@ -1,10 +1,11 @@
-use axum::routing::{get, patch, post};
+use axum::routing::{delete, get, patch, post};
 use axum::Router;
 
 use crate::app_state::AppState;
 use crate::parts::controllers::{
     admin_create_part_quotes, create_drawing_upload_url, create_model_file_upload_url,
-    create_parts, get_part, query_parts_for_quotation, update_part, update_selected_part_quote,
+    create_parts, delete_part, get_part, query_parts_for_quotation, update_part,
+    update_selected_part_quote,
 };
 
 pub fn create_router() -> Router<AppState> {
@@ -29,4 +30,8 @@ pub fn create_router() -> Router<AppState> {
             post(create_model_file_upload_url),
         )
         .route("/parts/drawing_upload_url", post(create_drawing_upload_url))
+        .route(
+            "/projects/:project_id/quotations/:quotation_id/parts/:part_id",
+            delete(delete_part),
+        )
 }

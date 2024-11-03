@@ -6,13 +6,14 @@ use http::StatusCode;
 
 use api_boundary::quotations::requests::{
     AdminQueryQuotationsByStatusRequest, CreateQuotationRequest, GetQuotationByIdRequest,
-    QueryQuotationsForProjectRequest,
+    GetQuotationSubtotalRequest, QueryQuotationsForProjectRequest,
 };
 
 use crate::app_state::AppState;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatusUseCase;
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotalUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
 use crate::shared::UseCase;
 
@@ -62,6 +63,22 @@ pub async fn admin_query_quotations_by_status(
 ) -> impl IntoResponse {
     let usecase =
         AdminQueryQuotationsByStatusUseCase::new(app_state.quotations.quotations_repository);
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn get_quotation_subtotal(
+    State(app_state): State<AppState>,
+    Path(request): Path<GetQuotationSubtotalRequest>,
+) -> impl IntoResponse {
+    let usecase = GetQuotationSubtotalUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.quotations.quotations_repository,
+    );
     let result = usecase.execute(request).await;
 
     match result {

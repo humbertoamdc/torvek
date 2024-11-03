@@ -271,4 +271,33 @@ impl PartsRepository for DynamodbParts {
             }
         }
     }
+
+    async fn delete_part(&self, quotation_id: String, part_id: String) -> Result<Part> {
+        let response = self
+            .client
+            .delete_item()
+            .table_name(&self.table)
+            .key("quotation_id", AttributeValue::S(quotation_id))
+            .key("id", AttributeValue::S(part_id))
+            .return_values(ReturnValue::AllOld)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.attributes {
+                Some(item) => match from_item::<Part>(item) {
+                    Ok(part) => Ok(part),
+                    Err(err) => {
+                        log::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                },
+                None => Err(Error::ItemNotFoundError),
+            },
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
 }

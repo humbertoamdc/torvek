@@ -55,6 +55,24 @@ impl ObjectStorage for S3ObjectStorage {
             Err(_) => Err(Error::UnknownError),
         }
     }
+
+    async fn delete_object(&self, url: &str) -> Result<()> {
+        let result = self
+            .client
+            .delete_object()
+            .bucket(&self.bucket)
+            .key(&self.filepath(url)?)
+            .send()
+            .await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                log::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
 }
 
 impl S3ObjectStorage {

@@ -70,7 +70,14 @@ async fn run_local(app: Router<AppState>) {
     let cors_layer = CorsLayer::new()
         .allow_headers::<AllowHeaders>([CONTENT_TYPE, ORIGIN].into())
         .allow_methods::<AllowMethods>(
-            [Method::GET, Method::POST, Method::PATCH, Method::PUT].into(),
+            [
+                Method::GET,
+                Method::POST,
+                Method::PATCH,
+                Method::PUT,
+                Method::DELETE,
+            ]
+            .into(),
         )
         .allow_credentials(true)
         .allow_origin::<AllowOrigin>(origins.into());
