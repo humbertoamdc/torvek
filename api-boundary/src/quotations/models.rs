@@ -1,5 +1,4 @@
 use chrono::{DateTime, Utc};
-use names::Generator;
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::{ContextV7, Timestamp, Uuid};
@@ -15,10 +14,9 @@ pub struct Quotation {
     pub updated_at: DateTime<Utc>,
 }
 impl Quotation {
-    pub fn new(customer_id: String, project_id: String) -> Self {
+    pub fn new(customer_id: String, project_id: String, name: String) -> Self {
         let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
         let encoded_id = format!("quo_{}", bs58::encode(id).into_string());
-        let name = Generator::default().next().unwrap();
         let now = Utc::now();
 
         Self {

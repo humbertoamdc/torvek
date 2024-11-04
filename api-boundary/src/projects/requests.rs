@@ -3,11 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateProjectRequest {
     pub customer_id: String,
-}
-impl CreateProjectRequest {
-    pub const fn new(customer_id: String) -> Self {
-        Self { customer_id }
-    }
+    pub project_name: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
