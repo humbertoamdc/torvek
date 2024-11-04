@@ -6,12 +6,14 @@ use crate::quotations::models::QuotationStatus;
 pub struct CreateQuotationRequest {
     pub customer_id: String,
     pub project_id: String,
+    pub quotation_name: String,
 }
 impl CreateQuotationRequest {
-    pub const fn new(customer_id: String, project_id: String) -> Self {
+    pub const fn new(customer_id: String, project_id: String, quotation_name: String) -> Self {
         Self {
             customer_id,
             project_id,
+            quotation_name,
         }
     }
 }

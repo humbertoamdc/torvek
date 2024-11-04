@@ -20,7 +20,11 @@ impl CreateQuotationUseCase {
 #[async_trait]
 impl UseCase<CreateQuotationRequest, ()> for CreateQuotationUseCase {
     async fn execute(&self, request: CreateQuotationRequest) -> Result<()> {
-        let quotation = Quotation::new(request.customer_id, request.project_id);
+        let quotation = Quotation::new(
+            request.customer_id,
+            request.project_id,
+            request.quotation_name,
+        );
         self.quotations_repository.create_quotation(quotation).await
     }
 }
