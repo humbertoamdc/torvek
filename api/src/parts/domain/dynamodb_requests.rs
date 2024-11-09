@@ -41,3 +41,8 @@ impl From<&UpdatePartRequest> for UpdatablePart {
         }
     }
 }
+
+pub struct BatchDeletePartObject {
+    pub part_id: String,
+    pub quotation_id: String,
+}

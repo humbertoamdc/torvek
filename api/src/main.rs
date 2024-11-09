@@ -23,6 +23,7 @@ mod quotations;
 mod repositories;
 mod services;
 mod shared;
+mod utils;
 
 #[tokio::main]
 async fn main() {

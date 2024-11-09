@@ -17,6 +17,7 @@ impl CreatePartsResponse {
 pub struct QueryPartsForQuotationResponse {
     pub parts: Vec<Part>,
     pub quotation_subtotal: Option<Money>,
+    pub cursor: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

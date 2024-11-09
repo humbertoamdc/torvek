@@ -3,6 +3,8 @@ use std::time::Duration;
 use crate::shared::Result;
 use api_boundary::common::error::Error;
 use aws_sdk_s3::presigning::PresigningConfig;
+use aws_sdk_s3::types::builders::DeleteBuilder;
+use aws_sdk_s3::types::ObjectIdentifier;
 use axum::async_trait;
 use url::Url;
 
@@ -62,6 +64,43 @@ impl ObjectStorage for S3ObjectStorage {
             .delete_object()
             .bucket(&self.bucket)
             .key(&self.filepath(url)?)
+            .send()
+            .await;
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn bulk_delete_objects(&self, urls: Vec<&str>) -> Result<()> {
+        let object_identifiers = urls
+            .into_iter()
+            .map(|url| {
+                ObjectIdentifier::builder()
+                    .key(self.filepath(url).unwrap())
+                    .build()
+                    .unwrap()
+            })
+            .collect::<Vec<ObjectIdentifier>>();
+
+        if object_identifiers.is_empty() {
+            return Ok(());
+        }
+
+        let result = self
+            .client
+            .delete_objects()
+            .bucket(&self.bucket)
+            .delete(
+                DeleteBuilder::default()
+                    .set_objects(Some(object_identifiers))
+                    .build()
+                    .unwrap(),
+            )
             .send()
             .await;
 

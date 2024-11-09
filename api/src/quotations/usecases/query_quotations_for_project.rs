@@ -25,11 +25,11 @@ impl UseCase<QueryQuotationsForProjectRequest, QueryQuotationsForProjectResponse
         &self,
         request: QueryQuotationsForProjectRequest,
     ) -> Result<QueryQuotationsForProjectResponse> {
-        let quotations = self
+        let response = self
             .quotations_repository
-            .query_quotations_for_project(request.project_id)
+            .query_quotations_for_project(request.project_id, 100, None)
             .await?;
 
-        Ok(QueryQuotationsForProjectResponse::new(quotations))
+        Ok(QueryQuotationsForProjectResponse::new(response.data))
     }
 }

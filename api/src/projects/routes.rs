@@ -1,6 +1,8 @@
 use crate::app_state::AppState;
-use crate::projects::controllers::{create_project, get_project_by_id, query_projects_for_client};
-use axum::routing::{get, post};
+use crate::projects::controllers::{
+    create_project, delete_project, get_project_by_id, query_projects_for_client,
+};
+use axum::routing::{delete, get, post};
 use axum::Router;
 
 pub fn create_router() -> Router<AppState> {
@@ -13,5 +15,9 @@ pub fn create_router() -> Router<AppState> {
         .route(
             "/customers/:customer_id/projects/:project_id",
             get(get_project_by_id),
+        )
+        .route(
+            "/customers/:customer_id/projects/:project_id",
+            delete(delete_project),
         )
 }

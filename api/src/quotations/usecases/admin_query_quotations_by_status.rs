@@ -25,11 +25,11 @@ impl UseCase<AdminQueryQuotationsByStatusRequest, AdminQueryQuotationsByStatusRe
         &self,
         request: AdminQueryQuotationsByStatusRequest,
     ) -> Result<AdminQueryQuotationsByStatusResponse> {
-        let quotations = self
+        let response = self
             .quotations_repository
-            .query_quotations_by_status(request.status)
+            .query_quotations_by_status(request.status, 100, None)
             .await?;
 
-        Ok(AdminQueryQuotationsByStatusResponse::new(quotations))
+        Ok(AdminQueryQuotationsByStatusResponse::new(response.data))
     }
 }

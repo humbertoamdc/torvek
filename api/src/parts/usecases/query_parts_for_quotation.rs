@@ -40,16 +40,16 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
         &self,
         request: QueryPartsForQuotationRequest,
     ) -> Result<QueryPartsForQuotationResponse> {
-        let mut parts = self
+        let mut response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id)
+            .query_parts_for_quotation(request.quotation_id, 100, None)
             .await?;
 
-        self.sign_part_render_urls(&mut parts).await?;
+        self.sign_part_render_urls(&mut response.data).await?;
 
         let quotation_subtotal: Option<Money> = {
             match request.with_quotation_subtotal {
-                true => match self.get_quotation_subtotal(&parts).await {
+                true => match self.get_quotation_subtotal(&response.data).await {
                     Ok(money) => Ok(Some(money)),
                     Err(err) => match err {
                         Error::NoSelectedQuoteAvailableForPart(_) => Ok(None),
@@ -61,8 +61,9 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
         };
 
         Ok(QueryPartsForQuotationResponse {
-            parts,
+            parts: response.data,
             quotation_subtotal,
+            cursor: response.cursor,
         })
     }
 }
