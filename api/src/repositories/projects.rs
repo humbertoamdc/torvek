@@ -12,5 +12,7 @@ pub trait ProjectsRepository: Send + Sync + 'static {
         cursor: Option<String>,
     ) -> Result<QueryResponse<Vec<Project>, String>>;
     async fn get_project_by_id(&self, customer_id: String, project_id: String) -> Result<Project>;
+
+    /// Delete project ONLY if it is not in `LOCKED` status.
     async fn try_delete_project(&self, customer_id: String, project_id: String) -> Result<()>;
 }

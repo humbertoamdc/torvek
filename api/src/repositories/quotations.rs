@@ -30,6 +30,7 @@ pub trait QuotationsRepository: Send + Sync + 'static {
         quotation_id: String,
         status: QuotationStatus,
     ) -> Result<()>;
+    /// Delete quotation ONLY if it is not in `PAYED` status.
     async fn try_delete_quotation(&self, project_id: String, quotation_id: String) -> Result<()>;
     async fn batch_delete_parts(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()>;
 }

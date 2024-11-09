@@ -39,6 +39,9 @@ impl UseCase<DeleteQuotationRequest, ()> for DeleteQuotationUseCase {
         let parts_repository = self.parts_repository.clone();
         let object_storage = self.object_storage.clone();
 
+        // Spawn a background task to cascade delete all the parts belonging to the project.
+        // This allows us to return early because we don't have to wait for the deletes to
+        // happen.
         tokio::task::spawn(async move {
             Self::cascade_delete_parts_for_quotation(
                 request.quotation_id.clone(),
@@ -68,12 +71,13 @@ impl DeleteQuotationUseCase {
 
             match result {
                 Ok(response) => {
-                    if !response.data.is_empty() {
-                        let _ = Self::delete_parts(&response.data, parts_repository.clone()).await;
-
-                        Self::delete_associated_objects(&response.data, object_storage.clone())
-                            .await;
+                    if response.data.is_empty() {
+                        break;
                     }
+
+                    let _ = Self::delete_parts(&response.data, parts_repository.clone()).await;
+
+                    Self::delete_associated_objects(&response.data, object_storage.clone()).await;
 
                     cursor = response.cursor;
                 }
