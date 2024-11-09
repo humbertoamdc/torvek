@@ -6,7 +6,7 @@ use api_boundary::common::file::File;
 use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
-use crate::parts::domain::updatable_part::UpdatablePart;
+use crate::parts::domain::dynamodb_requests::UpdatablePart;
 use crate::repositories::parts::PartsRepository;
 use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
 use api_boundary::parts::responses::CreateDrawingUploadUrlResponse;

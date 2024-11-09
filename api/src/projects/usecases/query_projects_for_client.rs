@@ -25,11 +25,14 @@ impl UseCase<QueryProjectsForClientRequest, QueryProjectsForClientResponse>
         &self,
         request: QueryProjectsForClientRequest,
     ) -> Result<QueryProjectsForClientResponse> {
-        let projects = self
+        let response = self
             .projects_repository
-            .query_projects_for_client(request.customer_id)
+            .query_projects_for_client(request.customer_id, 100, None)
             .await?;
 
-        Ok(QueryProjectsForClientResponse::new(projects))
+        Ok(QueryProjectsForClientResponse {
+            projects: response.data,
+            cursor: response.cursor,
+        })
     }
 }

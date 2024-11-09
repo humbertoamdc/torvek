@@ -7,7 +7,7 @@ use axum::async_trait;
 use api_boundary::parts::requests::UpdatePartRequest;
 use api_boundary::quotations::models::QuotationStatus;
 
-use crate::parts::domain::updatable_part::UpdatablePart;
+use crate::parts::domain::dynamodb_requests::UpdatablePart;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};

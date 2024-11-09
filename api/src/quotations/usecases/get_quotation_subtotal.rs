@@ -45,12 +45,12 @@ impl UseCase<GetQuotationSubtotalRequest, GetQuotationSubtotalResponse>
             });
         }
 
-        let parts = self
+        let response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id)
+            .query_parts_for_quotation(request.quotation_id, 100, None)
             .await?;
 
-        let quotation_subtotal = Some(self.calculate_quotation_subtotal(parts));
+        let quotation_subtotal = Some(self.calculate_quotation_subtotal(response.data));
 
         Ok(GetQuotationSubtotalResponse { quotation_subtotal })
     }

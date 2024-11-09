@@ -5,13 +5,14 @@ use axum::Json;
 use http::StatusCode;
 
 use api_boundary::quotations::requests::{
-    AdminQueryQuotationsByStatusRequest, CreateQuotationRequest, GetQuotationByIdRequest,
-    GetQuotationSubtotalRequest, QueryQuotationsForProjectRequest,
+    AdminQueryQuotationsByStatusRequest, CreateQuotationRequest, DeleteQuotationRequest,
+    GetQuotationByIdRequest, GetQuotationSubtotalRequest, QueryQuotationsForProjectRequest,
 };
 
 use crate::app_state::AppState;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatusUseCase;
 use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
+use crate::quotations::usecases::delete_quotation::DeleteQuotationUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotalUseCase;
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
@@ -83,6 +84,23 @@ pub async fn get_quotation_subtotal(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn delete_quotation(
+    State(app_state): State<AppState>,
+    Path(request): Path<DeleteQuotationRequest>,
+) -> impl IntoResponse {
+    let usecase = DeleteQuotationUseCase::new(
+        app_state.quotations.quotations_repository,
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::NO_CONTENT, Json(response))),
         Err(err) => Err(err.into_error_response()),
     }
 }

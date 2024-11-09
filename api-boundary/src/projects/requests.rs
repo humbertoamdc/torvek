@@ -21,3 +21,9 @@ impl QueryProjectsForClientRequest {
         Self { customer_id }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteProjectRequest {
+    pub customer_id: String,
+    pub project_id: String,
+}

@@ -232,6 +232,7 @@ impl AppStatePayments {
         let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
             dynamodb_client,
             config.orders.orders_table.clone(),
+            config.projects.projects_table.clone(),
             config.quotations.quotations_table.clone(),
         ));
 

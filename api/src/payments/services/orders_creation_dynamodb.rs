@@ -8,6 +8,7 @@ use serde_dynamo::to_item;
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use crate::shared::Result;
 use api_boundary::orders::models::Order;
+use api_boundary::projects::models::ProjectStatus;
 use api_boundary::quotations::models::QuotationStatus;
 
 use crate::payments::services::orders_creation::OrdersCreationService;
@@ -16,6 +17,7 @@ use crate::payments::services::orders_creation::OrdersCreationService;
 pub struct DynamodbOrdersCreationService {
     client: aws_sdk_dynamodb::Client,
     orders_table: String,
+    projects_table: String,
     quotations_table: String,
 }
 
@@ -23,11 +25,13 @@ impl DynamodbOrdersCreationService {
     pub fn new(
         client: aws_sdk_dynamodb::Client,
         orders_table: String,
+        projects_table: String,
         quotations_table: String,
     ) -> Self {
         Self {
             client,
             orders_table,
+            projects_table,
             quotations_table,
         }
     }
@@ -37,6 +41,7 @@ impl DynamodbOrdersCreationService {
 impl OrdersCreationService for DynamodbOrdersCreationService {
     async fn create_orders_and_update_quotation_status(
         &self,
+        customer_id: String,
         project_id: String,
         quotation_id: String,
         orders: Vec<Order>,
@@ -46,6 +51,9 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
             .into_iter()
             .map(|order| DynamodbOrderItem::from(order))
             .collect::<Vec<_>>();
+
+        // Update project status to Locked.
+        let project_transaction = self.build_project_transaction(customer_id, project_id.clone());
 
         // Update quotation status to OrdersCreated.
         let quotation_transaction = self.build_quotation_transaction(project_id, quotation_id);
@@ -57,6 +65,7 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
         let mut transaction_request = self
             .client
             .transact_write_items()
+            .transact_items(project_transaction)
             .transact_items(quotation_transaction);
 
         for transaction in orders_transactions {
@@ -76,6 +85,40 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
 }
 
 impl DynamodbOrdersCreationService {
+    fn build_project_transaction(
+        &self,
+        customer_id: String,
+        project_id: String,
+    ) -> TransactWriteItem {
+        TransactWriteItem::builder()
+            .update(
+                Update::builder()
+                    .table_name(&self.projects_table)
+                    .set_key(Some(HashMap::from([
+                        (String::from("customer_id"), AttributeValue::S(customer_id)),
+                        (String::from("id"), AttributeValue::S(project_id)),
+                    ])))
+                    .update_expression("SET #status = :locked, updated_at = :updated_at")
+                    .set_expression_attribute_names(Some(HashMap::from([(
+                        String::from("#status"),
+                        String::from("status"),
+                    )])))
+                    .set_expression_attribute_values(Some(HashMap::from([
+                        (
+                            String::from(":locked"),
+                            AttributeValue::S(ProjectStatus::Locked.to_string()),
+                        ),
+                        (
+                            String::from(":updated_at"),
+                            AttributeValue::S(chrono::Utc::now().to_rfc3339()),
+                        ),
+                    ])))
+                    .build()
+                    .unwrap(),
+            )
+            .build()
+    }
+
     fn build_quotation_transaction(
         &self,
         project_id: String,

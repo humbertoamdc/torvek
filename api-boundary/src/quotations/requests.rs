@@ -47,3 +47,9 @@ pub struct GetQuotationSubtotalRequest {
     pub project_id: String,
     pub quotation_id: String,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteQuotationRequest {
+    pub project_id: String,
+    pub quotation_id: String,
+}

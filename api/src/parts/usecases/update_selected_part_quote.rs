@@ -1,4 +1,4 @@
-use crate::parts::domain::updatable_part::UpdatablePart;
+use crate::parts::domain::dynamodb_requests::UpdatablePart;
 use crate::repositories::parts::PartsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::common::money::Money;
@@ -34,22 +34,23 @@ impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse>
         let part = self.parts_repository.update_part(updatable_part).await?;
 
         // Fetch parts for quotation.
-        let mut parts_for_quotation = self
+        let mut response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id)
+            .query_parts_for_quotation(request.quotation_id, 100, None)
             .await?;
 
         // At this point it is possible that we get the part values before being updated
         // because of eventual consistency. To make sure we have the most up-to-date value
         // use the part returned by the `update_part` method.
-        let old_part = parts_for_quotation
+        let old_part = response
+            .data
             .iter_mut()
             .find(|old_part| old_part.id == part.id)
             .expect("expecting to find a matching part");
         let _ = std::mem::replace(old_part, part.clone());
 
         // Calculate quotation subtotal.
-        let quotation_subtotal = self.calculate_quotation_subtotal(parts_for_quotation.clone());
+        let quotation_subtotal = self.calculate_quotation_subtotal(response.data.clone());
 
         Ok(UpdateSelectedPartQuoteResponse {
             part,

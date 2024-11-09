@@ -1,11 +1,13 @@
 use crate::app_state::AppState;
 use crate::projects::usecases::create_project::CreateProjectUseCase;
+use crate::projects::usecases::delete_project::DeleteProjectUseCase;
 use crate::projects::usecases::get_project_by_id::GetProjectByIdUseCase;
 use crate::projects::usecases::query_projects_for_client::QueryProjectsForClientUseCase;
 use crate::shared::UseCase;
 use api_boundary::common::into_error_response::IntoError;
 use api_boundary::projects::requests::{
-    CreateProjectRequest, GetProjectByIdRequest, QueryProjectsForClientRequest,
+    CreateProjectRequest, DeleteProjectRequest, GetProjectByIdRequest,
+    QueryProjectsForClientRequest,
 };
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
@@ -48,6 +50,24 @@ pub async fn get_project_by_id(
 
     match result {
         Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn delete_project(
+    State(app_state): State<AppState>,
+    Path(request): Path<DeleteProjectRequest>,
+) -> impl IntoResponse {
+    let usecase = DeleteProjectUseCase::new(
+        app_state.projects.projects_repository,
+        app_state.quotations.quotations_repository,
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::NO_CONTENT, Json(response))),
         Err(err) => Err(err.into_error_response()),
     }
 }
