@@ -184,24 +184,20 @@ impl DeleteProjectUseCase {
     }
 
     async fn delete_associated_objects(parts: &Vec<Part>, object_storage: Arc<dyn ObjectStorage>) {
-        let model_urls = parts
+        // Merge model, render, and drawing file urls into one array to bulk delete all
+        // the objects at the same time.
+        let urls = parts
             .iter()
-            .map(|part| part.model_file.url.as_ref())
-            .collect::<Vec<&str>>();
-        let render_urls = parts
-            .iter()
-            .map(|part| part.render_file.url.as_ref())
-            .collect::<Vec<&str>>();
-        let drawing_urls = parts
-            .iter()
-            .filter(|part| part.drawing_file.is_some())
-            .map(|part| part.drawing_file.as_ref().unwrap().url.as_ref())
-            .collect::<Vec<&str>>();
+            .flat_map(|part| {
+                vec![
+                    Some(&part.model_file),
+                    Some(&part.render_file),
+                    Option::from(&part.drawing_file),
+                ]
+            })
+            .filter_map(|file| file.map(|f| f.url.as_ref()))
+            .collect();
 
-        let _ = object_storage.bulk_delete_objects(model_urls).await;
-        let _ = object_storage.bulk_delete_objects(render_urls).await;
-        if !drawing_urls.is_empty() {
-            let _ = object_storage.bulk_delete_objects(drawing_urls).await;
-        }
+        let _ = object_storage.bulk_delete_objects(urls).await;
     }
 }
