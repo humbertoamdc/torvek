@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create the main api gateway for our backend.
+Resources:
+
+  # ===============
+  # | Api Gateway |
+  # ===============
+
+  ApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders:
+          - content-type
+          - origin
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+          - PATCH
+          - PUT
+          - DELETE
+        AllowOrigins:
+          - https://admin.torvek.com
+          - https://app.torvek.com
+          - https://suppliers.torvek.com
+          - https://www.torvek.com
+        MaxAge: 3600
+      Description: >-
+        This api gateway works as a proxy between the clients and the backend.
+      DisableExecuteApiEndpoint: false
+      Name: torvek-http-api
+      ProtocolType: HTTP
+
+  ApiGatewayLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ApiGateway
+      Description: >-
+        Integration that connects the Api Gateway routes with the backend.
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Join
+        - ''
+        - - 'arn:aws:apigateway:'
+          - !Ref 'AWS::Region'
+          - ':lambda:path/2015-03-31/functions/'
+          - 'arn:aws:lambda:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':function:api/invocations'
+      PayloadFormatVersion: 2.0
+
+  ApiGatewayGETProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: GET /{proxy+}
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGatewayLambdaIntegration
+
+  ApiGatewayPOSTProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: POST /{proxy+}
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGatewayLambdaIntegration
+
+  ApiGatewayPATCHProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: PATCH /{proxy+}
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGatewayLambdaIntegration
+
+  ApiGatewayPUTProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: PUT /{proxy+}
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGatewayLambdaIntegration
+
+  ApiGatewayDELETEProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: DELETE /{proxy+}
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGatewayLambdaIntegration
+
+  ApiGatewayStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ApiGateway
+      AutoDeploy: true
+      StageName: $default
+
+  # ================================================
+  # | Api Gateway custom domain and domain mapping |
+  # ================================================
+
+  ApiGatewayCustomDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: api.torvek.com
+      DomainNameConfigurations:
+        - CertificateArn: !ImportValue ApiCertificateArn
+          CertificateName: Api Certificate
+          EndpointType: Regional
+          SecurityPolicy: TLS_1_2
+
+  ApiGatewayDomainMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref ApiGateway
+      DomainName: api.torvek.com
+      Stage: !Ref ApiGatewayStage
+
+  Route53ApiRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt ApiGatewayCustomDomain.RegionalDomainName
+        EvaluateTargetHealth: true
+        HostedZoneId: !GetAtt ApiGatewayCustomDomain.RegionalHostedZoneId
+      Comment: Record that maps api.torvek.com to the api gateway domain name.
+      HostedZoneName: torvek.com.
+      Name: api.torvek.com
+      Type: A
+
+  # ===============
+  # | Permissions |
+  # ===============
+
+  # Grant permission to the api gateway to execute the api lambda function.
+  ApiGatewayExecuteLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Join
+        - ''
+        - - 'arn:aws:lambda:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':function:api'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGateway
+          - '/*/*/{proxy+}'
