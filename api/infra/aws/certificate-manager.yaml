@@ -58,3 +58,8 @@ Outputs:
     Value: !Ref SupplierPortalCertificate
     Export:
       Name: SupplierPortalCertificateArn
+  ApiCertificateArn:
+    Description: ARN for the api certificate.
+    Value: !Ref ApiCertificate
+    Export:
+      Name: ApiCertificateArn
