@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create dynamodb tables.
+Resources:
+
+  # ====================
+  # | Dynamodb tables  |
+  # ====================
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+        - AttributeName: status#id
+          AttributeType: S
+        - AttributeName: is_open
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+        - AttributeName: status#id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: OpenOrders
+          KeySchema:
+            - AttributeName: is_open
+              KeyType: HASH
+            - AttributeName: status#id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      TableName: Orders
+
+  ProjectsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      TableName: Projects
+
+  QuotationsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: project_id
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: project_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: QuotationsByStatus
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      TableName: Quotations
+
+  PartsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: quotation_id
+          AttributeType: S
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: quotation_id
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      TableName: Parts
+
+Outputs:
+  OrdersTableArn:
+    Description: ARN of orders dynamodb table.
+    Value: !GetAtt OrdersTable.Arn
+    Export:
+      Name: OrdersTableArn
+
+  ProjectsTableArn:
+    Description: ARN of projects dynamodb table.
+    Value: !GetAtt ProjectsTable.Arn
+    Export:
+      Name: ProjectsTableArn
+
+  QuotationsTableArn:
+    Description: ARN of quotations dynamodb table.
+    Value: !GetAtt QuotationsTable.Arn
+    Export:
+      Name: QuotationsTableArn
+
+  PartsTableArn:
+    Description: ARN of parts dynamodb table.
+    Value: !GetAtt PartsTable.Arn
+    Export:
+      Name: PartsTableArn

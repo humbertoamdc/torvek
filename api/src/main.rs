@@ -25,6 +25,12 @@ mod services;
 mod shared;
 mod utils;
 
+const CONFIG_BUCKET_STAGING: &str = "torvek-config-files-staging";
+const CONFIG_KEY_STAGING: &str = "staging.toml";
+
+const CONFIG_BUCKET_PROD: &str = "torvek-config-files";
+const CONFIG_KEY_PROD: &str = "prod.toml";
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
@@ -102,8 +108,15 @@ async fn run_local(app: Router<AppState>) {
 
 async fn run_lambda(app: Router<AppState>) {
     // Constants
-    let config_bucket = "torvek-config-files";
-    let config_key = "prod.toml";
+    tracing::info!(
+        "running lambda on {}",
+        env::var("ENV").unwrap_or(String::from("no env"))
+    );
+    let (config_bucket, config_key) = match env::var("ENV").unwrap_or(String::from("prod")).as_str()
+    {
+        "prod" => (CONFIG_BUCKET_PROD, CONFIG_KEY_PROD),
+        _ => (CONFIG_BUCKET_STAGING, CONFIG_KEY_STAGING),
+    };
 
     // Retrieve config from S3
     let shared_config = aws_config::defaults(BehaviorVersion::latest()).load().await;

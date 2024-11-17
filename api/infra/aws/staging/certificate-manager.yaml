@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create TLS/SSL certificates.
+Resources:
+
+  # ================
+  # | Certificates |
+  # ================
+
+  LandingPageWebCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: www.torvek-staging.com
+      ValidationMethod: DNS
+
+  CustomerWebAppCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: app.torvek-staging.com
+      ValidationMethod: DNS
+
+  AdminPortalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: admin.torvek-staging.com
+      ValidationMethod: DNS
+
+  SupplierPortalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: suppliers.torvek-staging.com
+      ValidationMethod: DNS
+
+  SuppliersAuthCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: auth.suppliers.torvek-staging.com
+      ValidationMethod: DNS
+
+  ApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: api.torvek-staging.com
+      ValidationMethod: DNS
+
+Outputs:
+  LandingPageWebCertificateArn:
+    Description: ARN for landing page web certificate.
+    Value: !Ref LandingPageWebCertificate
+    Export:
+      Name: LandingPageWebCertificateArn
+  CustomerWebAppCertificateArn:
+    Description: ARN for customer web app certificate.
+    Value: !Ref CustomerWebAppCertificate
+    Export:
+      Name: CustomerWebAppCertificateArn
+  AdminPortalCertificateArn:
+    Description: ARN for admin portal certificate.
+    Value: !Ref AdminPortalCertificate
+    Export:
+      Name: AdminPortalCertificateArn
+  SupplierPortalCertificateArn:
+    Description: ARN for supplier portal certificate.
+    Value: !Ref SupplierPortalCertificate
+    Export:
+      Name: SupplierPortalCertificateArn
+  ApiCertificateArn:
+    Description: ARN for the api certificate.
+    Value: !Ref ApiCertificate
+    Export:
+      Name: ApiCertificateArn
