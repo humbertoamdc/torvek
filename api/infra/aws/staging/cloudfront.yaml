@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create CloudFront distribution to serve websites hosted in S3.
+Resources:
+
+  # ===============
+  # | Permissions |
+  # ===============
+
+  LandingPageWebAppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: torvek-web-apps-staging
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Sid: AllowCloudFrontServicePrincipal
+          Action:
+            - 's3:GetObject'
+          Effect: Allow
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Resource: arn:aws:s3:::torvek-web-apps-staging/*
+          Condition:
+            StringEquals:
+              AWS:SourceArn:
+                - !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${LandingPageWebAppCloudFrontDistribution}'
+                - !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CustomerWebAppCloudFrontDistribution}'
+                - !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${AdminWebAppCloudFrontDistribution}'
+                - !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${SupplierWebAppCloudFrontDistribution}'
+
+  # ======================================
+  # | CloudFront origin access controls |
+  # ======================================
+
+  LandingPageWebAppCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Landing Page Origin Access Control
+        Name: LandingPageWebOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CustomerWebAppCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Customer Web App Origin Access Control
+        Name: CustomerWebAppOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AdminWebAppCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Admin Web App Origin Access Control
+        Name: AdminPortalOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  SupplierWebAppCloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: Supplier Web App Origin Access Control
+        Name: SupplierPortalOAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ============================
+  # | CloudFront distributions |
+  # ============================
+
+  LandingPageWebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - www.torvek-staging.com
+        Comment: Distribution for landing page web app.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: LandingPageWebAppOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !Sub 'torvek-web-apps-staging.s3.${AWS::Region}.amazonaws.com'
+            Id: LandingPageWebAppOrigin
+            OriginPath: /landing
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt LandingPageWebAppCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue LandingPageWebCertificateArn
+          SslSupportMethod: sni-only
+
+  CustomerWebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - app.torvek-staging.com
+        Comment: Distribution for customer web app.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: CustomerWebAppOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !Sub 'torvek-web-apps-staging.s3.${AWS::Region}.amazonaws.com'
+            Id: CustomerWebAppOrigin
+            OriginPath: /customers
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CustomerWebAppCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue CustomerWebAppCertificateArn
+          SslSupportMethod: sni-only
+
+  AdminWebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - admin.torvek-staging.com
+        Comment: Distribution for admin web app.
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: AdminWebAppOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !Sub 'torvek-web-apps-staging.s3.${AWS::Region}.amazonaws.com'
+            Id: AdminWebAppOrigin
+            OriginPath: /admins
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt AdminWebAppCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue AdminPortalCertificateArn
+          SslSupportMethod: sni-only
+
+  SupplierWebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - suppliers.torvek-staging.com
+        Comment: Distribution for supplier web app  .
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: SupplierWebAppOrigin
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Origins:
+          - DomainName: !Sub 'torvek-web-apps-staging.s3.${AWS::Region}.amazonaws.com'
+            Id: SupplierWebAppOrigin
+            OriginPath: /suppliers
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt SupplierWebAppCloudFrontOriginAccessControl.Id
+        ViewerCertificate:
+          AcmCertificateArn: !ImportValue SupplierPortalCertificateArn
+          SslSupportMethod: sni-only
+
+  # =====================
+  # | Route 53 records  |
+  # =====================
+
+  Route53LandingPageRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt LandingPageWebAppCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: Record that maps www.torvek-staging.com to its respective cloudfront distribution.
+      HostedZoneName: torvek-staging.com.
+      Name: www.torvek-staging.com
+      Type: A
+
+  Route53CustomerAppRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt CustomerWebAppCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: Record that maps app.torvek-staging.com to its respective cloudfront distribution.
+      HostedZoneName: torvek-staging.com.
+      Name: app.torvek-staging.com
+      Type: A
+
+  Route53AdminAppRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt AdminWebAppCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: Record that maps admin.torvek-staging.com to its respective cloudfront distribution.
+      HostedZoneName: torvek-staging.com.
+      Name: admin.torvek-staging.com
+      Type: A
+
+  Route53SupplierAppRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt SupplierWebAppCloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+      Comment: Record that maps suppliers.torvek-staging.com to its respective cloudfront distribution.
+      HostedZoneName: torvek-staging.com.
+      Name: suppliers.torvek-staging.com
+      Type: A

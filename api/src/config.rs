@@ -65,6 +65,7 @@ impl From<&str> for Config {
 #[serde(rename_all = "snake_case")]
 pub enum Environment {
     Development,
+    Staging,
     Production,
 }
 
