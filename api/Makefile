@@ -9,9 +9,8 @@ STAGING_REGION := us-east-1
 CONFIG_FILES_S3_BUCKET := s3://torvek-config-files
 STAGING_CONFIG_FILES_S3_BUCKET := s3://torvek-config-files-staging
 
-
-
 # === App ===
+
 run:
 	./scripts/run-dev.sh
 

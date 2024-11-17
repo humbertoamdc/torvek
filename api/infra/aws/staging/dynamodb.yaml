@@ -1,10 +1,15 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create dynamodb tables.
 Resources:
+
+  # ====================
+  # | Dynamodb tables  |
+  # ====================
+
   OrdersTable:
     Type: AWS::DynamoDB::Table
-    #    DeletionPolicy: Retain
-    #    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: customer_id
@@ -38,8 +43,8 @@ Resources:
 
   ProjectsTable:
     Type: AWS::DynamoDB::Table
-    #    DeletionPolicy: Retain
-    #    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: customer_id
@@ -62,8 +67,8 @@ Resources:
 
   QuotationsTable:
     Type: AWS::DynamoDB::Table
-    #    DeletionPolicy: Retain
-    #    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: project_id
@@ -99,8 +104,8 @@ Resources:
 
   PartsTable:
     Type: AWS::DynamoDB::Table
-    #    DeletionPolicy: Retain
-    #    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
         - AttributeName: quotation_id

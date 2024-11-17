@@ -1,7 +1,7 @@
 PROFILE := torvek
 REGION := us-east-1
 S3_URI := s3://torvek-web-apps/admins
-CLOUDFRONT_DISTRIBUTION := E2G8P0AFMND1XM
+CLOUDFRONT_DISTRIBUTION := EICHM9U41Q0Z6
 
 STAGING_PROFILE := torvek-staging
 STAGING_REGION := us-east-1
@@ -9,6 +9,13 @@ STAGING_S3_URI := s3://torvek-web-apps-staging/admins
 STAGING_CLOUDFRONT_DISTRIBUTION := E38O58FV2Q21NO
 
 SHELL := /bin/bash
+
+# === App ===
+
+run:
+	./scripts/run-dev.sh
+
+# === Infra ===
 
 # Parameters
 #	- env:	 string = Environment (staging | prod).
@@ -32,10 +39,3 @@ deploy:
 		--distribution-id $$cloudfrontDistribution \
 		--paths "/*" \
 		--no-cli-pager
-
-run:
-	./scripts/run-dev.sh
-
-
-open:
-	open -n -a "Google Chrome" --args --disable-web-security --user-data-dir="/tmp/chrome_dev_session" "http://localhost:8081"

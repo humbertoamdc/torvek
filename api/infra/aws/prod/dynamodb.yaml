@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: CF template to create dynamodb tables.
 Resources:
+
+  # ====================
+  # | Dynamodb tables  |
+  # ====================
+
   OrdersTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
