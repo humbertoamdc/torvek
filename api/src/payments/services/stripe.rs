@@ -66,39 +66,42 @@ impl StripePaymentsProcessor {
     }
 
     fn line_items_from_parts_data(parts: &Vec<Part>) -> Vec<CreateCheckoutSessionLineItems> {
-        parts.iter().map(|part| {
-            let selected_part_quote = part
-                .part_quotes
-                .clone()
-                .expect("expecting part quotes")
-                .into_iter()
-                .find(|part_quote| part_quote.id == part.selected_part_quote_id.clone().unwrap())
-                .expect("could not find a selected quote for part");
+        parts
+            .iter()
+            .map(|part| {
+                let selected_part_quote = part
+                    .part_quotes
+                    .clone()
+                    .expect("expecting part quotes")
+                    .into_iter()
+                    .find(|part_quote| {
+                        part_quote.id == part.selected_part_quote_id.clone().unwrap()
+                    })
+                    .expect("could not find a selected quote for part");
 
-            CreateCheckoutSessionLineItems {
-                adjustable_quantity: None,
-                dynamic_tax_rates: None,
-                price: None,
-                price_data: Some(CreateCheckoutSessionLineItemsPriceData {
-                    currency: Currency::MXN,
-                    product: None,
-                    product_data: Some(CreateCheckoutSessionLineItemsPriceDataProductData {
-                        description: Some(part.attributes.to_string()),
-                        images: Some(vec![
-                            "https://cdn.dribbble.com/userupload/11259598/file/original-70a5fe9cc326f004bb78e36ee5e9d8a7.png?resize=100x".to_string()
-                        ]),
-                        metadata: None,
-                        name: part.model_file.name.clone(),
-                        tax_code: None,
+                CreateCheckoutSessionLineItems {
+                    adjustable_quantity: None,
+                    dynamic_tax_rates: None,
+                    price: None,
+                    price_data: Some(CreateCheckoutSessionLineItemsPriceData {
+                        currency: Currency::MXN,
+                        product: None,
+                        product_data: Some(CreateCheckoutSessionLineItemsPriceDataProductData {
+                            description: Some(part.attributes.to_string()),
+                            images: None,
+                            metadata: None,
+                            name: part.model_file.name.clone(),
+                            tax_code: None,
+                        }),
+                        recurring: None,
+                        tax_behavior: None,
+                        unit_amount: Some(selected_part_quote.unit_price.amount),
+                        unit_amount_decimal: None,
                     }),
-                    recurring: None,
-                    tax_behavior: None,
-                    unit_amount: Some(selected_part_quote.unit_price.amount),
-                    unit_amount_decimal: None,
-                }),
-                quantity: Some(part.quantity),
-                tax_rates: None,
-            }
-        }).collect()
+                    quantity: Some(part.quantity),
+                    tax_rates: None,
+                }
+            })
+            .collect()
     }
 }
