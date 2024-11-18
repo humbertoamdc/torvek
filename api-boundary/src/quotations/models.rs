@@ -35,6 +35,7 @@ impl Quotation {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuotationStatus {
     Created,
+    PendingReview,
     PendingPayment,
     Payed,
 }

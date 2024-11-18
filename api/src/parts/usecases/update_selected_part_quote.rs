@@ -1,8 +1,6 @@
 use crate::parts::domain::dynamodb_requests::UpdatablePart;
 use crate::repositories::parts::PartsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::parts::requests::UpdateSelectedPartQuoteRequest;
 use api_boundary::parts::responses::UpdateSelectedPartQuoteResponse;
 use axum::async_trait;
