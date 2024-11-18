@@ -53,3 +53,9 @@ pub struct DeleteQuotationRequest {
     pub project_id: String,
     pub quotation_id: String,
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SendQuotationForReviewRequest {
+    pub project_id: String,
+    pub quotation_id: String,
+}

@@ -40,14 +40,15 @@ impl UseCase<UpdatePartRequest, Part> for UpdatePartUseCase {
         // Check that the quotation is in an updatable status and change status to created after making an update.
         match quotation.status {
             QuotationStatus::Created => (),
-            QuotationStatus::PendingPayment => {
-                self.quotations_repository
+            QuotationStatus::PendingReview | QuotationStatus::PendingPayment => {
+                let _ = self
+                    .quotations_repository
                     .update_quotation_status(
                         request.project_id.clone(),
                         request.quotation_id.clone(),
                         QuotationStatus::Created,
                     )
-                    .await?
+                    .await?;
             }
             QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
         }

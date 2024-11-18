@@ -1,7 +1,7 @@
 use crate::shared::{QueryResponse, Result};
 use api_boundary::common::error::Error;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
-use aws_sdk_dynamodb::types::{AttributeValue, DeleteRequest, WriteRequest};
+use aws_sdk_dynamodb::types::{AttributeValue, DeleteRequest, ReturnValue, WriteRequest};
 use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -157,7 +157,7 @@ impl QuotationsRepository for DynamodbQuotations {
         project_id: String,
         quotation_id: String,
         status: QuotationStatus,
-    ) -> Result<()> {
+    ) -> Result<Quotation> {
         let response = self
             .client
             .update_item()
@@ -179,11 +179,21 @@ impl QuotationsRepository for DynamodbQuotations {
                     AttributeValue::S(status.to_string()),
                 ),
             ])))
+            .return_values(ReturnValue::AllNew)
             .send()
             .await;
 
         match response {
-            Ok(_) => Ok(()),
+            Ok(output) => match output.attributes {
+                Some(item) => match from_item::<Quotation>(item) {
+                    Ok(quotation) => Ok(quotation),
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                },
+                None => Err(Error::ItemNotFoundError),
+            },
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)
