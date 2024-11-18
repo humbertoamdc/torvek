@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use leptos::*;
 
 use api_boundary::common::money::Money;
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{Part, PartAttributes};
 
 use crate::components::parts::part_quote_card::PartQuoteCard;
 
@@ -76,15 +76,24 @@ pub fn PartQuotesTableRow(
                 </div>
                 <div class="flex items-baseline">
                     <p class="font-bold text-base pr-2">"Process:"</p>
-                    <p class="text-md text-gray-900">{part.process}</p>
+                    <p class="text-md text-gray-900">{part.process.to_string()}</p>
                 </div>
                 <div class="flex items-baseline">
                     <p class="font-bold text-base pr-2">"Material:"</p>
-                    <p class="text-md text-gray-900">{part.material}</p>
+                    <p class="text-md text-gray-900">
+                        {match part.attributes.clone() {
+                            PartAttributes::CNC(attributes) => attributes.material,
+                        }}
+                    </p>
                 </div>
                 <div class="flex items-baseline">
                     <p class="font-bold text-base pr-2">"Tolerance:"</p>
-                    <p class="text-md text-gray-900">{part.tolerance}</p>
+                    <p class="text-md text-gray-900">
+                        {match part.attributes.clone() {
+                            PartAttributes::CNC(attributes) => attributes.tolerance,
+                        }}
+
+                    </p>
                 </div>
                 <div class="flex items-baseline">
                     <p class="font-bold text-base pr-2">"Quantity:"</p>

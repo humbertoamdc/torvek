@@ -1,4 +1,5 @@
 use api_boundary::common::file::File;
+use api_boundary::parts::models::PartAttributes;
 use api_boundary::parts::requests::UpdatePartRequest;
 use serde_derive::{Deserialize, Serialize};
 
@@ -9,8 +10,7 @@ pub struct UpdatablePart {
     pub quotation_id: String,
     pub drawing_file: Option<File>,
     pub process: Option<String>,
-    pub material: Option<String>,
-    pub tolerance: Option<String>,
+    pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
     pub selected_part_quote_id: Option<String>,
     pub clear_part_quotes: Option<bool>,
@@ -33,8 +33,7 @@ impl From<&UpdatePartRequest> for UpdatablePart {
             quotation_id: request.quotation_id.clone(),
             drawing_file: request.drawing_file.clone(),
             process: request.process.clone(),
-            material: request.material.clone(),
-            tolerance: request.tolerance.clone(),
+            attributes: request.attributes.clone(),
             quantity: request.quantity,
             selected_part_quote_id: None,
             clear_part_quotes: Some(true),

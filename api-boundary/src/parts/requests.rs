@@ -4,6 +4,7 @@ use url::Url;
 
 use crate::common::file::File;
 use crate::common::money::Money;
+use crate::parts::models::PartAttributes;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsRequest {
@@ -56,8 +57,7 @@ pub struct UpdatePartRequest {
     pub part_id: String,
     pub drawing_file: Option<File>,
     pub process: Option<String>,
-    pub material: Option<String>,
-    pub tolerance: Option<String>,
+    pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
 }
 

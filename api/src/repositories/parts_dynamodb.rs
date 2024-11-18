@@ -209,15 +209,12 @@ impl PartsRepository for DynamodbParts {
             update_expression.push_str("process = :process, ");
             expression_attribute_values.insert(":process".to_string(), AttributeValue::S(process));
         }
-        if let Some(material) = updatable_part.material {
-            update_expression.push_str("material = :material, ");
-            expression_attribute_values
-                .insert(":material".to_string(), AttributeValue::S(material));
-        }
-        if let Some(tolerance) = updatable_part.tolerance {
-            update_expression.push_str("tolerance = :tolerance, ");
-            expression_attribute_values
-                .insert(":tolerance".to_string(), AttributeValue::S(tolerance));
+        if let Some(attributes) = updatable_part.attributes {
+            update_expression.push_str("attributes = :attributes, ");
+            expression_attribute_values.insert(
+                ":attributes".to_string(),
+                AttributeValue::M(to_item(attributes).unwrap()),
+            );
         }
         if let Some(quantity) = updatable_part.quantity {
             update_expression.push_str("quantity = :quantity, ");

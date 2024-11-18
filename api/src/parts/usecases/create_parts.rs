@@ -6,7 +6,7 @@ use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 use api_boundary::common::file::File;
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{CNCAttributes, Part, PartAttributes, PartProcess};
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
 use api_boundary::quotations::models::QuotationStatus;
@@ -100,6 +100,8 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
                     request.customer_id.clone(),
                     request.project_id.clone(),
                     request.quotation_id.clone(),
+                    PartProcess::CNC,
+                    PartAttributes::CNC(CNCAttributes::default()),
                     original_file,
                     render_file,
                 )
