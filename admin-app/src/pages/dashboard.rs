@@ -39,9 +39,9 @@ pub fn Dashboard(
 
     // -- actions -- //
 
-    let query_created_quotations = create_action(move |_| async move {
+    let query_quotations_pending_review = create_action(move |_| async move {
         let result = quotations_client
-            .query_quotations_by_status(QuotationStatus::Created)
+            .query_quotations_by_status(QuotationStatus::PendingReview)
             .await;
 
         match result {
@@ -67,7 +67,7 @@ pub fn Dashboard(
         match result {
             Ok(user_info) => {
                 user_info_signal.update(|u| {
-                    query_created_quotations.dispatch(());
+                    query_quotations_pending_review.dispatch(());
                     query_open_orders.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
                 });
