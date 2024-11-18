@@ -33,52 +33,6 @@ impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse>
 
         let part = self.parts_repository.update_part(updatable_part).await?;
 
-        // Fetch parts for quotation.
-        let mut response = self
-            .parts_repository
-            .query_parts_for_quotation(request.quotation_id, 100, None)
-            .await?;
-
-        // At this point it is possible that we get the part values before being updated
-        // because of eventual consistency. To make sure we have the most up-to-date value
-        // use the part returned by the `update_part` method.
-        let old_part = response
-            .data
-            .iter_mut()
-            .find(|old_part| old_part.id == part.id)
-            .expect("expecting to find a matching part");
-        let _ = std::mem::replace(old_part, part.clone());
-
-        // Calculate quotation subtotal.
-        let quotation_subtotal = self.calculate_quotation_subtotal(response.data.clone());
-
-        Ok(UpdateSelectedPartQuoteResponse {
-            part,
-            quotation_subtotal,
-        })
-    }
-}
-
-impl UpdateSelectedPartQuoteUseCase {
-    pub fn calculate_quotation_subtotal(&self, parts: Vec<Part>) -> Money {
-        let selected_part_quotes = parts
-            .into_iter()
-            .map(|part| {
-                part.part_quotes
-                    .unwrap()
-                    .into_iter()
-                    .find(|part_quote| {
-                        part_quote.id == part.selected_part_quote_id.clone().unwrap()
-                    })
-                    .expect("expecting to have selected part quotes")
-            })
-            .collect::<Vec<PartQuote>>();
-
-        selected_part_quotes
-            .into_iter()
-            .fold(Money::default(), |mut money, part_quote| {
-                money.amount += part_quote.sub_total.amount;
-                money
-            })
+        Ok(UpdateSelectedPartQuoteResponse { part })
     }
 }

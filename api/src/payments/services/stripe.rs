@@ -83,10 +83,7 @@ impl StripePaymentsProcessor {
                     currency: Currency::MXN,
                     product: None,
                     product_data: Some(CreateCheckoutSessionLineItemsPriceDataProductData {
-                        description: Some(format!(
-                            "Process: {} / Material: {} / Tolerance: {}",
-                            part.process, part.material, part.tolerance
-                        )),
+                        description: Some(part.attributes.to_string()),
                         images: Some(vec![
                             "https://cdn.dribbble.com/userupload/11259598/file/original-70a5fe9cc326f004bb78e36ee5e9d8a7.png?resize=100x".to_string()
                         ]),

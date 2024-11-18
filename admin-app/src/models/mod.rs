@@ -1,5 +1,5 @@
 use api_boundary::common::file::File;
-use api_boundary::parts::models::Part;
+use api_boundary::parts::models::{Part, PartAttributes, PartProcess};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ReactivePart {
@@ -9,9 +9,8 @@ pub struct ReactivePart {
     pub quotation_id: String,
     pub model_file: File,
     pub drawing_file: Option<File>,
-    pub process: String,
-    pub material: String,
-    pub tolerance: String,
+    pub process: PartProcess,
+    pub attributes: PartAttributes,
     pub quantity: u64,
 }
 
@@ -25,8 +24,7 @@ impl From<&Part> for ReactivePart {
             model_file: part.model_file.clone(),
             drawing_file: part.drawing_file.clone(),
             process: part.process.clone(),
-            material: part.material.clone(),
-            tolerance: part.tolerance.clone(),
+            attributes: part.attributes.clone(),
             quantity: part.quantity,
         }
     }

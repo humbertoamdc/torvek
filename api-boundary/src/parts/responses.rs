@@ -61,5 +61,4 @@ impl GetRenderFilePresignedUrlResponse {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateSelectedPartQuoteResponse {
     pub part: Part,
-    pub quotation_subtotal: Money,
 }
