@@ -16,6 +16,30 @@ selfservice:
   default_browser_return_url: http://127.0.0.1:8080/
   allowed_return_urls:
     - http://127.0.0.1:8080
+  flows:
+    registration:
+      after:
+        code:
+          hooks:
+            - hook: session
+        hooks: [ ]
+        oidc:
+          hooks:
+            - hook: session
+        passkey:
+          hooks:
+            - hook: session
+        password:
+          hooks:
+            - hook: session
+        webauthn:
+          hooks:
+            - hook: session
+      before:
+        hooks: [ ]
+      enable_legacy_one_step: true
+      login_hints: true
+      ui_url: http://127.0.0.1:4433/ui/registration
 
   methods:
     password:

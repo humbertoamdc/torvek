@@ -1,22 +1,23 @@
 use api_boundary::common::error::Error;
 use axum::async_trait;
+use std::sync::Arc;
 
 use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 
 use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::domain::requests::CreateCheckoutSessionRequest;
-use crate::payments::services::stripe::StripePaymentsProcessor;
+use crate::services::payment_processor::PaymentsProcessor;
 use crate::shared::{Result, UseCase};
 
 pub struct CreateCheckoutSessionUseCase {
-    payments_processor: StripePaymentsProcessor,
+    payments_processor: Arc<dyn PaymentsProcessor>,
     query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
 }
 
 impl CreateCheckoutSessionUseCase {
     pub const fn new(
-        payments_processor: StripePaymentsProcessor,
+        payments_processor: Arc<dyn PaymentsProcessor>,
         query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
     ) -> Self {
         Self {

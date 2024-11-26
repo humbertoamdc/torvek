@@ -2,6 +2,7 @@ use std::env;
 use std::sync::Arc;
 
 use aws_config::{BehaviorVersion, SdkConfig};
+use http::header::AUTHORIZATION;
 use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use stripe::Client;
@@ -14,7 +15,6 @@ use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::parts::services::part_quotes_creation_dynamodb::DynamodbParQuotesCreation;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::payments::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
-use crate::payments::services::stripe::StripePaymentsProcessor;
 use crate::repositories::orders::OrdersRepository;
 use crate::repositories::orders_dynamodb::DynamodbOrders;
 use crate::repositories::parts::PartsRepository;
@@ -23,6 +23,8 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::repositories::quotations_dynamodb::DynamodbQuotations;
+use crate::services::payment_processor::PaymentsProcessor;
+use crate::services::stripe::Stripe;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -67,7 +69,7 @@ pub struct AppStateParts {
 #[derive(Clone)]
 pub struct AppStatePayments {
     pub webhook_secret: String,
-    pub payments_processor: StripePaymentsProcessor,
+    pub payments_processor: Arc<dyn PaymentsProcessor>,
     pub orders_creation_service: Arc<dyn OrdersCreationService>,
 }
 
@@ -223,11 +225,23 @@ impl AppStatePayments {
 
         // Clients
         let client = Client::new(&config.payments.secret_key);
+        let mut headers_map = HeaderMap::new();
+        headers_map.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&format!("Bearer {}", config.payments.secret_key)).unwrap(),
+        );
+        let files_client = reqwest::Client::builder()
+            .default_headers(headers_map)
+            .build()
+            .expect("error while creating files client");
         let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services
-        let payments_processor =
-            StripePaymentsProcessor::new(client, config.payments.success_url.clone());
+        let payments_processor = Arc::new(Stripe::new(
+            client,
+            files_client,
+            config.payments.success_url.clone(),
+        ));
 
         let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
             dynamodb_client,

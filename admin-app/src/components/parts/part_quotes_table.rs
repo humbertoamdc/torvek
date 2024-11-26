@@ -89,6 +89,7 @@ pub fn PartQuotesTable(
                         unit_price,
                         sub_total,
                         deadline: deadline.get_untracked().unwrap(),
+                        quantity: part.quantity,
                     });
                 });
         });

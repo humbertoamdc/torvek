@@ -19,7 +19,6 @@ mod parts;
 mod payments;
 mod projects;
 mod quotations;
-
 mod repositories;
 mod services;
 mod shared;

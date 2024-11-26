@@ -32,7 +32,7 @@ impl DynamodbParQuotesCreation {
 
 #[async_trait]
 impl PartQuotesCreation for DynamodbParQuotesCreation {
-    async fn create_part_quotes_and_update_quotation_status(
+    async fn create_part_quotes_and_update_quotation(
         &self,
         project_id: String,
         quotation_id: String,
@@ -86,16 +86,17 @@ impl DynamodbParQuotesCreation {
                         (String::from("project_id"), AttributeValue::S(project_id)),
                         (String::from("id"), AttributeValue::S(quotation_id)),
                     ])))
-                    .update_expression(
-                        "SET #status = :pendingPaymentStatus, updated_at = :updated_at",
-                    )
+                    .update_expression(format!(
+                        "SET {}, {}",
+                        "#status = :pending_payment_status", "updated_at = :updated_at"
+                    ))
                     .set_expression_attribute_names(Some(HashMap::from([(
                         String::from("#status"),
                         String::from("status"),
                     )])))
                     .set_expression_attribute_values(Some(HashMap::from([
                         (
-                            String::from(":pendingPaymentStatus"),
+                            String::from(":pending_payment_status"),
                             AttributeValue::S(QuotationStatus::PendingPayment.to_string()),
                         ),
                         (

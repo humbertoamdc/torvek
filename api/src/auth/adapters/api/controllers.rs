@@ -29,7 +29,10 @@ pub async fn register_client(
     State(app_state): State<AppState>,
     Json(request): Json<RegisterClientRequest>,
 ) -> impl IntoResponse {
-    let usecase = RegisterClientUseCase::new(app_state.auth.identity_manager);
+    let usecase = RegisterClientUseCase::new(
+        app_state.auth.identity_manager,
+        app_state.payments.payments_processor,
+    );
     let result = usecase.execute(request).await;
 
     match result {
