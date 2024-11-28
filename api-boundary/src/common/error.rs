@@ -7,6 +7,12 @@ use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("email is already in use")]
+    EmailTakenRegistrationError,
+    #[error("invalid credentials")]
+    InvalidCredentialsLoginError,
+    #[error("password has been found in data breaches")]
+    BreachedPasswordRegistrationError,
     #[error("the request item doesn't exist")]
     ItemNotFoundError,
     #[error("no quote selected for part with id `{0}`")]
@@ -28,6 +34,30 @@ pub enum Error {
 impl IntoError for Error {
     fn into_error_response(self) -> (StatusCode, Json<ApiError>) {
         let (status_code, api_error) = match self {
+            EmailTakenRegistrationError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: EmailTakenRegistrationError.to_string(),
+                },
+            ),
+            InvalidCredentialsLoginError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: InvalidCredentialsLoginError.to_string(),
+                },
+            ),
+            BreachedPasswordRegistrationError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: BreachedPasswordRegistrationError.to_string(),
+                },
+            ),
             ItemNotFoundError => (
                 StatusCode::NOT_FOUND,
                 ApiError {

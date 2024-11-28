@@ -4,11 +4,12 @@ use axum::async_trait;
 
 use crate::auth::adapters::api::requests::RegisterClientRequest;
 use crate::auth::application::services::identity_manager::IdentityManager;
-use crate::auth::application::usecases::interfaces::UseCase;
-use crate::auth::domain::errors::AuthError;
 use crate::auth::domain::session::{MetadataAdmin, SessionWithToken};
 use crate::auth::domain::user::UserRole;
 use crate::services::payment_processor::PaymentsProcessor;
+use crate::shared;
+use shared::Result;
+use shared::UseCase;
 
 pub struct RegisterClientUseCase {
     identity_manager: Arc<dyn IdentityManager>,
@@ -28,8 +29,8 @@ impl RegisterClientUseCase {
 }
 
 #[async_trait]
-impl UseCase<RegisterClientRequest, SessionWithToken, AuthError> for RegisterClientUseCase {
-    async fn execute(&self, request: RegisterClientRequest) -> Result<SessionWithToken, AuthError> {
+impl UseCase<RegisterClientRequest, SessionWithToken> for RegisterClientUseCase {
+    async fn execute(&self, request: RegisterClientRequest) -> Result<SessionWithToken> {
         let mut session_with_token = self.identity_manager.register_user(request.clone()).await?;
         let identity = self
             .identity_manager
@@ -41,8 +42,7 @@ impl UseCase<RegisterClientRequest, SessionWithToken, AuthError> for RegisterCli
         let stripe_customer = self
             .payments_processor
             .create_customer(request.name, request.email)
-            .await
-            .map_err(|_| AuthError::UnknownError)?;
+            .await?;
 
         let admin_metadata = MetadataAdmin {
             stripe_customer_id: stripe_customer.id.to_string(),

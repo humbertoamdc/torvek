@@ -3,8 +3,9 @@ use std::sync::Arc;
 use axum::async_trait;
 
 use crate::auth::application::services::identity_manager::IdentityManager;
-use crate::auth::application::usecases::interfaces::UseCase;
-use crate::auth::domain::errors::AuthError;
+use crate::shared;
+use shared::Result;
+use shared::UseCase;
 
 pub struct LogoutClientUseCase {
     identity_manager: Arc<dyn IdentityManager>,
@@ -17,8 +18,8 @@ impl LogoutClientUseCase {
 }
 
 #[async_trait]
-impl UseCase<String, (), AuthError> for LogoutClientUseCase {
-    async fn execute(&self, session_token: String) -> Result<(), AuthError> {
+impl UseCase<String, ()> for LogoutClientUseCase {
+    async fn execute(&self, session_token: String) -> Result<()> {
         self.identity_manager.logout_user(session_token).await
     }
 }

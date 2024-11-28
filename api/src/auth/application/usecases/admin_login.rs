@@ -4,9 +4,10 @@ use axum::async_trait;
 
 use crate::auth::adapters::api::requests::AdminLoginRequest;
 use crate::auth::application::services::identity_manager::AdminIdentityManager;
-use crate::auth::application::usecases::interfaces::UseCase;
-use crate::auth::domain::errors::AuthError;
 use crate::auth::domain::session::SessionWithToken;
+use crate::shared;
+use shared::Result;
+use shared::UseCase;
 
 pub struct AdminLoginUseCase {
     admin_identity_manager: Arc<dyn AdminIdentityManager>,
@@ -21,8 +22,8 @@ impl AdminLoginUseCase {
 }
 
 #[async_trait]
-impl UseCase<AdminLoginRequest, SessionWithToken, AuthError> for AdminLoginUseCase {
-    async fn execute(&self, request: AdminLoginRequest) -> Result<SessionWithToken, AuthError> {
+impl UseCase<AdminLoginRequest, SessionWithToken> for AdminLoginUseCase {
+    async fn execute(&self, request: AdminLoginRequest) -> Result<SessionWithToken> {
         self.admin_identity_manager.login_admin(request).await
     }
 }
