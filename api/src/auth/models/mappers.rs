@@ -1,5 +1,5 @@
-use crate::auth::adapters::api::responses::GetSessionResponse;
-use crate::auth::domain::session::Session;
+use crate::auth::models::responses::GetSessionResponse;
+use crate::auth::models::session::Session;
 
 pub struct GetSessionResponseMapper {}
 

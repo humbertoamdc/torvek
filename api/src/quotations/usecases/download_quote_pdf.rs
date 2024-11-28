@@ -1,7 +1,7 @@
-use crate::auth::application::services::identity_manager::IdentityManager;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
-use crate::services::payment_processor::{PaymentsProcessor, PriceData, QuoteLineItem};
+use crate::services::identity_manager::IdentityManager;
+use crate::services::stripe_client::{PriceData, QuoteLineItem, StripeClient};
 use crate::shared;
 use crate::shared::UseCase;
 use api_boundary::common::error::Error;
@@ -16,7 +16,7 @@ use std::sync::Arc;
 pub struct DownloadQuotePdfUseCase {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
-    payments_processor: Arc<dyn PaymentsProcessor>,
+    stripe_client: Arc<dyn StripeClient>,
     identity_manager: Arc<dyn IdentityManager>,
 }
 
@@ -24,13 +24,13 @@ impl DownloadQuotePdfUseCase {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
-        payments_processor: Arc<dyn PaymentsProcessor>,
+        stripe_client: Arc<dyn StripeClient>,
         identity_manager: Arc<dyn IdentityManager>,
     ) -> Self {
         Self {
             parts_repository,
             quotations_repository,
-            payments_processor,
+            stripe_client,
             identity_manager,
         }
     }
@@ -68,17 +68,15 @@ impl UseCase<DownloadQuotePdfRequest, Bytes> for DownloadQuotePdfUseCase {
             .stripe_customer_id;
 
         let stripe_quote = self
-            .payments_processor
+            .stripe_client
             .create_quote(stripe_customer_id, quote_line_items)
             .await?;
 
-        self.payments_processor
+        self.stripe_client
             .finalize_quote(stripe_quote.id.clone())
             .await?;
 
-        self.payments_processor
-            .download_quote_pdf(stripe_quote.id)
-            .await
+        self.stripe_client.download_quote_pdf(stripe_quote.id).await
     }
 }
 

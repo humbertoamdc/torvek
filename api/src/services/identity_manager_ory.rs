@@ -1,10 +1,6 @@
-use crate::auth::adapters::api::requests::{LoginClientRequest, RegisterClientRequest};
-use crate::auth::adapters::spi::identity_manager::ory_mappers::{
-    OryLoginRequestMapper, OryLogoutRequestMapper, OryRegisterRequestMapper,
-};
-use crate::auth::application::services::identity_manager::IdentityManager;
-use crate::auth::domain::session::{Identity, MetadataAdmin, Session, SessionWithToken};
-use crate::auth::domain::user::UserRole;
+use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
+use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
+use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use api_boundary::common::error::Error;
 use axum::async_trait;
@@ -15,7 +11,11 @@ use ory_kratos_client::apis::frontend_api::{
 };
 use ory_kratos_client::apis::identity_api::{get_identity, patch_identity};
 use ory_kratos_client::models::ui_text::TypeEnum;
-use ory_kratos_client::models::{JsonPatch, LoginFlow, RegistrationFlow, UiText};
+use ory_kratos_client::models::UpdateLoginFlowBody::UpdateLoginFlowWithPasswordMethod;
+use ory_kratos_client::models::UpdateRegistrationFlowBody::UpdateRegistrationFlowWithPasswordMethod;
+use ory_kratos_client::models::{
+    JsonPatch, LoginFlow, PerformNativeLogoutBody, RegistrationFlow, UiText,
+};
 use serde_json::json;
 use shared::Result;
 
@@ -63,11 +63,8 @@ impl IdentityManager for OryIdentityManager {
     }
 
     async fn logout_user(&self, session_token: String) -> Result<()> {
-        let response = perform_native_logout(
-            &self.config,
-            &OryLogoutRequestMapper::api_to_spi(session_token),
-        )
-        .await;
+        let request = PerformNativeLogoutBody { session_token };
+        let response = perform_native_logout(&self.config, &request).await;
 
         match response {
             Ok(_) => Ok(()),
@@ -106,30 +103,6 @@ impl IdentityManager for OryIdentityManager {
                 tracing::info!("Identity: {:?}", identity);
                 Ok(identity)
             }
-            Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
-
-    async fn set_user_role(&self, identity_id: &str, role: UserRole) -> Result<Identity> {
-        let patches = vec![JsonPatch {
-            from: None,
-            op: String::from("add"),
-            path: String::from("/metadata_public"),
-            value: Some(json!({"user": {"role": role}})),
-        }];
-
-        let response = patch_identity(&self.config, identity_id, Some(patches)).await;
-
-        match response {
-            Ok(ory_identity) => {
-                let serialized = serde_json::to_string(&ory_identity).unwrap();
-                let identity = serde_json::from_str::<Identity>(&serialized).unwrap();
-                Ok(identity)
-            }
-            // TODO: Handle error.
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)
@@ -184,13 +157,14 @@ impl OryIdentityManager {
         flow_id: &str,
         request: RegisterClientRequest,
     ) -> Result<SessionWithToken> {
-        let response = update_registration_flow(
-            &self.config,
-            flow_id,
-            &OryRegisterRequestMapper::api_to_spi(request),
-            None,
-        )
-        .await;
+        let request = UpdateRegistrationFlowWithPasswordMethod {
+            csrf_token: None,
+            password: request.password,
+            traits: json!({"email": request.email }),
+            transient_payload: None,
+        };
+
+        let response = update_registration_flow(&self.config, flow_id, &request, None).await;
 
         match response {
             Ok(successful_native_registration) => {
@@ -240,14 +214,14 @@ impl OryIdentityManager {
         flow_id: &str,
         request: LoginClientRequest,
     ) -> Result<SessionWithToken> {
-        let response = update_login_flow(
-            &self.config,
-            flow_id,
-            &OryLoginRequestMapper::api_to_spi(request),
-            None,
-            None,
-        )
-        .await;
+        let request = UpdateLoginFlowWithPasswordMethod {
+            csrf_token: None,
+            identifier: request.email,
+            password: request.password,
+            password_identifier: None,
+        };
+
+        let response = update_login_flow(&self.config, flow_id, &request, None, None).await;
 
         match response {
             Ok(successful_native_login) => {

@@ -1,15 +1,13 @@
 use crate::app_state::AppState;
-use crate::auth::adapters::api::mappers::GetSessionResponseMapper;
-use crate::auth::adapters::api::requests::{
-    AdminLoginRequest, LoginClientRequest, RegisterClientRequest,
-};
-use crate::auth::application::usecases::admin_login::AdminLoginUseCase;
-use crate::auth::application::usecases::admin_logout::AdminLogoutUseCase;
-use crate::auth::application::usecases::get_admin_session::GetAdminSessionUseCase;
-use crate::auth::application::usecases::get_session::GetSessionUseCase;
-use crate::auth::application::usecases::login_client::LoginClientUseCase;
-use crate::auth::application::usecases::logout_client::LogoutClientUseCase;
-use crate::auth::application::usecases::register_client::RegisterClientUseCase;
+use crate::auth::models::mappers::GetSessionResponseMapper;
+use crate::auth::models::requests::{AdminLoginRequest, LoginClientRequest, RegisterClientRequest};
+use crate::auth::usecases::admin_login::AdminLoginUseCase;
+use crate::auth::usecases::admin_logout::AdminLogoutUseCase;
+use crate::auth::usecases::get_admin_session::GetAdminSessionUseCase;
+use crate::auth::usecases::get_session::GetSessionUseCase;
+use crate::auth::usecases::login_client::LoginClientUseCase;
+use crate::auth::usecases::logout_client::LogoutClientUseCase;
+use crate::auth::usecases::register_client::RegisterClientUseCase;
 use crate::shared::UseCase;
 use api_boundary::common::error::Error;
 use axum::extract::State;
@@ -30,7 +28,7 @@ pub async fn register_client(
 ) -> impl IntoResponse {
     let usecase = RegisterClientUseCase::new(
         app_state.auth.identity_manager,
-        app_state.payments.payments_processor,
+        app_state.payments.stripe_client,
     );
     let result = usecase.execute(request).await;
 

@@ -1,3 +1,7 @@
+use crate::auth::models::requests::AdminLoginRequest;
+use crate::auth::models::session::{Session, SessionWithToken};
+use crate::services::identity_manager::AdminIdentityManager;
+use crate::shared;
 use api_boundary::common::error::Error;
 use axum::async_trait;
 use ory_kratos_client::apis::configuration::Configuration;
@@ -6,15 +10,8 @@ use ory_kratos_client::apis::frontend_api::{
     UpdateLoginFlowError,
 };
 use ory_kratos_client::models::ui_text::TypeEnum;
-use ory_kratos_client::models::{LoginFlow, UiText};
-
-use crate::auth::adapters::api::requests::AdminLoginRequest;
-use crate::auth::adapters::spi::admin_identity_manager::ory_mappers::{
-    OryAdminLoginRequestMapper, OryAdminLogoutRequestMapper,
-};
-use crate::auth::application::services::identity_manager::AdminIdentityManager;
-use crate::auth::domain::session::{Session, SessionWithToken};
-use crate::shared;
+use ory_kratos_client::models::UpdateLoginFlowBody::UpdateLoginFlowWithPasswordMethod;
+use ory_kratos_client::models::{LoginFlow, PerformNativeLogoutBody, UiText};
 use shared::Result;
 
 #[derive(Clone)]
@@ -47,15 +44,12 @@ impl AdminIdentityManager for OryAdminIdentityManager {
     }
 
     async fn logout_admin(&self, session_token: String) -> Result<()> {
-        let response = perform_native_logout(
-            &self.config,
-            &OryAdminLogoutRequestMapper::api_to_spi(session_token),
-        )
-        .await;
+        let request = PerformNativeLogoutBody { session_token };
+
+        let response = perform_native_logout(&self.config, &request).await;
 
         match response {
             Ok(_) => Ok(()),
-            // TODO: Handle error.
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)
@@ -100,14 +94,14 @@ impl OryAdminIdentityManager {
         flow_id: &str,
         request: AdminLoginRequest,
     ) -> Result<SessionWithToken> {
-        let response = update_login_flow(
-            &self.config,
-            flow_id,
-            &OryAdminLoginRequestMapper::api_to_spi(request),
-            None,
-            None,
-        )
-        .await;
+        let request = UpdateLoginFlowWithPasswordMethod {
+            csrf_token: Some(request.csrf_token),
+            identifier: request.email,
+            password: request.password,
+            password_identifier: None,
+        };
+
+        let response = update_login_flow(&self.config, flow_id, &request, None, None).await;
 
         match response {
             Ok(successful_native_login) => {

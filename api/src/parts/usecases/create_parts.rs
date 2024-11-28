@@ -13,7 +13,7 @@ use api_boundary::quotations::models::QuotationStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
-use crate::services::payment_processor::PaymentsProcessor;
+use crate::services::stripe_client::StripeClient;
 use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
@@ -25,7 +25,7 @@ pub struct CreatePartsUseCase {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    payments_processor: Arc<dyn PaymentsProcessor>,
+    stripe_client: Arc<dyn StripeClient>,
 }
 
 impl CreatePartsUseCase {
@@ -33,13 +33,13 @@ impl CreatePartsUseCase {
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        payments_processor: Arc<dyn PaymentsProcessor>,
+        stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
         Self {
             parts_repository,
             quotations_repository,
             object_storage,
-            payments_processor,
+            stripe_client,
         }
     }
 }
@@ -111,7 +111,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
 
         for part in parts.iter_mut() {
             // Create stripe product.
-            self.payments_processor
+            self.stripe_client
                 .create_product(part.model_file.name.clone(), part.id.clone())
                 .await?;
         }

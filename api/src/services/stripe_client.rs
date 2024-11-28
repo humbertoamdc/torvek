@@ -7,7 +7,7 @@ use shared::Result;
 use stripe::{Currency, Customer};
 
 #[async_trait]
-pub trait PaymentsProcessor: Send + Sync + 'static {
+pub trait StripeClient: Send + Sync + 'static {
     async fn create_customer(&self, name: String, email: String) -> Result<Customer>;
     async fn create_product(&self, name: String, id: String) -> Result<()>;
     async fn create_quote(

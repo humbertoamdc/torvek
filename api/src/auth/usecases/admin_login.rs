@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use axum::async_trait;
 
-use crate::auth::adapters::api::requests::AdminLoginRequest;
-use crate::auth::application::services::identity_manager::AdminIdentityManager;
-use crate::auth::domain::session::SessionWithToken;
+use crate::auth::models::requests::AdminLoginRequest;
+use crate::auth::models::session::SessionWithToken;
+use crate::services::identity_manager::AdminIdentityManager;
 use crate::shared;
 use shared::Result;
 use shared::UseCase;

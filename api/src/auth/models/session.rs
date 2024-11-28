@@ -2,8 +2,6 @@ use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::auth::domain::user::User;
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SessionWithToken {
     #[serde(rename = "session_token")]
@@ -29,11 +27,6 @@ pub struct Identity {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Traits {
     pub email: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct MetadataPublic {
-    pub user: User,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

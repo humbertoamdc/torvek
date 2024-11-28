@@ -23,7 +23,7 @@ pub async fn create_checkout_session(
         app_state.parts.object_storage,
     );
     let usecase = CreateCheckoutSessionUseCase::new(
-        app_state.payments.payments_processor,
+        app_state.payments.stripe_client,
         query_parts_for_quotation_usecase,
     );
     let result = usecase.execute(request).await;

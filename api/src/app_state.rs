@@ -7,9 +7,6 @@ use reqwest::header::ACCEPT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use stripe::Client;
 
-use crate::auth::adapters::spi::admin_identity_manager::ory::OryAdminIdentityManager;
-use crate::auth::adapters::spi::identity_manager::ory::OryIdentityManager;
-use crate::auth::application::services::identity_manager::{AdminIdentityManager, IdentityManager};
 use crate::config::{Config, Environment};
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::parts::services::part_quotes_creation_dynamodb::DynamodbParQuotesCreation;
@@ -23,8 +20,11 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::repositories::quotations_dynamodb::DynamodbQuotations;
-use crate::services::payment_processor::PaymentsProcessor;
+use crate::services::admin_identity_manager_ory::OryAdminIdentityManager;
+use crate::services::identity_manager::{AdminIdentityManager, IdentityManager};
+use crate::services::identity_manager_ory::OryIdentityManager;
 use crate::services::stripe::Stripe;
+use crate::services::stripe_client::StripeClient;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -69,7 +69,7 @@ pub struct AppStateParts {
 #[derive(Clone)]
 pub struct AppStatePayments {
     pub webhook_secret: String,
-    pub payments_processor: Arc<dyn PaymentsProcessor>,
+    pub stripe_client: Arc<dyn StripeClient>,
     pub orders_creation_service: Arc<dyn OrdersCreationService>,
 }
 
@@ -237,7 +237,7 @@ impl AppStatePayments {
         let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services
-        let payments_processor = Arc::new(Stripe::new(
+        let stripe_client = Arc::new(Stripe::new(
             client,
             files_client,
             config.payments.success_url.clone(),
@@ -252,7 +252,7 @@ impl AppStatePayments {
 
         Self {
             webhook_secret: config.payments.webhook_secret.clone(),
-            payments_processor,
+            stripe_client,
             orders_creation_service,
         }
     }

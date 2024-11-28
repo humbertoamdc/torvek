@@ -1,4 +1,4 @@
-use crate::services::payment_processor::{PaymentsProcessor, Quote, QuoteLineItem, StripeQuote};
+use crate::services::stripe_client::{Quote, QuoteLineItem, StripeClient, StripeQuote};
 use crate::shared;
 use api_boundary::common::error::Error;
 use api_boundary::parts::models::Part;
@@ -37,7 +37,7 @@ impl Stripe {
 }
 
 #[async_trait]
-impl PaymentsProcessor for Stripe {
+impl StripeClient for Stripe {
     async fn create_customer(&self, name: String, email: String) -> Result<Customer> {
         let mut create_customer = CreateCustomer::new();
         create_customer.name = Some(&name);

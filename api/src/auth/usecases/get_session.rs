@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use axum::async_trait;
 
-use crate::auth::application::services::identity_manager::IdentityManager;
-use crate::auth::domain::session::Session;
+use crate::auth::models::session::Session;
+use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use shared::Result;
 use shared::UseCase;

@@ -60,7 +60,7 @@ pub async fn create_parts(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
         app_state.parts.object_storage,
-        app_state.payments.payments_processor,
+        app_state.payments.stripe_client,
     );
     let result = usecase.execute(request).await;
 

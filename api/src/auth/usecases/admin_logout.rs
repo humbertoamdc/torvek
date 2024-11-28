@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::async_trait;
 
-use crate::auth::application::services::identity_manager::AdminIdentityManager;
+use crate::services::identity_manager::AdminIdentityManager;
 use crate::shared;
 use shared::Result;
 use shared::UseCase;

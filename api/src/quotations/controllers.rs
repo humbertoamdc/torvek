@@ -146,7 +146,7 @@ pub async fn download_pdf_quote(
     let usecase = DownloadQuotePdfUseCase::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
-        app_state.payments.payments_processor,
+        app_state.payments.stripe_client,
         app_state.auth.identity_manager,
     );
     let result = usecase.execute(request).await;
