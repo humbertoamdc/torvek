@@ -100,7 +100,6 @@ impl IdentityManager for OryIdentityManager {
             Ok(identity) => {
                 let serialized = serde_json::to_string(&identity).unwrap();
                 let identity = serde_json::from_str::<Identity>(&serialized).unwrap();
-                tracing::info!("Identity: {:?}", identity);
                 Ok(identity)
             }
             Err(err) => {

@@ -107,10 +107,6 @@ async fn run_local(app: Router<AppState>) {
 
 async fn run_lambda(app: Router<AppState>) {
     // Constants
-    tracing::info!(
-        "running lambda on {}",
-        env::var("ENV").unwrap_or(String::from("no env"))
-    );
     let (config_bucket, config_key) = match env::var("ENV").unwrap_or(String::from("prod")).as_str()
     {
         "prod" => (CONFIG_BUCKET_PROD, CONFIG_KEY_PROD),

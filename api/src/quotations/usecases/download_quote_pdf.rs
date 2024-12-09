@@ -39,20 +39,15 @@ impl DownloadQuotePdfUseCase {
 #[async_trait]
 impl UseCase<DownloadQuotePdfRequest, Bytes> for DownloadQuotePdfUseCase {
     async fn execute(&self, request: DownloadQuotePdfRequest) -> crate::shared::Result<Bytes> {
-        // TODO: Move auth errors to common error enum.
         let session = self
             .identity_manager
             .get_session(request.session_id.clone())
-            .await
-            .map_err(|_| Error::UnknownError)?;
+            .await?;
 
         let identity = self
             .identity_manager
             .get_identity(session.identity.clone().id)
-            .await
-            .map_err(|_| Error::UnknownError)?;
-
-        tracing::info!("{session:#?}");
+            .await?;
 
         self.check_quote_status(request.project_id, request.quotation_id.clone())
             .await?;
