@@ -202,7 +202,7 @@ impl OryIdentityManager {
         match response {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
-                tracing::error!("{:#?}", err);
+                tracing::error!("{:?}", err);
                 Err(Error::UnknownError)
             }
         }
@@ -252,7 +252,7 @@ impl OryIdentityManager {
     }
 
     fn match_error(error_messages: &Vec<UiText>) -> Error {
-        tracing::error!("{error_messages:#?}");
+        tracing::error!("{error_messages:?}");
         // TODO: Map error ids to a custom enum.
         match Self::extract_error_id(&error_messages) {
             4000006 => Error::InvalidCredentialsLoginError,
