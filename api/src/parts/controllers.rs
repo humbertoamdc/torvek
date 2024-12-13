@@ -21,7 +21,6 @@ use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUse
 use crate::parts::usecases::update_part::UpdatePartUseCase;
 use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuoteUseCase;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::shared::UseCase;
 
 pub async fn admin_create_part_quotes(
@@ -57,12 +56,11 @@ pub async fn create_parts(
     State(app_state): State<AppState>,
     Json(request): Json<CreatePartsRequest>,
 ) -> impl IntoResponse {
-    let update_quotation_status_usecase =
-        UpdateQuotationStatusUseCase::new(app_state.quotations.quotations_repository);
     let usecase = CreatePartsUseCase::new(
         app_state.parts.parts_repository,
+        app_state.quotations.quotations_repository,
         app_state.parts.object_storage,
-        update_quotation_status_usecase,
+        app_state.payments.stripe_client,
     );
     let result = usecase.execute(request).await;
 

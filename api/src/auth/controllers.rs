@@ -1,3 +1,15 @@
+use crate::app_state::AppState;
+use crate::auth::models::mappers::GetSessionResponseMapper;
+use crate::auth::models::requests::{AdminLoginRequest, LoginClientRequest, RegisterClientRequest};
+use crate::auth::usecases::admin_login::AdminLoginUseCase;
+use crate::auth::usecases::admin_logout::AdminLogoutUseCase;
+use crate::auth::usecases::get_admin_session::GetAdminSessionUseCase;
+use crate::auth::usecases::get_session::GetSessionUseCase;
+use crate::auth::usecases::login_client::LoginClientUseCase;
+use crate::auth::usecases::logout_client::LogoutClientUseCase;
+use crate::auth::usecases::register_client::RegisterClientUseCase;
+use crate::shared::UseCase;
+use api_boundary::common::error::Error;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -5,21 +17,6 @@ use axum::Json;
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
 use cookie::time::OffsetDateTime;
-
-use crate::app_state::AppState;
-use crate::auth::adapters::api::mappers::GetSessionResponseMapper;
-use crate::auth::adapters::api::requests::{
-    AdminLoginRequest, LoginClientRequest, RegisterClientRequest,
-};
-use crate::auth::application::usecases::admin_login::AdminLoginUseCase;
-use crate::auth::application::usecases::admin_logout::AdminLogoutUseCase;
-use crate::auth::application::usecases::get_admin_session::GetAdminSessionUseCase;
-use crate::auth::application::usecases::get_session::GetSessionUseCase;
-use crate::auth::application::usecases::interfaces::UseCase;
-use crate::auth::application::usecases::login_client::LoginClientUseCase;
-use crate::auth::application::usecases::logout_client::LogoutClientUseCase;
-use crate::auth::application::usecases::register_client::RegisterClientUseCase;
-use crate::auth::domain::errors::AuthError;
 
 static CUSTOMER_SESSION_TOKEN: &'static str = "customer_session_token";
 static ADMIN_SESSION_TOKEN: &'static str = "admin_session_token";
@@ -29,7 +26,10 @@ pub async fn register_client(
     State(app_state): State<AppState>,
     Json(request): Json<RegisterClientRequest>,
 ) -> impl IntoResponse {
-    let usecase = RegisterClientUseCase::new(app_state.auth.identity_manager);
+    let usecase = RegisterClientUseCase::new(
+        app_state.auth.identity_manager,
+        app_state.payments.stripe_client,
+    );
     let result = usecase.execute(request).await;
 
     match result {
@@ -83,7 +83,7 @@ pub async fn get_session(
 
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
-        None => Err(AuthError::UnknownError),
+        None => Err(Error::UnknownError),
     };
 
     match result {
@@ -109,7 +109,7 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
         // TODO: Handle error.
-        None => Err(AuthError::UnknownError),
+        None => Err(Error::UnknownError),
     };
 
     match result {
@@ -121,7 +121,7 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
 
             (StatusCode::NO_CONTENT, cookies.add(cookie))
         }
-        Err(_) => (StatusCode::BAD_REQUEST, CookieJar::new()),
+        Err(_) => (StatusCode::UNAUTHORIZED, CookieJar::new()),
     }
 }
 
@@ -159,7 +159,7 @@ pub async fn get_admin_session(
 
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
-        None => Err(AuthError::UnknownError),
+        None => Err(Error::UnknownError),
     };
 
     match result {
@@ -188,7 +188,7 @@ pub async fn admin_logout(
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
         // TODO: Handle error.
-        None => Err(AuthError::UnknownError),
+        None => Err(Error::UnknownError),
     };
 
     match result {

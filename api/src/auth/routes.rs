@@ -3,7 +3,7 @@ use axum::routing::post;
 use axum::Router;
 
 use crate::app_state::AppState;
-use crate::auth::adapters::api::controllers::{
+use crate::auth::controllers::{
     admin_login, admin_logout, get_admin_session, get_session, login, logout, register_client,
 };
 

@@ -7,6 +7,12 @@ use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("email is already in use")]
+    EmailTakenRegistrationError,
+    #[error("invalid credentials")]
+    InvalidCredentialsLoginError,
+    #[error("password has been found in data breaches")]
+    BreachedPasswordRegistrationError,
     #[error("the request item doesn't exist")]
     ItemNotFoundError,
     #[error("no quote selected for part with id `{0}`")]
@@ -19,6 +25,8 @@ pub enum Error {
     DeleteLockedProject,
     #[error("cannot delete a quote that has been payed for")]
     DeletePayedQuotation,
+    #[error("a pdf quote can't be generated the because parts haven't been quoted yet")]
+    NoPdfQuoteAvailable,
     #[error("an unexpected error occurred")]
     UnknownError,
 }
@@ -26,6 +34,38 @@ pub enum Error {
 impl IntoError for Error {
     fn into_error_response(self) -> (StatusCode, Json<ApiError>) {
         let (status_code, api_error) = match self {
+            EmailTakenRegistrationError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: EmailTakenRegistrationError.to_string(),
+                },
+            ),
+            InvalidCredentialsLoginError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: InvalidCredentialsLoginError.to_string(),
+                },
+            ),
+            BreachedPasswordRegistrationError => (
+                StatusCode::UNPROCESSABLE_ENTITY,
+                ApiError {
+                    status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: BreachedPasswordRegistrationError.to_string(),
+                },
+            ),
+            ItemNotFoundError => (
+                StatusCode::NOT_FOUND,
+                ApiError {
+                    status_code: StatusCode::NOT_FOUND.as_u16(),
+                    code: ErrorCode::MissingUserInput,
+                    message: ItemNotFoundError.to_string(),
+                },
+            ),
             NoSelectedQuoteAvailableForPart(message) => (
                 StatusCode::BAD_REQUEST,
                 ApiError {
@@ -66,10 +106,18 @@ impl IntoError for Error {
                     message: DeletePayedQuotation.to_string(),
                 },
             ),
+            NoPdfQuoteAvailable => (
+                StatusCode::BAD_REQUEST,
+                ApiError {
+                    status_code: StatusCode::BAD_REQUEST.as_u16(),
+                    code: ErrorCode::ItemNotFound,
+                    message: NoPdfQuoteAvailable.to_string(),
+                },
+            ),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ApiError::default()),
         };
 
-        (status_code, Json(api_error.into()))
+        (status_code, Json(api_error))
     }
 }
 

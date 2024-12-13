@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use api_boundary::common::error::Error;
 use axum::async_trait;
 use uuid::{ContextV7, Timestamp, Uuid};
 
@@ -10,11 +9,11 @@ use api_boundary::parts::models::{CNCAttributes, Part, PartAttributes, PartProce
 use api_boundary::parts::requests::CreatePartsRequest;
 use api_boundary::parts::responses::CreatePartsResponse;
 use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 
-use crate::quotations::usecases::update_quotation_status::UpdateQuotationStatusUseCase;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
+use crate::services::stripe_client::StripeClient;
 use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
@@ -24,20 +23,23 @@ static RENDER_FILE_FORMAT: &'static str = ".stl";
 
 pub struct CreatePartsUseCase {
     parts_repository: Arc<dyn PartsRepository>,
+    quotations_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    update_quotation_status_usecase: UpdateQuotationStatusUseCase,
+    stripe_client: Arc<dyn StripeClient>,
 }
 
 impl CreatePartsUseCase {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
+        quotations_repository: Arc<dyn QuotationsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        update_quotation_status_usecase: UpdateQuotationStatusUseCase,
+        stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
         Self {
             parts_repository,
+            quotations_repository,
             object_storage,
-            update_quotation_status_usecase,
+            stripe_client,
         }
     }
 }
@@ -46,7 +48,6 @@ impl CreatePartsUseCase {
 impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
     async fn execute(&self, request: CreatePartsRequest) -> Result<CreatePartsResponse> {
         let file_ids = (0..request.file_names.len())
-            .into_iter()
             .map(|_| {
                 let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
                 let encoded_id = format!("file_{}", bs58::encode(id).into_string());
@@ -81,7 +82,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
             )
             .await?;
 
-        let parts = original_presigned_urls
+        let mut parts: Vec<Part> = original_presigned_urls
             .iter()
             .zip(render_presigned_urls)
             .enumerate()
@@ -108,16 +109,20 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
             })
             .collect();
 
-        let update_quotation_status_request = UpdateQuotationStatusRequest {
-            project_id: request.project_id,
-            quotation_id: request.quotation_id,
-            status: QuotationStatus::Created,
-        };
+        for part in parts.iter_mut() {
+            // Create stripe product.
+            self.stripe_client
+                .create_product(part.model_file.name.clone(), part.id.clone())
+                .await?;
+        }
 
-        self.update_quotation_status_usecase
-            .execute(update_quotation_status_request)
-            .await
-            .map_err(|_| Error::UnknownError)?;
+        self.quotations_repository
+            .update_quotation_status(
+                request.project_id,
+                request.quotation_id,
+                QuotationStatus::Created,
+            )
+            .await?;
 
         self.parts_repository.create_parts(parts).await?;
 

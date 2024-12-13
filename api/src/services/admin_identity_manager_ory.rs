@@ -1,20 +1,18 @@
+use crate::auth::models::requests::AdminLoginRequest;
+use crate::auth::models::session::{Session, SessionWithToken};
+use crate::services::identity_manager::AdminIdentityManager;
+use crate::shared;
+use api_boundary::common::error::Error;
 use axum::async_trait;
 use ory_kratos_client::apis::configuration::Configuration;
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, perform_native_logout, to_session, update_login_flow,
     UpdateLoginFlowError,
 };
-use ory_kratos_client::apis::Error;
 use ory_kratos_client::models::ui_text::TypeEnum;
-use ory_kratos_client::models::{LoginFlow, UiText};
-
-use crate::auth::adapters::api::requests::AdminLoginRequest;
-use crate::auth::adapters::spi::admin_identity_manager::ory_mappers::{
-    OryAdminLoginRequestMapper, OryAdminLogoutRequestMapper,
-};
-use crate::auth::application::services::identity_manager::AdminIdentityManager;
-use crate::auth::domain::errors::AuthError;
-use crate::auth::domain::session::{Session, SessionWithToken};
+use ory_kratos_client::models::UpdateLoginFlowBody::UpdateLoginFlowWithPasswordMethod;
+use ory_kratos_client::models::{LoginFlow, PerformNativeLogoutBody, UiText};
+use shared::Result;
 
 #[derive(Clone)]
 pub struct OryAdminIdentityManager {
@@ -39,30 +37,27 @@ impl OryAdminIdentityManager {
 
 #[async_trait]
 impl AdminIdentityManager for OryAdminIdentityManager {
-    async fn login_admin(&self, request: AdminLoginRequest) -> Result<SessionWithToken, AuthError> {
+    async fn login_admin(&self, request: AdminLoginRequest) -> Result<SessionWithToken> {
         let login_flow = self.init_admin_login_flow().await?;
 
         self.execute_admin_login_flow(&login_flow.id, request).await
     }
 
-    async fn logout_admin(&self, session_token: String) -> Result<(), AuthError> {
-        let response = perform_native_logout(
-            &self.config,
-            &OryAdminLogoutRequestMapper::api_to_spi(session_token),
-        )
-        .await;
+    async fn logout_admin(&self, session_token: String) -> Result<()> {
+        let request = PerformNativeLogoutBody { session_token };
+
+        let response = perform_native_logout(&self.config, &request).await;
 
         match response {
             Ok(_) => Ok(()),
-            // TODO: Handle error.
             Err(err) => {
                 tracing::error!("{err:?}");
-                Err(AuthError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 
-    async fn get_admin_session(&self, session_token: String) -> Result<Session, AuthError> {
+    async fn get_admin_session(&self, session_token: String) -> Result<Session> {
         let response = to_session(&self.config, Some(&session_token), None, None).await;
 
         match response {
@@ -74,14 +69,14 @@ impl AdminIdentityManager for OryAdminIdentityManager {
             // TODO: Handle error.
             Err(err) => {
                 tracing::error!("{err:?}");
-                Err(AuthError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
 }
 
 impl OryAdminIdentityManager {
-    async fn init_admin_login_flow(&self) -> Result<LoginFlow, AuthError> {
+    async fn init_admin_login_flow(&self) -> Result<LoginFlow> {
         let response =
             create_native_login_flow(&self.config, None, None, None, None, None, None).await;
 
@@ -89,7 +84,7 @@ impl OryAdminIdentityManager {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
                 tracing::error!("{err:?}");
-                Err(AuthError::InitializingLoginFlowError)
+                Err(Error::UnknownError)
             }
         }
     }
@@ -98,15 +93,15 @@ impl OryAdminIdentityManager {
         &self,
         flow_id: &str,
         request: AdminLoginRequest,
-    ) -> Result<SessionWithToken, AuthError> {
-        let response = update_login_flow(
-            &self.config,
-            flow_id,
-            &OryAdminLoginRequestMapper::api_to_spi(request),
-            None,
-            None,
-        )
-        .await;
+    ) -> Result<SessionWithToken> {
+        let request = UpdateLoginFlowWithPasswordMethod {
+            csrf_token: Some(request.csrf_token),
+            identifier: request.email,
+            password: request.password,
+            password_identifier: None,
+        };
+
+        let response = update_login_flow(&self.config, flow_id, &request, None, None).await;
 
         match response {
             Ok(successful_native_login) => {
@@ -114,7 +109,7 @@ impl OryAdminIdentityManager {
                 let auth_session = serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
                 Ok(auth_session)
             }
-            Err(Error::ResponseError(response_content)) => {
+            Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
                 let error_messages = response_content
                     .entity
                     .map(|update_login_flow_error| {
@@ -132,16 +127,16 @@ impl OryAdminIdentityManager {
             }
             Err(err) => {
                 tracing::error!("{err:?}");
-                Err(AuthError::UnknownError)
+                Err(Error::UnknownError)
             }
         }
     }
-    fn match_error(error_messages: &Vec<UiText>) -> AuthError {
+    fn match_error(error_messages: &Vec<UiText>) -> Error {
         tracing::error!("{error_messages:#?}");
         // TODO: Map error ids to a custom enum.
         match Self::extract_error_id(&error_messages) {
-            4000006 => AuthError::InvalidCredentialsLoginError,
-            _ => AuthError::UnknownError,
+            4000006 => Error::InvalidCredentialsLoginError,
+            _ => Error::UnknownError,
         }
     }
 

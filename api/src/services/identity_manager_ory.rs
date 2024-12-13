@@ -1,23 +1,23 @@
+use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
+use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
+use crate::services::identity_manager::IdentityManager;
+use crate::shared;
+use api_boundary::common::error::Error;
 use axum::async_trait;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, create_native_registration_flow, perform_native_logout, to_session,
     update_login_flow, update_registration_flow, UpdateLoginFlowError, UpdateRegistrationFlowError,
 };
-use ory_kratos_client::apis::identity_api::patch_identity;
-use ory_kratos_client::apis::Error;
+use ory_kratos_client::apis::identity_api::{get_identity, patch_identity};
 use ory_kratos_client::models::ui_text::TypeEnum;
-use ory_kratos_client::models::{JsonPatch, LoginFlow, RegistrationFlow, UiText};
-use serde_json::json;
-
-use crate::auth::adapters::api::requests::{LoginClientRequest, RegisterClientRequest};
-use crate::auth::adapters::spi::identity_manager::ory_mappers::{
-    OryLoginRequestMapper, OryLogoutRequestMapper, OryRegisterRequestMapper,
+use ory_kratos_client::models::UpdateLoginFlowBody::UpdateLoginFlowWithPasswordMethod;
+use ory_kratos_client::models::UpdateRegistrationFlowBody::UpdateRegistrationFlowWithPasswordMethod;
+use ory_kratos_client::models::{
+    JsonPatch, LoginFlow, PerformNativeLogoutBody, RegistrationFlow, UiText,
 };
-use crate::auth::application::services::identity_manager::IdentityManager;
-use crate::auth::domain::errors::AuthError;
-use crate::auth::domain::session::{Identity, Session, SessionWithToken};
-use crate::auth::domain::user::UserRole;
+use serde_json::json;
+use shared::Result;
 
 #[derive(Clone)]
 pub struct OryIdentityManager {
@@ -47,10 +47,7 @@ impl OryIdentityManager {
 
 #[async_trait]
 impl IdentityManager for OryIdentityManager {
-    async fn register_user(
-        &self,
-        request: RegisterClientRequest,
-    ) -> Result<SessionWithToken, AuthError> {
+    async fn register_user(&self, request: RegisterClientRequest) -> Result<SessionWithToken> {
         // TODO: Handle errors and cases where user is already registered.
         let registration_flow = self.init_registration_flow().await?;
 
@@ -58,51 +55,70 @@ impl IdentityManager for OryIdentityManager {
             .await
     }
 
-    async fn login_user(&self, request: LoginClientRequest) -> Result<SessionWithToken, AuthError> {
+    async fn login_user(&self, request: LoginClientRequest) -> Result<SessionWithToken> {
         // TODO: Handle errors and cases where user is already registered.
         let login_flow = self.init_login_flow().await?;
 
         self.execute_login_flow(&login_flow.id, request).await
     }
 
-    async fn logout_user(&self, session_token: String) -> Result<(), AuthError> {
-        let response = perform_native_logout(
-            &self.config,
-            &OryLogoutRequestMapper::api_to_spi(session_token),
-        )
-        .await;
+    async fn logout_user(&self, session_token: String) -> Result<()> {
+        let request = PerformNativeLogoutBody { session_token };
+        let response = perform_native_logout(&self.config, &request).await;
 
         match response {
             Ok(_) => Ok(()),
             // TODO: Handle error.
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                tracing::error!("{}", err);
+                Err(Error::UnknownError)
+            }
         }
     }
 
-    async fn get_session(&self, session_token: String) -> Result<Session, AuthError> {
-        let response = to_session(&self.config, Some(&session_token), None, None).await;
+    async fn get_session(&self, session_token: String) -> Result<Session> {
+        let result = to_session(&self.config, Some(&session_token), None, None).await;
 
-        match response {
+        match result {
             Ok(session) => {
                 let serialized = serde_json::to_string(&session).unwrap();
                 let session = serde_json::from_str::<Session>(&serialized).unwrap();
                 Ok(session)
             }
             // TODO: Handle error.
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 
-    async fn set_user_role(
+    async fn get_identity(&self, identity_id: String) -> Result<Identity> {
+        let result = get_identity(&self.config, &identity_id, None).await;
+
+        match result {
+            Ok(identity) => {
+                let serialized = serde_json::to_string(&identity).unwrap();
+                let identity = serde_json::from_str::<Identity>(&serialized).unwrap();
+                Ok(identity)
+            }
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn update_admin_metadata(
         &self,
         identity_id: &str,
-        role: UserRole,
-    ) -> Result<Identity, AuthError> {
+        metadata: MetadataAdmin,
+    ) -> Result<Identity> {
         let patches = vec![JsonPatch {
             from: None,
             op: String::from("add"),
-            path: String::from("/metadata_public"),
-            value: Some(json!({"user": {"role": role}})),
+            path: String::from("/metadata_admin"),
+            value: Some(json!(serde_json::to_value(&metadata).unwrap())),
         }];
 
         let response = patch_identity(&self.config, identity_id, Some(patches)).await;
@@ -114,18 +130,24 @@ impl IdentityManager for OryIdentityManager {
                 Ok(identity)
             }
             // TODO: Handle error.
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                tracing::error!("Failed to update metadata admin metadata: {err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 }
 
 impl OryIdentityManager {
-    async fn init_registration_flow(&self) -> Result<RegistrationFlow, AuthError> {
+    async fn init_registration_flow(&self) -> Result<RegistrationFlow> {
         let response = create_native_registration_flow(&self.config, None, None).await;
 
         match response {
             Ok(registration_flow) => Ok(registration_flow),
-            Err(_) => Err(AuthError::InitializingRegistrationFlowError),
+            Err(err) => {
+                tracing::error!("Failed to create registration flow: {err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 
@@ -133,23 +155,24 @@ impl OryIdentityManager {
         &self,
         flow_id: &str,
         request: RegisterClientRequest,
-    ) -> Result<SessionWithToken, AuthError> {
-        let response = update_registration_flow(
-            &self.config,
-            flow_id,
-            &OryRegisterRequestMapper::api_to_spi(request),
-            None,
-        )
-        .await;
+    ) -> Result<SessionWithToken> {
+        let request = UpdateRegistrationFlowWithPasswordMethod {
+            csrf_token: None,
+            password: request.password,
+            traits: json!({"email": request.email }),
+            transient_payload: None,
+        };
+
+        let response = update_registration_flow(&self.config, flow_id, &request, None).await;
 
         match response {
-            Ok(successful_native_login) => {
-                let serialized = serde_json::to_string(&successful_native_login).unwrap();
+            Ok(successful_native_registration) => {
+                let serialized = serde_json::to_string(&successful_native_registration).unwrap();
                 let auth_session = serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
                 Ok(auth_session)
             }
-            Err(Error::ResponseError(response_content)) => {
-                tracing::error!("Response content {response_content:#?}");
+            Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
+                tracing::error!("Response content {response_content:?}");
                 let error_messages = response_content
                     .entity
                     .map(|update_registration_flow_error| {
@@ -165,19 +188,22 @@ impl OryIdentityManager {
 
                 Err(Self::match_error(&error_messages))
             }
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                tracing::error!("{}", err);
+                Err(Error::UnknownError)
+            }
         }
     }
 
-    async fn init_login_flow(&self) -> Result<LoginFlow, AuthError> {
+    async fn init_login_flow(&self) -> Result<LoginFlow> {
         let response =
             create_native_login_flow(&self.config, None, None, None, None, None, None).await;
 
         match response {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
-                tracing::error!("{:#?}", err);
-                Err(AuthError::InitializingLoginFlowError)
+                tracing::error!("{:?}", err);
+                Err(Error::UnknownError)
             }
         }
     }
@@ -186,15 +212,15 @@ impl OryIdentityManager {
         &self,
         flow_id: &str,
         request: LoginClientRequest,
-    ) -> Result<SessionWithToken, AuthError> {
-        let response = update_login_flow(
-            &self.config,
-            flow_id,
-            &OryLoginRequestMapper::api_to_spi(request),
-            None,
-            None,
-        )
-        .await;
+    ) -> Result<SessionWithToken> {
+        let request = UpdateLoginFlowWithPasswordMethod {
+            csrf_token: None,
+            identifier: request.email,
+            password: request.password,
+            password_identifier: None,
+        };
+
+        let response = update_login_flow(&self.config, flow_id, &request, None, None).await;
 
         match response {
             Ok(successful_native_login) => {
@@ -202,7 +228,7 @@ impl OryIdentityManager {
                 let auth_session = serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
                 Ok(auth_session)
             }
-            Err(Error::ResponseError(response_content)) => {
+            Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
                 let error_messages = response_content
                     .entity
                     .map(|update_login_flow_error| {
@@ -218,18 +244,21 @@ impl OryIdentityManager {
 
                 Err(Self::match_error(&error_messages))
             }
-            Err(_) => Err(AuthError::UnknownError),
+            Err(err) => {
+                tracing::error!("{}", err);
+                Err(Error::UnknownError)
+            }
         }
     }
 
-    fn match_error(error_messages: &Vec<UiText>) -> AuthError {
-        tracing::error!("{error_messages:#?}");
+    fn match_error(error_messages: &Vec<UiText>) -> Error {
+        tracing::error!("{error_messages:?}");
         // TODO: Map error ids to a custom enum.
         match Self::extract_error_id(&error_messages) {
-            4000006 => AuthError::InvalidCredentialsLoginError,
-            4000028 => AuthError::EmailTakenRegistrationError,
-            4000034 => AuthError::BreachedPasswordRegistrationError,
-            _ => AuthError::UnknownError,
+            4000006 => Error::InvalidCredentialsLoginError,
+            4000028 => Error::EmailTakenRegistrationError,
+            4000034 => Error::BreachedPasswordRegistrationError,
+            _ => Error::UnknownError,
         }
     }
 

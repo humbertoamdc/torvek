@@ -2,8 +2,6 @@ use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
-use crate::auth::domain::user::User;
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SessionWithToken {
     #[serde(rename = "session_token")]
@@ -23,6 +21,7 @@ pub struct Session {
 pub struct Identity {
     pub id: String,
     pub traits: Traits,
+    pub metadata_admin: Option<MetadataAdmin>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -31,8 +30,8 @@ pub struct Traits {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct MetadataPublic {
-    pub user: User,
+pub struct MetadataAdmin {
+    pub stripe_customer_id: String,
 }
 
 impl SessionWithToken {
