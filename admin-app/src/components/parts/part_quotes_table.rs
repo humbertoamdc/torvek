@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use chrono::NaiveDate;
 use leptos::html::Div;
 use leptos::*;
 use leptos_use::use_element_visibility;
@@ -33,7 +32,7 @@ pub fn PartQuotesTable(
 
     let parts = create_rw_signal(Vec::<Part>::new());
     let prices_options_list = create_rw_signal(Vec::<Vec<RwSignal<Option<Money>>>>::default());
-    let deadlines_list = create_rw_signal(Vec::<Vec<RwSignal<Option<NaiveDate>>>>::default());
+    let workdays_to_complete_list = create_rw_signal(Vec::<Vec<RwSignal<u32>>>::default());
     let parts_table_ref = create_node_ref::<Div>();
     let is_visible = use_element_visibility(parts_table_ref);
 
@@ -67,9 +66,9 @@ pub fn PartQuotesTable(
         let parts_deadlines_map = parts
             .get_untracked()
             .into_iter()
-            .zip(deadlines_list.get_untracked())
+            .zip(workdays_to_complete_list.get_untracked())
             .map(|(part, deadlines)| (part.id, deadlines))
-            .collect::<HashMap<String, Vec<RwSignal<Option<NaiveDate>>>>>();
+            .collect::<HashMap<String, Vec<RwSignal<u32>>>>();
 
         let mut price_data: Vec<CreatePartQuotesRequestData> = Vec::new();
 
@@ -79,7 +78,7 @@ pub fn PartQuotesTable(
                 .unwrap()
                 .into_iter()
                 .zip(parts_deadlines_map.get(&part.id).unwrap())
-                .for_each(|(price_option, deadline)| {
+                .for_each(|(price_option, workdays_to_complete)| {
                     let sub_total = price_option.get_untracked().unwrap();
                     let mut unit_price = sub_total.clone();
                     unit_price.amount = sub_total.amount / part.quantity as i64;
@@ -88,7 +87,7 @@ pub fn PartQuotesTable(
                         part_id: part.id.clone(),
                         unit_price,
                         sub_total,
-                        deadline: deadline.get_untracked().unwrap(),
+                        workdays_to_complete: workdays_to_complete.get_untracked(),
                         quantity: part.quantity,
                     });
                 });
@@ -123,11 +122,14 @@ pub fn PartQuotesTable(
 
     let submit_is_disabled = Signal::derive(move || {
         parts.get().is_empty()
-            || !deadlines_list.get().iter().all(|deadline_options| {
-                deadline_options
-                    .iter()
-                    .all(|deadline_option| deadline_option.get().is_some())
-            })
+            || !workdays_to_complete_list
+                .get()
+                .iter()
+                .all(|deadline_options| {
+                    deadline_options
+                        .iter()
+                        .all(|deadline_option| deadline_option.get() > 0)
+                })
             || !prices_options_list.get().iter().all(|price_options| {
                 price_options
                     .iter()
@@ -146,14 +148,14 @@ pub fn PartQuotesTable(
                         create_rw_signal(None::<Money>),
                         create_rw_signal(None::<Money>),
                     ];
-                    let deadline_options = vec![
-                        create_rw_signal(None::<NaiveDate>),
-                        create_rw_signal(None::<NaiveDate>),
-                        create_rw_signal(None::<NaiveDate>),
+                    let workdays_to_complete_options = vec![
+                        create_rw_signal(0_u32),
+                        create_rw_signal(0_u32),
+                        create_rw_signal(0_u32),
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
-                    deadlines_list.update(|deadlines| deadlines.push(deadline_options.clone()));
-                    view! { <PartQuotesTableRow part=part.clone() price_options deadline_options/> }
+                    workdays_to_complete_list.update(|workdays_to_complete| workdays_to_complete.push(workdays_to_complete_options.clone()));
+                    view! { <PartQuotesTableRow part=part.clone() price_options workdays_to_complete_options /> }
                 }
             />
 

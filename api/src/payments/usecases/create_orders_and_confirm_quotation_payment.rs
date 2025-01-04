@@ -13,6 +13,7 @@ use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUse
 use crate::payments::domain::requests::CompleteCheckoutSessionWebhookRequest;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::shared::{Result, UseCase};
+use crate::utils::workdays::Workdays;
 
 pub struct CreateOrdersAndConfirmQuotationPaymentUseCase {
     orders_creation_service: Arc<dyn OrdersCreationService>,
@@ -69,13 +70,16 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()>
             .parts
             .into_iter()
             .map(|part| {
+                let part_quote = selected_part_quote_for_part[&part.id].clone();
+                let now = Utc::now().naive_utc().date();
+                let deadline = Workdays::add_workdays(now, part_quote.workdays_to_complete);
                 Order::new(
                     part.customer_id,
                     part.project_id,
                     part.quotation_id,
                     part.id.clone(),
                     selected_part_quote_for_part[&part.id].id.clone(),
-                    Utc::now().naive_utc().date(), // TODO: This will come from quote price, which will be attached to part by id.
+                    deadline,
                     OrderStatus::PendingPricing,
                     request.shipping_recipient_name.clone(),
                     request.shipping_address.clone(),

@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Days, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use std::fmt::{Display, Formatter};
@@ -6,6 +6,8 @@ use uuid::{ContextV7, Timestamp, Uuid};
 
 use crate::common::file::File;
 use crate::common::money::Money;
+
+static PART_QUOTE_VALID_DAYS: u64 = 30;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Part {
@@ -134,23 +136,33 @@ pub struct PartQuote {
     pub part_id: String,
     pub unit_price: Money,
     pub sub_total: Money,
-    pub deadline: NaiveDate,
+    pub workdays_to_complete: u64,
+    pub valid_until: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
 impl PartQuote {
-    pub fn new(part_id: String, unit_price: Money, sub_total: Money, deadline: NaiveDate) -> Self {
+    pub fn new(
+        part_id: String,
+        unit_price: Money,
+        sub_total: Money,
+        workdays_to_complete: u64,
+    ) -> Self {
         let now = Utc::now();
         let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
         let encoded_id = format!("pq_{}", bs58::encode(id).into_string());
+        let valid_until = now
+            .checked_add_days(Days::new(PART_QUOTE_VALID_DAYS))
+            .expect("error creating `valid_until` date for part quote.");
 
         Self {
             id: encoded_id,
             part_id,
             unit_price,
             sub_total,
-            deadline,
+            workdays_to_complete,
+            valid_until,
             created_at: now,
             updated_at: now,
         }
