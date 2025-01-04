@@ -1,13 +1,12 @@
-use chrono::NaiveDate;
 use leptos::*;
-use thaw::{DatePicker, Input, InputPrefix};
+use thaw::{Input, InputNumber, InputPrefix};
 
 use api_boundary::common::money::Money;
 
 #[component]
 pub fn PartQuoteCard(
     #[prop(into)] price_option: RwSignal<Option<Money>>,
-    #[prop(into)] deadline_option: RwSignal<Option<NaiveDate>>,
+    #[prop(into)] workdays_to_complete_option: RwSignal<u32>,
 ) -> impl IntoView {
     // -- signals -- //
 
@@ -54,9 +53,22 @@ pub fn PartQuoteCard(
         price_option.update(|p| *p = Some(Money::new(formatted_price, iso_currency::Currency::MXN)))
     };
 
+    let workdays_to_complete_formatter = Callback::<u32, String>::new(move |value: u32| {
+        if value == 0 {
+            String::default()
+        } else {
+            value.to_string()
+        }
+    });
+
     view! {
         <div class="grow flex justify-between items-center rounded-md border p-3">
-            <DatePicker value=deadline_option/>
+            <InputNumber
+                class="w-36"
+                value=workdays_to_complete_option
+                step=1
+                formatter=workdays_to_complete_formatter
+            />
             <Input
                 class="w-36"
                 value=price

@@ -1,4 +1,3 @@
-use chrono::NaiveDate;
 use leptos::*;
 
 use api_boundary::common::money::Money;
@@ -10,7 +9,7 @@ use crate::components::parts::part_quote_card::PartQuoteCard;
 pub fn PartQuotesTableRow(
     #[prop(into)] part: Part,
     #[prop(into)] price_options: Vec<RwSignal<Option<Money>>>,
-    #[prop(into)] deadline_options: Vec<RwSignal<Option<NaiveDate>>>,
+    #[prop(into)] workdays_to_complete_options: Vec<RwSignal<u32>>,
 ) -> impl IntoView {
     // -- signals -- //
     view! {
@@ -101,9 +100,9 @@ pub fn PartQuotesTableRow(
                 </div>
             </div>
             <div class="flex flex-col w-96 space-y-2">
-                <PartQuoteCard price_option=price_options[0] deadline_option=deadline_options[0]/>
-                <PartQuoteCard price_option=price_options[1] deadline_option=deadline_options[1]/>
-                <PartQuoteCard price_option=price_options[2] deadline_option=deadline_options[2]/>
+                <PartQuoteCard price_option=price_options[0] workdays_to_complete_option=workdays_to_complete_options[0]/>
+                <PartQuoteCard price_option=price_options[1] workdays_to_complete_option=workdays_to_complete_options[1]/>
+                <PartQuoteCard price_option=price_options[2] workdays_to_complete_option=workdays_to_complete_options[2]/>
             </div>
         </div>
     }

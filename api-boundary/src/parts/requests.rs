@@ -1,4 +1,3 @@
-use chrono::NaiveDate;
 use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
@@ -91,7 +90,7 @@ pub struct CreatePartQuotesRequestData {
     pub part_id: String,
     pub unit_price: Money,
     pub sub_total: Money,
-    pub deadline: NaiveDate,
+    pub workdays_to_complete: u64,
     pub quantity: u64,
 }
 

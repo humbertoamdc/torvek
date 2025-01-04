@@ -36,7 +36,7 @@ impl UseCase<CreatePartQuotesRequest, ()> for CreatePartQuotesUseCase {
                 quote_data.part_id.clone(),
                 quote_data.unit_price,
                 quote_data.sub_total,
-                quote_data.deadline,
+                quote_data.workdays_to_complete,
             );
 
             if selected {
