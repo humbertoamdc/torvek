@@ -3,7 +3,7 @@ use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWith
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use api_boundary::common::error::Error;
-use axum::async_trait;
+use async_trait::async_trait;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, create_native_registration_flow, perform_native_logout, to_session,
@@ -70,7 +70,7 @@ impl IdentityManager for OryIdentityManager {
             Ok(_) => Ok(()),
             // TODO: Handle error.
             Err(err) => {
-                tracing::error!("{}", err);
+                tracing::error!("Failed to logout user. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -87,7 +87,7 @@ impl IdentityManager for OryIdentityManager {
             }
             // TODO: Handle error.
             Err(err) => {
-                tracing::error!("{err:?}");
+                tracing::error!("Failed to get session. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -103,7 +103,7 @@ impl IdentityManager for OryIdentityManager {
                 Ok(identity)
             }
             Err(err) => {
-                tracing::error!("{err:?}");
+                tracing::error!("Failed to get identity. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -131,7 +131,7 @@ impl IdentityManager for OryIdentityManager {
             }
             // TODO: Handle error.
             Err(err) => {
-                tracing::error!("Failed to update metadata admin metadata: {err:?}");
+                tracing::error!("Failed to update metadata admin metadata. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -145,7 +145,7 @@ impl OryIdentityManager {
         match response {
             Ok(registration_flow) => Ok(registration_flow),
             Err(err) => {
-                tracing::error!("Failed to create registration flow: {err:?}");
+                tracing::error!("Failed to create registration flow. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -172,7 +172,6 @@ impl OryIdentityManager {
                 Ok(auth_session)
             }
             Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
-                tracing::error!("Response content {response_content:?}");
                 let error_messages = response_content
                     .entity
                     .map(|update_registration_flow_error| {
@@ -189,7 +188,7 @@ impl OryIdentityManager {
                 Err(Self::match_error(&error_messages))
             }
             Err(err) => {
-                tracing::error!("{}", err);
+                tracing::error!("Failed to update registration flow. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -202,7 +201,7 @@ impl OryIdentityManager {
         match response {
             Ok(login_flow) => Ok(login_flow),
             Err(err) => {
-                tracing::error!("{:?}", err);
+                tracing::error!("Failed to init login flow. {:?}", err);
                 Err(Error::UnknownError)
             }
         }
@@ -245,7 +244,7 @@ impl OryIdentityManager {
                 Err(Self::match_error(&error_messages))
             }
             Err(err) => {
-                tracing::error!("{}", err);
+                tracing::error!("Failed to update login flow. {err:?}");
                 Err(Error::UnknownError)
             }
         }

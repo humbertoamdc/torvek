@@ -2,7 +2,7 @@ use crate::services::stripe_client::{Quote, QuoteLineItem, StripeClient, StripeQ
 use crate::shared;
 use api_boundary::common::error::Error;
 use api_boundary::parts::models::Part;
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::body::Bytes;
 use iso_currency::Currency;
 use shared::Result;

@@ -1,9 +1,8 @@
-use std::sync::Arc;
-use std::time::Duration;
-
 use api_boundary::common::error::Error;
 use api_boundary::common::file::File;
-use axum::async_trait;
+use async_trait::async_trait;
+use std::sync::Arc;
+use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 use crate::parts::domain::dynamodb_requests::UpdatablePart;

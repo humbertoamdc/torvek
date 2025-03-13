@@ -1,8 +1,7 @@
-use axum::async_trait;
-
 use crate::auth::models::requests::{AdminLoginRequest, LoginClientRequest, RegisterClientRequest};
 use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
 use crate::shared;
+use async_trait::async_trait;
 use shared::Result;
 
 #[async_trait]

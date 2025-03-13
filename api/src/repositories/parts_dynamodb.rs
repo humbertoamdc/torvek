@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
 use api_boundary::common::error::Error;
+use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{
     AttributeValue, DeleteRequest, KeysAndAttributes, PutRequest, ReturnValue, WriteRequest,
 };
-use axum::async_trait;
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
+use std::collections::HashMap;
 
 use crate::parts::domain::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
 use crate::repositories::parts::PartsRepository;

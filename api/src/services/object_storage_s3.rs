@@ -1,11 +1,10 @@
-use std::time::Duration;
-
 use crate::shared::Result;
 use api_boundary::common::error::Error;
+use async_trait::async_trait;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::types::builders::DeleteBuilder;
 use aws_sdk_s3::types::ObjectIdentifier;
-use axum::async_trait;
+use std::time::Duration;
 use url::Url;
 
 use crate::services::object_storage::ObjectStorage;

@@ -7,7 +7,7 @@ use crate::shared::UseCase;
 use api_boundary::common::error::Error;
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::DownloadQuotePdfRequest;
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::body::Bytes;
 use iso_currency::Currency;
 use shared::Result;

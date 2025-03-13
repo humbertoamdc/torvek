@@ -2,7 +2,7 @@ use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::quotations::models::Quotation;
 use api_boundary::quotations::requests::GetQuotationByIdRequest;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct GetQuotationByIdUseCase {

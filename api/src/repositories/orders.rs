@@ -1,4 +1,4 @@
-use axum::async_trait;
+use async_trait::async_trait;
 
 use crate::shared::Result;
 use api_boundary::common::money::Money;

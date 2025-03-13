@@ -6,7 +6,7 @@ use api_boundary::parts::models::{Part, PartQuote};
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::GetQuotationSubtotalRequest;
 use api_boundary::quotations::responses::GetQuotationSubtotalResponse;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct GetQuotationSubtotalUseCase {

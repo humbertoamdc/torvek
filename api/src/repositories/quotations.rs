@@ -1,5 +1,5 @@
 use crate::shared::{QueryResponse, Result};
-use axum::async_trait;
+use async_trait::async_trait;
 
 use crate::quotations::domain::dynamodb_requests::BatchDeleteQuotationObject;
 use api_boundary::quotations::models::{Quotation, QuotationStatus};

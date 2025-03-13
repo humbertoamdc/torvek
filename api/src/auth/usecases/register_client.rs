@@ -1,14 +1,12 @@
-use std::sync::Arc;
-
-use axum::async_trait;
-
 use crate::auth::models::requests::RegisterClientRequest;
 use crate::auth::models::session::{MetadataAdmin, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::services::stripe_client::StripeClient;
 use crate::shared;
+use async_trait::async_trait;
 use shared::Result;
 use shared::UseCase;
+use std::sync::Arc;
 
 pub struct RegisterClientUseCase {
     identity_manager: Arc<dyn IdentityManager>,

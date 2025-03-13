@@ -1,6 +1,5 @@
-use axum::async_trait;
-
 use api_boundary::parts::models::Part;
+use async_trait::async_trait;
 
 use crate::parts::domain::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
 use crate::shared::{QueryResponse, Result};

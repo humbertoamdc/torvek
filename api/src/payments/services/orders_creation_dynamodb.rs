@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use api_boundary::common::error::Error;
+use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
-use axum::async_trait;
 use serde_dynamo::to_item;
+use std::collections::HashMap;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use crate::shared::Result;

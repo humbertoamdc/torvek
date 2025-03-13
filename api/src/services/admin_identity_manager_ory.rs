@@ -3,7 +3,7 @@ use crate::auth::models::session::{Session, SessionWithToken};
 use crate::services::identity_manager::AdminIdentityManager;
 use crate::shared;
 use api_boundary::common::error::Error;
-use axum::async_trait;
+use async_trait::async_trait;
 use ory_kratos_client::apis::configuration::Configuration;
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, perform_native_logout, to_session, update_login_flow,
