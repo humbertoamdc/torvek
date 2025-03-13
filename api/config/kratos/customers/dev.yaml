@@ -4,13 +4,13 @@ dsn: memory
 
 serve:
   public:
-    base_url: http://127.0.0.1:4443
-    port: 4443
+    base_url: http://127.0.0.1:4433
+    port: 4433
     cors:
       enabled: true
   admin:
-    base_url: http://127.0.0.1:4444
-    port: 4444
+    base_url: http://127.0.0.1:4434
+    port: 4434
 
 selfservice:
   default_browser_return_url: http://127.0.0.1:8080/
@@ -39,7 +39,7 @@ selfservice:
         hooks: [ ]
       enable_legacy_one_step: true
       login_hints: true
-      ui_url: http://127.0.0.1:4443/ui/registration
+      ui_url: http://127.0.0.1:4433/ui/registration
 
   methods:
     password:

@@ -216,7 +216,7 @@ mod tests {
 
         // Create registration request
         let register_request = RegisterClientRequest {
-            email: String::from("testd632fddfsd7263454@example.com"),
+            email: String::from("testd632fddfsd72dd63454@example.com"),
             password: String::from("password"), // More complex password to pass validation
             name: String::from("Test Name"),
         };
