@@ -88,7 +88,7 @@ mod customer_logout {
     use http::StatusCode;
 
     #[tokio::test]
-    async fn it_should_get_active_session() {
+    async fn it_should_logout_user_and_unset_the_session_token() {
         let mut server = init_test_server().await;
 
         let user = generate_customer().await;
