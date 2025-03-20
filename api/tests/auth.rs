@@ -5,14 +5,13 @@ mod register_customer {
     use api::auth::models::requests::RegisterClientRequest;
     use http::StatusCode;
 
-    static ID: std::sync::LazyLock<uuid::Uuid> = std::sync::LazyLock::new(uuid::Uuid::new_v4);
-
     #[tokio::test]
     async fn it_should_create_session_on_registration() {
         let server = init_test_server().await;
 
+        let id = uuid::Uuid::new_v4();
         let register_request = RegisterClientRequest {
-            email: format!("{:?}@test.com", &*ID),
+            email: format!("{:?}@test.com", id),
             password: String::from("password"),
             name: String::from("Test Name"),
         };
