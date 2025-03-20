@@ -261,9 +261,7 @@ impl AppStatePayments {
 async fn get_shared_config(config: &Config) -> SdkConfig {
     let mut shared_config = aws_config::defaults(BehaviorVersion::latest());
     if config.app.env == Environment::Development {
-        shared_config = shared_config.endpoint_url(
-            env::var("AWS_ENDPOINT_URL").unwrap_or(String::from("http://127.0.0.1:4576")),
-        );
+        shared_config = shared_config.endpoint_url(env::var("AWS_ENDPOINT_URL").unwrap());
     }
     shared_config.load().await
 }
@@ -271,10 +269,7 @@ async fn get_shared_config(config: &Config) -> SdkConfig {
 async fn get_s3_shared_config(config: &Config) -> SdkConfig {
     let mut shared_config = aws_config::defaults(BehaviorVersion::latest());
     if config.app.env == Environment::Development {
-        shared_config = shared_config.endpoint_url(
-            env::var("AWS_S3_ENDPOINT_URL")
-                .unwrap_or(String::from("http://s3.localhost.localstack.cloud:4576")),
-        );
+        shared_config = shared_config.endpoint_url(env::var("AWS_S3_ENDPOINT_URL").unwrap());
     }
     shared_config.load().await
 }

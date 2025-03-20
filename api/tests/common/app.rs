@@ -4,6 +4,7 @@ use api::config::Config;
 use axum::Router;
 use axum_test::TestServer;
 use http::HeaderValue;
+use std::env;
 use std::sync::Once;
 use tokio::sync::OnceCell;
 use tower_http::cors::CorsLayer;
@@ -53,6 +54,12 @@ async fn create_test_app() -> Router {
     TRACING_INIT.call_once(|| {
         tracing_subscriber::fmt::init();
     });
+
+    env::set_var("AWS_ENDPOINT_URL", "http://127.0.0.1:4576");
+    env::set_var(
+        "AWS_S3_ENDPOINT_URL",
+        "http://s3.localhost.localstack.cloud:4576",
+    );
 
     create_app_from_config(&APP_CONFIG).await
 }
