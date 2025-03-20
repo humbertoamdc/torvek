@@ -163,7 +163,7 @@ pub async fn download_pdf_quote(
                 .body(axum::body::Body::from(response)) // Pass the Vec<u8> directly
                 .unwrap()
         }
-        Err(err) => {
+        Err(_) => {
             // TODO: Standardize this response and error.
             Response::builder()
                 .status(StatusCode::BAD_REQUEST)

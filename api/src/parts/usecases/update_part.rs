@@ -1,8 +1,7 @@
-use std::sync::Arc;
-
 use api_boundary::common::error::Error;
 use api_boundary::parts::models::Part;
-use axum::async_trait;
+use async_trait::async_trait;
+use std::sync::Arc;
 
 use api_boundary::parts::requests::UpdatePartRequest;
 use api_boundary::quotations::models::QuotationStatus;

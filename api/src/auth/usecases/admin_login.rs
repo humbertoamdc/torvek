@@ -1,13 +1,11 @@
-use std::sync::Arc;
-
-use axum::async_trait;
-
 use crate::auth::models::requests::AdminLoginRequest;
 use crate::auth::models::session::SessionWithToken;
 use crate::services::identity_manager::AdminIdentityManager;
 use crate::shared;
+use async_trait::async_trait;
 use shared::Result;
 use shared::UseCase;
+use std::sync::Arc;
 
 pub struct AdminLoginUseCase {
     admin_identity_manager: Arc<dyn AdminIdentityManager>,

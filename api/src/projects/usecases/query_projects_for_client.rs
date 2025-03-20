@@ -2,7 +2,7 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::projects::requests::QueryProjectsForClientRequest;
 use api_boundary::projects::responses::QueryProjectsForClientResponse;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct QueryProjectsForClientUseCase {

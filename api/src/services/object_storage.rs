@@ -1,7 +1,6 @@
-use std::time::Duration;
-
 use crate::shared::Result;
-use axum::async_trait;
+use async_trait::async_trait;
+use std::time::Duration;
 
 #[async_trait]
 pub trait ObjectStorage: Send + Sync + 'static {

@@ -3,7 +3,7 @@ use crate::repositories::parts::PartsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::parts::requests::UpdateSelectedPartQuoteRequest;
 use api_boundary::parts::responses::UpdateSelectedPartQuoteResponse;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct UpdateSelectedPartQuoteUseCase {

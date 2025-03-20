@@ -1,5 +1,5 @@
 use api_boundary::common::error::Error;
-use axum::async_trait;
+use async_trait::async_trait;
 
 pub mod extractors;
 

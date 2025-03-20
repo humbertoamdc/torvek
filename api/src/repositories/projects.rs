@@ -1,6 +1,6 @@
 use crate::shared::{QueryResponse, Result};
 use api_boundary::projects::models::Project;
-use axum::async_trait;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait ProjectsRepository: Send + Sync + 'static {

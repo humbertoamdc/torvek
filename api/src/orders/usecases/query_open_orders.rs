@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use api_boundary::orders::requests::QueryOpenOrdersRequest;
-use axum::async_trait;
-
 use api_boundary::orders::responses::QueryOpenOrdersResponse;
+use async_trait::async_trait;
+use std::sync::Arc;
 
 use crate::repositories::orders::OrdersRepository;
 use crate::shared::{Result, UseCase};

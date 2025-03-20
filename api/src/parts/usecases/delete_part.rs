@@ -6,7 +6,7 @@ use crate::shared::UseCase;
 use api_boundary::common::error::Error;
 use api_boundary::parts::requests::DeletePartRequest;
 use api_boundary::quotations::models::QuotationStatus;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct DeletePartUseCase {

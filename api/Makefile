@@ -14,6 +14,9 @@ STAGING_CONFIG_FILES_S3_BUCKET := s3://torvek-config-files-staging
 run:
 	./scripts/run-dev.sh
 
+test:
+	./scripts/run-test.sh
+
 # === Infra ===
 
 # Parameters

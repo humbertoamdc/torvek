@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
-use axum::async_trait;
-
 use crate::auth::models::session::Session;
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
+use async_trait::async_trait;
 use shared::Result;
 use shared::UseCase;
+use std::sync::Arc;
 
 pub struct GetSessionUseCase {
     identity_manager: Arc<dyn IdentityManager>,

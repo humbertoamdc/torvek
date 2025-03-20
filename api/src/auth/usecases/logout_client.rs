@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
-use axum::async_trait;
-
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
+use async_trait::async_trait;
 use shared::Result;
 use shared::UseCase;
+use std::sync::Arc;
 
 pub struct LogoutClientUseCase {
     identity_manager: Arc<dyn IdentityManager>,

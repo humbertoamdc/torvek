@@ -1,8 +1,7 @@
-use axum::async_trait;
-use std::collections::HashMap;
-
 use crate::shared::Result;
 use api_boundary::parts::models::PartQuote;
+use async_trait::async_trait;
+use std::collections::HashMap;
 
 #[async_trait]
 pub trait PartQuotesCreation: Send + Sync + 'static {

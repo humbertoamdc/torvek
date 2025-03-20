@@ -7,7 +7,7 @@ use api_boundary::parts::requests::CreateModelUploadUrlRequest;
 use api_boundary::parts::responses::CreateModelUploadUrlResponse;
 use api_boundary::quotations::models::QuotationStatus;
 use api_boundary::quotations::requests::GetQuotationByIdRequest;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
 use url::Url;

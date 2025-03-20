@@ -3,7 +3,7 @@ use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use api_boundary::parts::models::Part;
 use api_boundary::parts::requests::GetPartRequest;
-use axum::async_trait;
+use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
 
