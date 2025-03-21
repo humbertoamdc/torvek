@@ -31,7 +31,7 @@ mod register_customer {
 
 mod customer_login {
     use crate::common::app::init_test_server;
-    use crate::common::user_generator::generate_customer;
+    use crate::common::user_generator::TestUser;
     use api::auth::models::requests::LoginClientRequest;
     use http::StatusCode;
 
@@ -39,7 +39,7 @@ mod customer_login {
     async fn it_should_create_session_on_login() {
         let server = init_test_server().await;
 
-        let user = generate_customer().await;
+        let user = TestUser::new().await;
         let login_request = LoginClientRequest {
             email: user.email,
             password: user.password,
@@ -57,7 +57,7 @@ mod customer_login {
 
 mod get_active_session {
     use crate::common::app::init_test_server;
-    use crate::common::user_generator::generate_customer;
+    use crate::common::user_generator::TestUser;
     use api::auth::models::responses::GetSessionResponse;
     use cookie::Cookie;
 
@@ -65,12 +65,9 @@ mod get_active_session {
     async fn it_should_get_active_session() {
         let mut server = init_test_server().await;
 
-        let user = generate_customer().await;
+        let user = TestUser::new().await;
 
-        server.add_cookie(Cookie::new(
-            "customer_session_token",
-            user.session_token.clone(),
-        ));
+        server.add_cookie(Cookie::new("customer_session_token", user.session_token));
 
         let session = server
             .get("/api/v1/session")
@@ -83,7 +80,7 @@ mod get_active_session {
 
 mod customer_logout {
     use crate::common::app::init_test_server;
-    use crate::common::user_generator::generate_customer;
+    use crate::common::user_generator::TestUser;
     use cookie::Cookie;
     use http::StatusCode;
 
@@ -91,12 +88,9 @@ mod customer_logout {
     async fn it_should_logout_user_and_unset_the_session_token() {
         let mut server = init_test_server().await;
 
-        let user = generate_customer().await;
+        let user = TestUser::new().await;
 
-        server.add_cookie(Cookie::new(
-            "customer_session_token",
-            user.session_token.clone(),
-        ));
+        server.add_cookie(Cookie::new("customer_session_token", user.session_token));
 
         let response = server.post("/api/v1/logout").await;
 

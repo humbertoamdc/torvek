@@ -9,5 +9,5 @@ pub mod projects;
 pub mod quotations;
 mod repositories;
 mod services;
-mod shared;
+pub mod shared;
 mod utils;
