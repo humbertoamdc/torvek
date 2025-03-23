@@ -17,11 +17,13 @@ impl CreateDrawingUploadUrlResponse {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryOpenOrdersResponse {
     pub orders: Vec<Order>,
+    pub cursor: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryOrdersForCustomerResponse {
     pub data: Vec<QueryOrdersForCustomerResponseData>,
+    pub cursor: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

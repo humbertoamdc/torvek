@@ -19,8 +19,11 @@ impl QueryOpenOrdersUseCase {
 #[async_trait]
 impl UseCase<QueryOpenOrdersRequest, QueryOpenOrdersResponse> for QueryOpenOrdersUseCase {
     async fn execute(&self, _: QueryOpenOrdersRequest) -> Result<QueryOpenOrdersResponse> {
-        let orders = self.orders_repository.query_open_orders().await?;
+        let response = self.orders_repository.query_open_orders().await?;
 
-        Ok(QueryOpenOrdersResponse { orders })
+        Ok(QueryOpenOrdersResponse {
+            orders: response.data,
+            cursor: response.cursor,
+        })
     }
 }

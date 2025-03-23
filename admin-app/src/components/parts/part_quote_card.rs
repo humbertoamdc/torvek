@@ -6,7 +6,7 @@ use api_boundary::common::money::Money;
 #[component]
 pub fn PartQuoteCard(
     #[prop(into)] price_option: RwSignal<Option<Money>>,
-    #[prop(into)] workdays_to_complete_option: RwSignal<u32>,
+    #[prop(into)] workdays_to_complete_option: RwSignal<u64>,
 ) -> impl IntoView {
     // -- signals -- //
 
@@ -53,7 +53,7 @@ pub fn PartQuoteCard(
         price_option.update(|p| *p = Some(Money::new(formatted_price, iso_currency::Currency::MXN)))
     };
 
-    let workdays_to_complete_formatter = Callback::<u32, String>::new(move |value: u32| {
+    let workdays_to_complete_formatter = Callback::<u64, String>::new(move |value: u64| {
         if value == 0 {
             String::default()
         } else {

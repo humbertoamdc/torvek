@@ -8,7 +8,8 @@ use std::collections::HashMap;
 
 use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
 use crate::repositories::orders::OrdersRepository;
-use crate::shared::Result;
+use crate::shared::{QueryResponse, Result};
+use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use api_boundary::common::money::Money;
 use api_boundary::orders::models::{Order, OrderStatus};
 
@@ -28,10 +29,17 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
-    async fn query_orders_for_customer(&self, customer_id: String) -> Result<Vec<Order>> {
+    async fn query_orders_for_customer(
+        &self,
+        customer_id: String,
+        cursor: Option<String>,
+        limit: i32,
+    ) -> Result<QueryResponse<Vec<Order>, String>> {
         let response = self
             .client
             .query()
+            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
+            .limit(limit)
             .table_name(&self.table)
             .key_condition_expression("customer_id = :value")
             .expression_attribute_values(":value", AttributeValue::S(customer_id))
@@ -48,7 +56,10 @@ impl OrdersRepository for DynamodbOrders {
                             .into_iter()
                             .map(|dynamodb_order: DynamodbOrderItem| dynamodb_order.into())
                             .collect();
-                        Ok(orders)
+                        Ok(QueryResponse {
+                            data: orders,
+                            cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
+                        })
                     }
                     Err(err) => {
                         tracing::error!("{:?}", err);
@@ -63,7 +74,7 @@ impl OrdersRepository for DynamodbOrders {
         }
     }
 
-    async fn query_open_orders(&self) -> Result<Vec<Order>> {
+    async fn query_open_orders(&self) -> Result<QueryResponse<Vec<Order>, String>> {
         let response = self
             .client
             .query()
@@ -83,7 +94,10 @@ impl OrdersRepository for DynamodbOrders {
                             .into_iter()
                             .map(|dynamodb_order: DynamodbOrderItem| dynamodb_order.into())
                             .collect();
-                        Ok(orders)
+                        Ok(QueryResponse {
+                            data: orders,
+                            cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
+                        })
                     }
                     Err(err) => {
                         tracing::error!("{:?}", err);

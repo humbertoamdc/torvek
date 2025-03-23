@@ -3,10 +3,10 @@ use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
-use serde_derive::Deserialize;
 
 use api_boundary::orders::requests::{
-    AdminUpdateOrderPayoutRequest, QueryOpenOrdersRequest, QueryOrdersForCustomerRequest,
+    AdminUpdateOrderPayoutRequest, QueryOpenOrdersRequest, QueryOrdersForCustomerQueryParameters,
+    QueryOrdersForCustomerRequest,
 };
 
 use crate::app_state::AppState;
@@ -15,20 +15,12 @@ use crate::orders::usecases::query_open_orders::QueryOpenOrdersUseCase;
 use crate::orders::usecases::query_orders_for_customer::QueryOrdersForCustomer;
 use crate::shared::UseCase;
 
-#[derive(Deserialize)]
-pub struct QueryParameters {
-    pub with_part_data: Option<bool>,
-}
-
 pub async fn query_orders_for_customer(
     State(app_state): State<AppState>,
     Path(customer_id): Path<String>,
-    Query(params): Query<QueryParameters>,
+    Query(params): Query<QueryOrdersForCustomerQueryParameters>,
 ) -> impl IntoResponse {
-    let request = QueryOrdersForCustomerRequest {
-        customer_id,
-        with_part_data: params.with_part_data.unwrap_or(false),
-    };
+    let request = QueryOrdersForCustomerRequest::new(customer_id, params);
     let usecase = QueryOrdersForCustomer::new(
         app_state.orders.orders_repository,
         app_state.parts.parts_repository,
