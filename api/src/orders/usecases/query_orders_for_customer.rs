@@ -82,11 +82,8 @@ impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
             .into_iter()
             .map(|order| {
                 let part_id = order.part_id.clone();
-                let part = parts_map.remove(&part_id).unwrap();
-                QueryOrdersForCustomerResponseData {
-                    order,
-                    part: Some(part),
-                }
+                let part = parts_map.remove(&part_id);
+                QueryOrdersForCustomerResponseData { order, part }
             })
             .collect();
 

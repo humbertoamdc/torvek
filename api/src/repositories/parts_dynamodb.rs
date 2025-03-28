@@ -152,8 +152,8 @@ impl PartsRepository for DynamodbParts {
     async fn query_parts_for_quotation(
         &self,
         quotation_id: String,
-        page_limit: i32,
         cursor: Option<String>,
+        page_limit: i32,
     ) -> Result<QueryResponse<Vec<Part>, String>> {
         let response = self
             .client

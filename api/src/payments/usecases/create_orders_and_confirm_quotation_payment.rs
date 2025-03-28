@@ -39,6 +39,8 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()>
         let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
             quotation_id: request.quotation_id.clone(),
             with_quotation_subtotal: false,
+            cursor: None,
+            limit: 100,
         };
         let query_parts_for_quotation_response = self
             .query_parts_for_quotation_usecase

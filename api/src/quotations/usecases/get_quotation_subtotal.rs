@@ -47,7 +47,7 @@ impl UseCase<GetQuotationSubtotalRequest, GetQuotationSubtotalResponse>
 
         let response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id, 100, None)
+            .query_parts_for_quotation(request.quotation_id, None, 100)
             .await?;
 
         let quotation_subtotal = Some(self.calculate_quotation_subtotal(response.data));

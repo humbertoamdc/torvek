@@ -12,7 +12,7 @@ provider "stripe" {
 }
 
 resource "stripe_webhook_endpoint" "complete_checkout_session_webhook_staging" {
-  url         = "https://example/api/v1/payments/webhooks/complete_checkout_session"
+  url         = "https://httpbin.org/status/200"
   description = "Webhook used by Stripe to confirm when a quotation payment is successful."
   enabled_events = [
     "checkout.session.completed"

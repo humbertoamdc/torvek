@@ -32,6 +32,19 @@ impl PartsClient {
         send(request).await
     }
 
+    pub async fn admin_query_parts_for_quotation(
+        &self,
+        quotation_id: String,
+    ) -> Result<QueryPartsForQuotationResponse> {
+        let url = format!("{}/admin/quotations/{quotation_id}/parts", self.url);
+        let request = Request::get(&url)
+            .credentials(RequestCredentials::Include)
+            .build()
+            .unwrap();
+
+        send(request).await
+    }
+
     pub async fn create_parts(&self, body: CreatePartsRequest) -> Result<CreatePartsResponse> {
         let url = format!("{}/parts", self.url);
         let request = Request::post(&url)

@@ -37,15 +37,30 @@ pub struct GetPartRequest {
     pub part_id: String,
 }
 
+#[derive(Deserialize)]
+pub struct QueryPartsForQuotationQueryParameters {
+    pub with_quotation_subtotal: Option<bool>,
+    pub cursor: Option<String>,
+    pub limit: Option<i32>,
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryPartsForQuotationRequest {
     pub quotation_id: String,
     pub with_quotation_subtotal: bool,
+    pub cursor: Option<String>,
+    pub limit: i32,
 }
-
-#[derive(Deserialize)]
-pub struct QueryPartsForQuotationQueryParameters {
-    pub with_quotation_subtotal: Option<bool>,
+impl QueryPartsForQuotationRequest {
+    pub fn new(quotation_id: String, params: QueryPartsForQuotationQueryParameters) -> Self {
+        let max_limit = 10;
+        Self {
+            quotation_id,
+            with_quotation_subtotal: params.with_quotation_subtotal.unwrap_or(false),
+            cursor: params.cursor,
+            limit: params.limit.unwrap_or(max_limit),
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
