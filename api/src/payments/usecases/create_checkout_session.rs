@@ -37,6 +37,8 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
         let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
             quotation_id: request.quotation_id.clone(),
             with_quotation_subtotal: false,
+            cursor: None,
+            limit: 100,
         };
 
         let parts_for_quotation = self

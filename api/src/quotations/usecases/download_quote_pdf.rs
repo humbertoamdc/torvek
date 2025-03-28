@@ -92,7 +92,7 @@ impl DownloadQuotePdfUseCase {
         let page_limit = 100;
         let query_part_response = self
             .parts_repository
-            .query_parts_for_quotation(quotation_id, page_limit, None)
+            .query_parts_for_quotation(quotation_id, None, page_limit)
             .await?;
 
         let quote_line_items = query_part_response

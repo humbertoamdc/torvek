@@ -142,7 +142,7 @@ impl DeleteProjectUseCase {
 
         loop {
             let result = parts_repository
-                .query_parts_for_quotation(quotation_id.clone(), page_limit, cursor)
+                .query_parts_for_quotation(quotation_id.clone(), cursor, page_limit)
                 .await;
 
             match result {

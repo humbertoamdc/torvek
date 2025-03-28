@@ -32,19 +32,19 @@ pub fn PartQuotesTable(
 
     let parts = create_rw_signal(Vec::<Part>::new());
     let prices_options_list = create_rw_signal(Vec::<Vec<RwSignal<Option<Money>>>>::default());
-    let workdays_to_complete_list = create_rw_signal(Vec::<Vec<RwSignal<u32>>>::default());
+    let workdays_to_complete_list = create_rw_signal(Vec::<Vec<RwSignal<u64>>>::default());
     let parts_table_ref = create_node_ref::<Div>();
     let is_visible = use_element_visibility(parts_table_ref);
 
     // -- actions -- //
 
     let query_parts_for_quotation = create_action(move |_| {
-        let customer_id = quotation.customer_id.clone();
-        let project_id = quotation.project_id.clone();
+        // let customer_id = quotation.customer_id.clone();
+        // let project_id = quotation.project_id.clone();
         let quotation_id = quotation.id.clone();
         async move {
             let result = parts_client
-                .query_parts_for_quotation(customer_id, project_id, quotation_id)
+                .admin_query_parts_for_quotation(quotation_id)
                 .await;
 
             match result {
@@ -68,7 +68,7 @@ pub fn PartQuotesTable(
             .into_iter()
             .zip(workdays_to_complete_list.get_untracked())
             .map(|(part, deadlines)| (part.id, deadlines))
-            .collect::<HashMap<String, Vec<RwSignal<u32>>>>();
+            .collect::<HashMap<String, Vec<RwSignal<u64>>>>();
 
         let mut price_data: Vec<CreatePartQuotesRequestData> = Vec::new();
 
@@ -149,9 +149,9 @@ pub fn PartQuotesTable(
                         create_rw_signal(None::<Money>),
                     ];
                     let workdays_to_complete_options = vec![
-                        create_rw_signal(0_u32),
-                        create_rw_signal(0_u32),
-                        create_rw_signal(0_u32),
+                        create_rw_signal(0_u64),
+                        create_rw_signal(0_u64),
+                        create_rw_signal(0_u64),
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
                     workdays_to_complete_list.update(|workdays_to_complete| workdays_to_complete.push(workdays_to_complete_options.clone()));

@@ -42,14 +42,15 @@ impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
         &self,
         request: QueryOrdersForCustomerRequest,
     ) -> Result<QueryOrdersForCustomerResponse> {
-        let orders = self
+        let response = self
             .orders_repository
-            .query_orders_for_customer(request.customer_id)
+            .query_orders_for_customer(request.customer_id, request.cursor, request.limit)
             .await?;
 
         let mut parts_map = HashMap::<String, Part>::new();
-        if request.with_part_data && !orders.is_empty() {
-            let order_and_part_ids = orders
+        if request.with_part_data && !response.data.is_empty() {
+            let order_and_part_ids = response
+                .data
                 .iter()
                 .map(|order| (order.quotation_id.clone(), order.part_id.clone()))
                 .collect();
@@ -76,18 +77,19 @@ impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
                 .collect::<HashMap<String, Part>>();
         }
 
-        let data = orders
+        let data = response
+            .data
             .into_iter()
             .map(|order| {
                 let part_id = order.part_id.clone();
-                let part = parts_map.remove(&part_id).unwrap();
-                QueryOrdersForCustomerResponseData {
-                    order,
-                    part: Some(part),
-                }
+                let part = parts_map.remove(&part_id);
+                QueryOrdersForCustomerResponseData { order, part }
             })
             .collect();
 
-        Ok(QueryOrdersForCustomerResponse { data })
+        Ok(QueryOrdersForCustomerResponse {
+            data,
+            cursor: response.cursor,
+        })
     }
 }

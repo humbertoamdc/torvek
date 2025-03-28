@@ -40,7 +40,7 @@ impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
     ) -> Result<QueryPartsForQuotationResponse> {
         let mut response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id, 100, None)
+            .query_parts_for_quotation(request.quotation_id, request.cursor, request.limit)
             .await?;
 
         self.sign_part_render_urls(&mut response.data).await?;

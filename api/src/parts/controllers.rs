@@ -36,6 +36,25 @@ pub async fn admin_create_part_quotes(
     }
 }
 
+pub async fn admin_query_parts_for_quotation(
+    State(app_state): State<AppState>,
+    Path(quotation_id): Path<String>,
+    Query(params): Query<QueryPartsForQuotationQueryParameters>,
+) -> impl IntoResponse {
+    let mut request = QueryPartsForQuotationRequest::new(quotation_id, params);
+    request.limit = 100;
+    let usecase = QueryPartsForQuotationUseCase::new(
+        app_state.parts.parts_repository,
+        app_state.parts.object_storage,
+    );
+    let result = usecase.execute(request).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
 pub async fn get_part(
     State(app_state): State<AppState>,
     Path(request): Path<GetPartRequest>,
@@ -73,13 +92,9 @@ pub async fn create_parts(
 pub async fn query_parts_for_quotation(
     State(app_state): State<AppState>,
     Path((_, _, quotation_id)): Path<(String, String, String)>,
-    Query(query_params): Query<QueryPartsForQuotationQueryParameters>,
+    Query(params): Query<QueryPartsForQuotationQueryParameters>,
 ) -> impl IntoResponse {
-    let request = QueryPartsForQuotationRequest {
-        quotation_id,
-        with_quotation_subtotal: query_params.with_quotation_subtotal.unwrap_or(false),
-    };
-
+    let request = QueryPartsForQuotationRequest::new(quotation_id, params);
     let usecase = QueryPartsForQuotationUseCase::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,

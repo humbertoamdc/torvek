@@ -23,10 +23,29 @@ pub struct AdminCreateOrdersRequestData {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryOpenOrdersRequest {}
 
+#[derive(Deserialize)]
+pub struct QueryOrdersForCustomerQueryParameters {
+    pub with_part_data: Option<bool>,
+    pub cursor: Option<String>,
+    pub limit: Option<i32>,
+}
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryOrdersForCustomerRequest {
     pub customer_id: String,
     pub with_part_data: bool,
+    pub cursor: Option<String>,
+    pub limit: i32,
+}
+impl QueryOrdersForCustomerRequest {
+    pub fn new(customer_id: String, params: QueryOrdersForCustomerQueryParameters) -> Self {
+        let max_limit = 10;
+        Self {
+            customer_id,
+            with_part_data: params.with_part_data.unwrap_or(false),
+            cursor: params.cursor,
+            limit: params.limit.unwrap_or(max_limit),
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]

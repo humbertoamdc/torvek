@@ -15,8 +15,8 @@ pub trait PartsRepository: Send + Sync + 'static {
     async fn query_parts_for_quotation(
         &self,
         quotation_id: String,
-        page_limit: i32,
         cursor: Option<String>,
+        page_limit: i32,
     ) -> Result<QueryResponse<Vec<Part>, String>>;
     async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part>;
     async fn delete_part(&self, quotation_id: String, part_id: String) -> Result<Part>;

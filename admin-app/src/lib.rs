@@ -43,7 +43,7 @@ pub fn App() -> impl IntoView {
     // -- init API -- //
     let unauthorized_api = UnauthorizedApi::new(API_URL);
     let logging_in = create_action(move |_| async move {
-        // Try to login. If there is a session id in the cookies we can skip the login page.
+        // Try to log in. If there is a session id in the cookies we can skip the login page.
         if let Ok((authorized_api, user_info)) =
             { unauthorized_api.try_login_with_session_cookie().await }
         {

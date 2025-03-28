@@ -9,7 +9,7 @@ use crate::components::parts::part_quote_card::PartQuoteCard;
 pub fn PartQuotesTableRow(
     #[prop(into)] part: Part,
     #[prop(into)] price_options: Vec<RwSignal<Option<Money>>>,
-    #[prop(into)] workdays_to_complete_options: Vec<RwSignal<u32>>,
+    #[prop(into)] workdays_to_complete_options: Vec<RwSignal<u64>>,
 ) -> impl IntoView {
     // -- signals -- //
     view! {
