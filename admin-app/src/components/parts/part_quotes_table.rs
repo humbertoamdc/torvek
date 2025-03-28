@@ -39,8 +39,6 @@ pub fn PartQuotesTable(
     // -- actions -- //
 
     let query_parts_for_quotation = create_action(move |_| {
-        // let customer_id = quotation.customer_id.clone();
-        // let project_id = quotation.project_id.clone();
         let quotation_id = quotation.id.clone();
         async move {
             let result = parts_client
