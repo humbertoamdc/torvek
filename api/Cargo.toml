@@ -45,6 +45,9 @@ async-trait = "0.1.83"
 axum-test = "16.4.1"
 time = "0.3.41"
 
+[dev-dependencies]
+cookie = "0.18.1"
+
 [target.x86_64-unknown-linux-gnu.dependencies]
 openssl = { version = "0.10.59", features = ["vendored"] }
 openssl-sys = { version = "0.9.95", features = ["vendored"] }
