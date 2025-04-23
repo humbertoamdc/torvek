@@ -16,7 +16,7 @@ use axum::response::IntoResponse;
 use axum::Json;
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
-use cookie::time::OffsetDateTime;
+use time::OffsetDateTime;
 
 static CUSTOMER_SESSION_TOKEN: &'static str = "customer_session_token";
 static ADMIN_SESSION_TOKEN: &'static str = "admin_session_token";
