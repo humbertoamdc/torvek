@@ -73,14 +73,14 @@ pub async fn create_lambda_app() -> Router {
 
 pub async fn create_app_from_config(config: &Config) -> Router {
     let app_state = AppState::from(config).await;
-    create_base_router().with_state(app_state)
+    create_base_router(app_state.clone()).with_state(app_state)
 }
 
-fn create_base_router() -> Router<AppState> {
+fn create_base_router(state: AppState) -> Router<AppState> {
     Router::new()
         .nest("/api/v1", auth::routes::create_router())
         .nest("/api/v1", orders::routes::create_router())
-        .nest("/api/v1", projects::routes::create_router())
+        .nest("/api/v1", projects::routes::create_router(state))
         .nest("/api/v1", quotations::routes::create_router())
         .nest("/api/v1", parts::routes::create_router())
         .nest("/api/v1", payments::routes::create_router())
