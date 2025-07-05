@@ -88,7 +88,6 @@ where
             match session_token.clone() {
                 Some(token) => match state.auth.identity_manager.get_session(token).await {
                     Ok(session) => {
-                        tracing::info!("Authenticated session: {:#?}", session);
                         req.extensions_mut().insert(session);
                         let res = inner.call(req).await?;
                         Ok(res.into_response())
