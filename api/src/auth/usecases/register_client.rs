@@ -1,5 +1,5 @@
 use crate::auth::models::requests::RegisterClientRequest;
-use crate::auth::models::session::{MetadataAdmin, SessionWithToken};
+use crate::auth::models::session::{MetadataPublic, Role, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::services::stripe_client::StripeClient;
 use crate::shared;
@@ -41,11 +41,12 @@ impl UseCase<RegisterClientRequest, SessionWithToken> for RegisterClientUseCase 
             .create_customer(request.name, request.email)
             .await?;
 
-        let admin_metadata = MetadataAdmin {
-            stripe_customer_id: stripe_customer.id.to_string(),
+        let public_metadata = MetadataPublic {
+            stripe_customer_id: Some(stripe_customer.id.to_string()),
+            role: Role::Customer,
         };
         self.identity_manager
-            .update_admin_metadata(&identity.id, admin_metadata)
+            .update_public_metadata(&identity.id, public_metadata)
             .await?;
 
         Ok(session_with_token)

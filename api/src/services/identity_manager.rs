@@ -1,5 +1,5 @@
 use crate::auth::models::requests::{AdminLoginRequest, LoginClientRequest, RegisterClientRequest};
-use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
+use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
 use crate::shared;
 use async_trait::async_trait;
 use shared::Result;
@@ -11,10 +11,10 @@ pub trait IdentityManager: Send + Sync + 'static {
     async fn logout_user(&self, session_token: String) -> Result<()>;
     async fn get_session(&self, session_token: String) -> Result<Session>;
     async fn get_identity(&self, identity_id: String) -> Result<Identity>;
-    async fn update_admin_metadata(
+    async fn update_public_metadata(
         &self,
         identity_id: &str,
-        metadata: MetadataAdmin,
+        metadata: MetadataPublic,
     ) -> Result<Identity>;
 }
 

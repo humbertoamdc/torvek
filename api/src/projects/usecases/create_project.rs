@@ -1,7 +1,7 @@
+use crate::projects::models::requests::CreateProjectInput;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::projects::models::Project;
-use api_boundary::projects::requests::CreateProjectRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -18,9 +18,9 @@ impl CreateProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateProjectRequest, ()> for CreateProjectUseCase {
-    async fn execute(&self, request: CreateProjectRequest) -> Result<()> {
-        let project = Project::new(request.customer_id, request.project_name);
+impl UseCase<CreateProjectInput, ()> for CreateProjectUseCase {
+    async fn execute(&self, input: CreateProjectInput) -> Result<()> {
+        let project = Project::new(input.identity.id, input.project_name);
         self.projects_repository.create_project(project).await
     }
 }

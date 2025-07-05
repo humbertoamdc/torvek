@@ -1,6 +1,6 @@
+use crate::projects::models::requests::QueryProjectsForClientInput;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::projects::requests::QueryProjectsForClientRequest;
 use api_boundary::projects::responses::QueryProjectsForClientResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -18,16 +18,16 @@ impl QueryProjectsForClientUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryProjectsForClientRequest, QueryProjectsForClientResponse>
+impl UseCase<QueryProjectsForClientInput, QueryProjectsForClientResponse>
     for QueryProjectsForClientUseCase
 {
     async fn execute(
         &self,
-        request: QueryProjectsForClientRequest,
+        input: QueryProjectsForClientInput,
     ) -> Result<QueryProjectsForClientResponse> {
         let response = self
             .projects_repository
-            .query_projects_for_client(request.customer_id, 100, None)
+            .query_projects_for_client(input.identity.id, 100, None)
             .await?;
 
         Ok(QueryProjectsForClientResponse {

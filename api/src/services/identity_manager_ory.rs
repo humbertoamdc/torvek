@@ -1,5 +1,5 @@
 use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
-use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
+use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use api_boundary::common::error::Error;
@@ -109,15 +109,15 @@ impl IdentityManager for OryIdentityManager {
         }
     }
 
-    async fn update_admin_metadata(
+    async fn update_public_metadata(
         &self,
         identity_id: &str,
-        metadata: MetadataAdmin,
+        metadata: MetadataPublic,
     ) -> Result<Identity> {
         let patches = vec![JsonPatch {
             from: None,
             op: String::from("add"),
-            path: String::from("/metadata_admin"),
+            path: String::from("/metadata_public"),
             value: Some(json!(serde_json::to_value(&metadata).unwrap())),
         }];
 
@@ -131,7 +131,7 @@ impl IdentityManager for OryIdentityManager {
             }
             // TODO: Handle error.
             Err(err) => {
-                tracing::error!("Failed to update metadata admin metadata. {err:?}");
+                tracing::error!("Failed to update public metadata. {err:?}");
                 Err(Error::UnknownError)
             }
         }

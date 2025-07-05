@@ -21,7 +21,7 @@ pub struct Session {
 pub struct Identity {
     pub id: String,
     pub traits: Traits,
-    pub metadata_admin: Option<MetadataAdmin>,
+    pub metadata_public: Option<MetadataPublic>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -30,8 +30,15 @@ pub struct Traits {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct MetadataAdmin {
-    pub stripe_customer_id: String,
+pub struct MetadataPublic {
+    pub stripe_customer_id: Option<String>,
+    pub role: Role,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Role {
+    Admin,
+    Customer,
 }
 
 impl SessionWithToken {

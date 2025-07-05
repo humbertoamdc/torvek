@@ -55,12 +55,10 @@ impl UseCase<DownloadQuotePdfRequest, Bytes> for DownloadQuotePdfUseCase {
         let quote_line_items = self.generate_quote_line_items(request.quotation_id).await?;
 
         let stripe_customer_id = identity
-            .metadata_admin
-            .expect(&format!(
-                "missing admin metadata for customer with id: {}",
-                session.identity.id
-            ))
-            .stripe_customer_id;
+            .metadata_public
+            .expect("metadata_public is required")
+            .stripe_customer_id
+            .expect("No stripe-customer ID configured");
 
         let stripe_quote = self
             .stripe_client

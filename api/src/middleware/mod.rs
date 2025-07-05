@@ -1,5 +1,7 @@
 use crate::app_state::AppState;
+use crate::auth;
 use crate::auth::controllers::{ADMIN_SESSION_TOKEN, CUSTOMER_SESSION_TOKEN};
+use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use axum::response::{IntoResponse, Response};
 use http::{header, HeaderMap, HeaderValue, Request, StatusCode};
 use lambda_http::tower::Layer;
@@ -88,7 +90,17 @@ where
             match session_token.clone() {
                 Some(token) => match state.auth.identity_manager.get_session(token).await {
                     Ok(session) => {
-                        req.extensions_mut().insert(session);
+                        if !session.active {
+                            return Ok(StatusCode::UNAUTHORIZED.into_response());
+                        }
+                        match session.clone().identity.metadata_public.unwrap().role {
+                            auth::models::session::Role::Admin => {
+                                req.extensions_mut().insert(AdminSession(session));
+                            }
+                            auth::models::session::Role::Customer => {
+                                req.extensions_mut().insert(CustomerSession(session));
+                            }
+                        };
                         let res = inner.call(req).await?;
                         Ok(res.into_response())
                     }
