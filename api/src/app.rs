@@ -1,5 +1,6 @@
 use crate::app_state::AppState;
 use crate::config::Config;
+use crate::middleware::SessionAuthLayer;
 use crate::{auth, orders, parts, payments, projects, quotations};
 use aws_config::BehaviorVersion;
 use axum::Router;
@@ -77,13 +78,20 @@ pub async fn create_app_from_config(config: &Config) -> Router {
 }
 
 fn create_base_router(state: AppState) -> Router<AppState> {
+    let public_router = Router::new().nest("/v1", auth::routes::create_public_router());
+
+    let private_router = Router::new()
+        .nest("/v1", auth::routes::create_private_router())
+        .nest("/v1", orders::routes::create_router())
+        .nest("/v1", projects::routes::create_router())
+        .nest("/v1", quotations::routes::create_router())
+        .nest("/v1", parts::routes::create_router())
+        .nest("/v1", payments::routes::create_router())
+        .layer(SessionAuthLayer::new(state));
+
     Router::new()
-        .nest("/api/v1", auth::routes::create_router())
-        .nest("/api/v1", orders::routes::create_router())
-        .nest("/api/v1", projects::routes::create_router(state))
-        .nest("/api/v1", quotations::routes::create_router())
-        .nest("/api/v1", parts::routes::create_router())
-        .nest("/api/v1", payments::routes::create_router())
+        .nest("/api", public_router)
+        .nest("/api", private_router)
         .layer(CompressionLayer::new().gzip(true).deflate(true))
 }
 
