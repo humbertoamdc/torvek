@@ -23,9 +23,9 @@ pub enum Error {
     InvalidUrl,
     #[error("cannot delete a project contains payed quotes")]
     DeleteLockedProject,
-    #[error("cannot delete a quote that has been payed for")]
+    #[error("cannot delete a quote that has been paid for")]
     DeletePayedQuotation,
-    #[error("a pdf quote can't be generated the because parts haven't been quoted yet")]
+    #[error("a pdf quote can't be generated because parts haven't been quoted yet")]
     NoPdfQuoteAvailable,
     #[error("an unexpected error occurred")]
     UnknownError,
