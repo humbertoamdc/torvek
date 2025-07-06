@@ -12,6 +12,7 @@ pub struct SessionWithToken {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Session {
+    pub id: String,
     pub active: bool,
     pub expires_at: DateTime<Utc>,
     pub identity: Identity,

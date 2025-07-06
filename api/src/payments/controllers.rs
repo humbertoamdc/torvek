@@ -1,5 +1,4 @@
 use crate::app_state::AppState;
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
 use crate::payments::models::inputs::{
     CompleteCheckoutSessionWebhookRequest, CreateCheckoutSessionInput,
 };
@@ -32,13 +31,9 @@ pub async fn create_checkout_session(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let query_parts_for_quotation_usecase = QueryPartsForQuotationUseCase::new(
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
-    );
     let usecase = CreateCheckoutSessionUseCase::new(
         app_state.payments.stripe_client,
-        query_parts_for_quotation_usecase,
+        app_state.parts.parts_repository,
     );
     let result = usecase.execute(input).await;
 
