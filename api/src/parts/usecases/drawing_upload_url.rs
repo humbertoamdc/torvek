@@ -1,20 +1,18 @@
+use crate::parts::models::dynamodb_requests::UpdatablePart;
+use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
+use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
+use crate::quotations::models::inputs::GetQuotationByIdInput;
+use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
+use crate::shared::{Result, UseCase};
 use api_boundary::common::error::Error;
 use api_boundary::common::file::File;
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
-
-use crate::parts::domain::dynamodb_requests::UpdatablePart;
-use crate::repositories::parts::PartsRepository;
-use api_boundary::parts::requests::CreateDrawingUploadUrlRequest;
-use api_boundary::parts::responses::CreateDrawingUploadUrlResponse;
-use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::requests::GetQuotationByIdRequest;
-
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::services::object_storage::ObjectStorage;
-use crate::shared::{Result, UseCase};
 
 static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
@@ -39,30 +37,30 @@ impl CreateDrawingUploadUrlUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
+impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
     for CreateDrawingUploadUrlUseCase
 {
     async fn execute(
         &self,
-        request: CreateDrawingUploadUrlRequest,
+        input: CreateDrawingUploadUrlInput,
     ) -> Result<CreateDrawingUploadUrlResponse> {
-        if self.quotation_is_payed(&request).await? {
+        if self.quotation_is_payed(&input).await? {
             return Err(Error::UpdatePartAfterPayingQuotation);
         }
 
         // We only want to preserve one drawing file per part. In the case where
         // a file has been previously uploaded, we will use the path for that file,
         // effectively overwriting the file and maintaining one drawing per part.
-        let file_path = match request.file_url {
+        let file_path = match input.file_url {
             Some(file_url) => file_url.path().strip_prefix("/").unwrap().to_string(),
             None => {
                 let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
 
                 let file_id = format!("file_{}", bs58::encode(id).into_string());
-                let file_extension = request.file_name.split(".").last().unwrap();
+                let file_extension = input.file_name.split(".").last().unwrap();
                 let file_path = format!(
                     "{}/{}/{}.{}",
-                    DRAWING_FILES_BASE_FILE_PATH, request.customer_id, file_id, file_extension
+                    DRAWING_FILES_BASE_FILE_PATH, input.identity.id, file_id, file_extension
                 );
 
                 file_path
@@ -76,10 +74,10 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
         let url = presigned_url.split("?").nth(0).unwrap().to_string();
 
         let updatable_part = UpdatablePart {
-            id: request.part_id,
-            customer_id: request.customer_id,
-            quotation_id: request.quotation_id,
-            drawing_file: Some(File::new(request.file_name, url.clone())),
+            id: input.part_id,
+            customer_id: input.identity.id,
+            quotation_id: input.quotation_id,
+            drawing_file: Some(File::new(input.file_name, url.clone())),
             process: None,
             attributes: None,
             quantity: None,
@@ -93,15 +91,15 @@ impl UseCase<CreateDrawingUploadUrlRequest, CreateDrawingUploadUrlResponse>
 }
 
 impl CreateDrawingUploadUrlUseCase {
-    async fn quotation_is_payed(&self, request: &CreateDrawingUploadUrlRequest) -> Result<bool> {
-        let get_quotation_request = GetQuotationByIdRequest {
-            customer_id: String::default(),
-            project_id: request.project_id.clone(),
-            quotation_id: request.quotation_id.clone(),
+    async fn quotation_is_payed(&self, input: &CreateDrawingUploadUrlInput) -> Result<bool> {
+        let get_quotation_input = GetQuotationByIdInput {
+            identity: input.identity.clone(),
+            project_id: input.project_id.clone(),
+            quotation_id: input.quotation_id.clone(),
         };
         let quotation = self
             .get_quotation_by_id_use_case
-            .execute(get_quotation_request)
+            .execute(get_quotation_input)
             .await
             .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
 

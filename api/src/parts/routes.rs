@@ -17,11 +17,11 @@ pub fn create_router() -> Router<AppState> {
         )
         .route("/parts", post(create_parts))
         .route(
-            "/customers/:customer_id/projects/:project_id/quotations/:quotation_id/parts",
+            "/projects/:project_id/quotations/:quotation_id/parts",
             get(query_parts_for_quotation),
         )
         .route(
-            "/customers/:customer_id/projects/:project_id/quotations/:quotation_id/parts/:part_id",
+            "/projects/:project_id/quotations/:quotation_id/parts/:part_id",
             get(get_part),
         )
         .route("/parts", patch(update_part))

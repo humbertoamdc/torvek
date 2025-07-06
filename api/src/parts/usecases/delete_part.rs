@@ -1,11 +1,11 @@
+use crate::parts::models::inputs::DeletePartInput;
+use crate::quotations::models::quotation::QuotationStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::Result;
 use crate::shared::UseCase;
 use api_boundary::common::error::Error;
-use api_boundary::parts::requests::DeletePartRequest;
-use api_boundary::quotations::models::QuotationStatus;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -30,11 +30,11 @@ impl DeletePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeletePartRequest, ()> for DeletePartUseCase {
-    async fn execute(&self, request: DeletePartRequest) -> Result<()> {
+impl UseCase<DeletePartInput, ()> for DeletePartUseCase {
+    async fn execute(&self, input: DeletePartInput) -> Result<()> {
         let quotation = self
             .quotations_repository
-            .get_quotation_by_id(request.project_id, request.quotation_id.clone())
+            .get_quotation_by_id(input.project_id, input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status.
@@ -45,7 +45,7 @@ impl UseCase<DeletePartRequest, ()> for DeletePartUseCase {
 
         let part = self
             .parts_repository
-            .delete_part(request.quotation_id, request.part_id)
+            .delete_part(input.quotation_id, input.part_id)
             .await?;
 
         let _ = self

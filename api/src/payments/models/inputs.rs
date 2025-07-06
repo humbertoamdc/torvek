@@ -1,4 +1,5 @@
-use api_boundary::orders::models::Address;
+use crate::auth::models::session::Identity;
+use crate::orders::models::order::Address;
 use serde_derive::{Deserialize, Serialize};
 use stripe::CheckoutSession;
 
@@ -12,8 +13,8 @@ pub enum WebhookRequestError {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateCheckoutSessionRequest {
-    pub customer_id: String,
+pub struct CreateCheckoutSessionInput {
+    pub identity: Identity,
     pub project_id: String,
     pub quotation_id: String,
 }

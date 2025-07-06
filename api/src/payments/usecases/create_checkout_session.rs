@@ -1,13 +1,12 @@
+use crate::parts::models::inputs::QueryPartsForQuotationInput;
+use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
+use crate::payments::models::inputs::CreateCheckoutSessionInput;
+use crate::services::stripe_client::StripeClient;
+use crate::shared::{Result, UseCase};
 use api_boundary::common::error::Error;
-use api_boundary::parts::requests::QueryPartsForQuotationRequest;
 use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
-
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::payments::domain::requests::CreateCheckoutSessionRequest;
-use crate::services::stripe_client::StripeClient;
-use crate::shared::{Result, UseCase};
 
 pub struct CreateCheckoutSessionUseCase {
     stripe_client: Arc<dyn StripeClient>,
@@ -27,15 +26,17 @@ impl CreateCheckoutSessionUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
+impl UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse>
     for CreateCheckoutSessionUseCase
 {
     async fn execute(
         &self,
-        request: CreateCheckoutSessionRequest,
+        input: CreateCheckoutSessionInput,
     ) -> Result<CreateCheckoutSessionResponse> {
-        let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
-            quotation_id: request.quotation_id.clone(),
+        let query_parts_for_quotation_input = QueryPartsForQuotationInput {
+            identity: input.identity.clone(),
+            project_id: input.project_id.clone(),
+            quotation_id: input.quotation_id.clone(),
             with_quotation_subtotal: false,
             cursor: None,
             limit: 100,
@@ -43,7 +44,7 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
 
         let parts_for_quotation = self
             .query_parts_for_quotation_usecase
-            .execute(query_parts_for_quotation_request)
+            .execute(query_parts_for_quotation_input)
             .await
             .map_err(|_| Error::UnknownError)?
             .parts;
@@ -51,9 +52,9 @@ impl UseCase<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
         let url = self
             .stripe_client
             .create_checkout_session(
-                request.customer_id,
-                request.project_id,
-                request.quotation_id,
+                input.identity.id,
+                input.project_id,
+                input.quotation_id,
                 parts_for_quotation,
             )
             .await?;

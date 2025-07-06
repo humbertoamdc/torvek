@@ -12,11 +12,11 @@ pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/quotations", post(create_quotation))
         .route(
-            "/customers/:customer_id/projects/:project_id/quotations",
+            "/projects/:project_id/quotations",
             get(query_quotations_for_project),
         )
         .route(
-            "/customers/:customer_id/projects/:project_id/quotations/:quotation_id",
+            "/projects/:project_id/quotations/:quotation_id",
             get(get_quotation_by_id),
         )
         .route(

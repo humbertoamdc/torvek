@@ -1,4 +1,4 @@
-use crate::projects::models::requests::QueryProjectsForClientInput;
+use crate::projects::models::inputs::QueryProjectsForClientInput;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::projects::responses::QueryProjectsForClientResponse;

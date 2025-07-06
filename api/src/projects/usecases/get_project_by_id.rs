@@ -1,4 +1,4 @@
-use crate::projects::models::requests::GetProjectByIdInput;
+use crate::projects::models::inputs::GetProjectByIdInput;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
 use api_boundary::projects::models::Project;

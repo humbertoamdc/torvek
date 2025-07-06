@@ -1,14 +1,14 @@
-use crate::parts::domain::dynamodb_requests::BatchDeletePartObject;
-use crate::projects::models::requests::DeleteProjectInput;
-use crate::quotations::domain::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::parts::models::dynamodb_requests::BatchDeletePartObject;
+use crate::parts::models::part::Part;
+use crate::projects::models::inputs::DeleteProjectInput;
+use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::quotations::models::quotation::Quotation;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::UseCase;
-use api_boundary::parts::models::Part;
-use api_boundary::quotations::models::Quotation;
 use async_trait::async_trait;
 use std::sync::Arc;
 

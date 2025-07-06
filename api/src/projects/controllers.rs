@@ -1,7 +1,6 @@
 use crate::app_state::AppState;
-use crate::projects::models::requests::{
-    CreateProjectInput, CreateProjectRequest, DeleteProjectInput, GetProjectByIdInput,
-    QueryProjectsForClientInput,
+use crate::projects::models::inputs::{
+    CreateProjectInput, DeleteProjectInput, GetProjectByIdInput, QueryProjectsForClientInput,
 };
 use crate::projects::usecases::create_project::CreateProjectUseCase;
 use crate::projects::usecases::delete_project::DeleteProjectUseCase;
@@ -14,6 +13,12 @@ use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
+use serde_derive::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateProjectRequest {
+    pub project_name: String,
+}
 
 pub async fn create_project(
     State(app_state): State<AppState>,

@@ -1,8 +1,7 @@
-use async_trait::async_trait;
-
+use crate::orders::models::order::Order;
 use crate::shared::{QueryResponse, Result};
 use api_boundary::common::money::Money;
-use api_boundary::orders::models::Order;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {

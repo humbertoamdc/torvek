@@ -1,4 +1,4 @@
-use api_boundary::orders::models::{Address, Order, OrderStatus};
+use crate::orders::models::order::{Address, Order, OrderStatus};
 use chrono::{DateTime, NaiveDate, Utc};
 use serde_derive::{Deserialize, Serialize};
 use std::str::FromStr;

@@ -1,4 +1,4 @@
-use crate::parts::models::inputs::QueryPartsForQuotationInput;
+use crate::parts::models::inputs::AdminQueryPartsForQuotationInput;
 use crate::parts::models::part::{Part, PartQuote};
 use crate::parts::models::responses::QueryPartsForQuotationResponse;
 use crate::repositories::parts::PartsRepository;
@@ -12,12 +12,12 @@ use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct QueryPartsForQuotationUseCase {
+pub struct AdminQueryPartsForQuotationUseCase {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl QueryPartsForQuotationUseCase {
+impl AdminQueryPartsForQuotationUseCase {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
@@ -30,12 +30,12 @@ impl QueryPartsForQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryPartsForQuotationInput, QueryPartsForQuotationResponse>
-    for QueryPartsForQuotationUseCase
+impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
+    for AdminQueryPartsForQuotationUseCase
 {
     async fn execute(
         &self,
-        input: QueryPartsForQuotationInput,
+        input: AdminQueryPartsForQuotationInput,
     ) -> Result<QueryPartsForQuotationResponse> {
         let mut response = self
             .parts_repository
@@ -65,7 +65,7 @@ impl UseCase<QueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     }
 }
 
-impl QueryPartsForQuotationUseCase {
+impl AdminQueryPartsForQuotationUseCase {
     async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
         for part in parts.iter_mut() {
             let presigned_url = self

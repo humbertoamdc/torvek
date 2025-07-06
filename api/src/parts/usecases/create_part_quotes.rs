@@ -1,7 +1,7 @@
+use crate::parts::models::inputs::CreatePartQuotesRequest;
+use crate::parts::models::part::PartQuote;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::shared::{Result, UseCase};
-use api_boundary::parts::models::PartQuote;
-use api_boundary::parts::requests::CreatePartQuotesRequest;
 use async_trait::async_trait;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;

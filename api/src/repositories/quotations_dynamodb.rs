@@ -1,9 +1,9 @@
-use crate::quotations::domain::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::quotations::models::quotation::{Quotation, QuotationStatus};
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use api_boundary::common::error::Error;
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
 use aws_sdk_dynamodb::types::{AttributeValue, DeleteRequest, ReturnValue, WriteRequest};

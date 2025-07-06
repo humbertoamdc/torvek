@@ -1,12 +1,12 @@
+use crate::parts::models::inputs::CreateModelUploadUrlInput;
+use crate::parts::models::responses::CreateModelUploadUrlResponse;
+use crate::quotations::models::inputs::GetQuotationByIdInput;
+use crate::quotations::models::quotation::QuotationStatus;
 use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use api_boundary::common::error::Error;
-use api_boundary::parts::requests::CreateModelUploadUrlRequest;
-use api_boundary::parts::responses::CreateModelUploadUrlResponse;
-use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::requests::GetQuotationByIdRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
@@ -35,18 +35,18 @@ impl ModelUploadUrlUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse> for ModelUploadUrlUseCase {
+impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelUploadUrlUseCase {
     async fn execute(
         &self,
-        request: CreateModelUploadUrlRequest,
+        input: CreateModelUploadUrlInput,
     ) -> Result<CreateModelUploadUrlResponse> {
-        if self.quotation_is_payed(&request).await? {
+        if self.quotation_is_payed(&input).await? {
             return Err(Error::UpdatePartAfterPayingQuotation);
         }
 
         let part = self
             .parts_repository
-            .get_part(request.quotation_id, request.part_id)
+            .get_part(input.quotation_id, input.part_id)
             .await?;
 
         let url = part.model_file.url.parse::<Url>().unwrap();
@@ -66,11 +66,11 @@ impl UseCase<CreateModelUploadUrlRequest, CreateModelUploadUrlResponse> for Mode
 }
 
 impl ModelUploadUrlUseCase {
-    async fn quotation_is_payed(&self, request: &CreateModelUploadUrlRequest) -> Result<bool> {
-        let get_quotation_request = GetQuotationByIdRequest {
-            customer_id: String::default(),
-            project_id: request.project_id.clone(),
-            quotation_id: request.quotation_id.clone(),
+    async fn quotation_is_payed(&self, input: &CreateModelUploadUrlInput) -> Result<bool> {
+        let get_quotation_request = GetQuotationByIdInput {
+            identity: input.identity.clone(),
+            project_id: input.project_id.clone(),
+            quotation_id: input.quotation_id.clone(),
         };
         let quotation = self
             .get_quotation_by_id_use_case

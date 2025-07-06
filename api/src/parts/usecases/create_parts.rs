@@ -3,22 +3,21 @@ use std::sync::Arc;
 use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
 
-use api_boundary::common::file::File;
-use api_boundary::parts::models::{CNCAttributes, Part, PartAttributes, PartProcess};
-use api_boundary::parts::requests::CreatePartsRequest;
-use api_boundary::parts::responses::CreatePartsResponse;
-use api_boundary::quotations::models::QuotationStatus;
-
+use crate::parts::models::inputs::CreatePartsInput;
+use crate::parts::models::part::{CNCAttributes, Part, PartAttributes, PartProcess};
+use crate::quotations::models::quotation::QuotationStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::services::stripe_client::StripeClient;
 use crate::shared::{Result, UseCase};
+use api_boundary::common::file::File;
+use api_boundary::parts::responses::CreatePartsResponse;
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
-static ORIGINAL_FILES_BASE_FILE_PATH: &'static str = "parts/originals";
-static RENDER_FILES_BASE_FILE_PATH: &'static str = "parts/web_ready";
-static RENDER_FILE_FORMAT: &'static str = ".stl";
+static ORIGINAL_FILES_BASE_FILE_PATH: &str = "parts/originals";
+static RENDER_FILES_BASE_FILE_PATH: &str = "parts/web_ready";
+static RENDER_FILE_FORMAT: &str = ".stl";
 
 pub struct CreatePartsUseCase {
     parts_repository: Arc<dyn PartsRepository>,
@@ -44,17 +43,17 @@ impl CreatePartsUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
-    async fn execute(&self, request: CreatePartsRequest) -> Result<CreatePartsResponse> {
-        let file_ids = (0..request.file_names.len())
+impl UseCase<CreatePartsInput, CreatePartsResponse> for CreatePartsUseCase {
+    async fn execute(&self, input: CreatePartsInput) -> Result<CreatePartsResponse> {
+        let file_ids = (0..input.file_names.len())
             .map(|_| {
                 let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
                 let encoded_id = format!("file_{}", bs58::encode(id).into_string());
                 encoded_id
             })
             .collect::<Vec<String>>();
-        let original_file_names = request.file_names.clone();
-        let render_file_names = request
+        let original_file_names = input.file_names.clone();
+        let render_file_names = input
             .file_names
             .into_iter()
             .map(|file_name| {
@@ -69,7 +68,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
                 &original_file_names,
                 &file_ids,
                 ORIGINAL_FILES_BASE_FILE_PATH,
-                request.customer_id.clone(),
+                input.identity.id.clone(),
             )
             .await?;
         let render_presigned_urls = self
@@ -77,7 +76,7 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
                 &render_file_names,
                 &file_ids,
                 RENDER_FILES_BASE_FILE_PATH,
-                request.customer_id.clone(),
+                input.identity.id.clone(),
             )
             .await?;
 
@@ -97,9 +96,9 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
                 let render_file = File::new(render_file_names[i].clone(), render_url);
 
                 Part::new(
-                    request.customer_id.clone(),
-                    request.project_id.clone(),
-                    request.quotation_id.clone(),
+                    input.identity.id.clone(),
+                    input.project_id.clone(),
+                    input.quotation_id.clone(),
                     PartProcess::CNC,
                     PartAttributes::CNC(CNCAttributes::default()),
                     original_file,
@@ -117,8 +116,8 @@ impl UseCase<CreatePartsRequest, CreatePartsResponse> for CreatePartsUseCase {
 
         self.quotations_repository
             .update_quotation_status(
-                request.project_id,
-                request.quotation_id,
+                input.project_id,
+                input.quotation_id,
                 QuotationStatus::Created,
             )
             .await?;

@@ -1,7 +1,7 @@
+use crate::quotations::models::inputs::QueryQuotationsForProjectInput;
+use crate::quotations::models::responses::QueryQuotationsForProjectResponse;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::quotations::requests::QueryQuotationsForProjectRequest;
-use api_boundary::quotations::responses::QueryQuotationsForProjectResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -18,16 +18,16 @@ impl QueryQuotationsForProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryQuotationsForProjectRequest, QueryQuotationsForProjectResponse>
+impl UseCase<QueryQuotationsForProjectInput, QueryQuotationsForProjectResponse>
     for QueryQuotationsForProjectUseCase
 {
     async fn execute(
         &self,
-        request: QueryQuotationsForProjectRequest,
+        input: QueryQuotationsForProjectInput,
     ) -> Result<QueryQuotationsForProjectResponse> {
         let response = self
             .quotations_repository
-            .query_quotations_for_project(request.project_id, 100, None)
+            .query_quotations_for_project(input.project_id, 100, None)
             .await?;
 
         Ok(QueryQuotationsForProjectResponse::new(response.data))

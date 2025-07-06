@@ -1,6 +1,6 @@
+use crate::parts::models::inputs::UpdatePartInput;
+use crate::parts::models::part::PartAttributes;
 use api_boundary::common::file::File;
-use api_boundary::parts::models::PartAttributes;
-use api_boundary::parts::requests::UpdatePartRequest;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -25,16 +25,16 @@ impl UpdatablePart {
     }
 }
 
-impl From<&UpdatePartRequest> for UpdatablePart {
-    fn from(request: &UpdatePartRequest) -> Self {
+impl From<&UpdatePartInput> for UpdatablePart {
+    fn from(input: &UpdatePartInput) -> Self {
         Self {
-            id: request.part_id.clone(),
-            customer_id: request.customer_id.clone(),
-            quotation_id: request.quotation_id.clone(),
-            drawing_file: request.drawing_file.clone(),
-            process: request.process.clone(),
-            attributes: request.attributes.clone(),
-            quantity: request.quantity,
+            id: input.part_id.clone(),
+            customer_id: input.identity.id.clone(),
+            quotation_id: input.quotation_id.clone(),
+            drawing_file: input.drawing_file.clone(),
+            process: input.process.clone(),
+            attributes: input.attributes.clone(),
+            quantity: input.quantity,
             selected_part_quote_id: None,
             clear_part_quotes: Some(true),
         }

@@ -2,11 +2,6 @@ use crate::auth::models::session::Identity;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateProjectRequest {
-    pub project_name: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct CreateProjectInput {
     pub identity: Identity,
     pub project_name: String,
