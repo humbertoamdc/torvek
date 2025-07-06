@@ -1,8 +1,8 @@
 use crate::app_state::AppState;
 use crate::parts::models::inputs::{
     AdminQueryPartsForQuotationInput, CreateDrawingUploadUrlInput, CreateModelUploadUrlInput,
-    CreatePartsInput, DeletePartInput, GetPartInput, QueryPartsForQuotationInput, UpdatePartInput,
-    UpdateSelectedPartQuoteInput,
+    CreatePartQuotesRequest, CreatePartsInput, DeletePartInput, GetPartInput,
+    QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
 use crate::parts::models::part::PartAttributes;
 use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotationUseCase;
@@ -20,7 +20,6 @@ use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::UseCase;
 use api_boundary::common::file::File;
 use api_boundary::common::into_error_response::IntoError;
-use api_boundary::parts::requests::CreatePartQuotesRequest;
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
