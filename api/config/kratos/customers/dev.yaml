@@ -16,6 +16,7 @@ selfservice:
   default_browser_return_url: http://127.0.0.1:8080/
   allowed_return_urls:
     - http://127.0.0.1:8080
+    - http://127.0.0.1:8081
   flows:
     registration:
       after:

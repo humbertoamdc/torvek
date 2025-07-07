@@ -2,7 +2,7 @@ use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
 use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
-use api_boundary::common::error::Error;
+use crate::shared::error::Error;
 use async_trait::async_trait;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{

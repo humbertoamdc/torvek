@@ -1,6 +1,6 @@
 use crate::orders::models::order::Order;
+use crate::shared::money::Money;
 use crate::shared::{QueryResponse, Result};
-use api_boundary::common::money::Money;
 use async_trait::async_trait;
 
 #[async_trait]

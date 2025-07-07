@@ -1,4 +1,4 @@
-use crate::common::error::ErrorCode;
+use crate::shared::error::ErrorCode;
 use http::StatusCode;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};

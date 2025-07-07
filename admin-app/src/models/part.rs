@@ -1,13 +1,9 @@
-use chrono::{DateTime, Days, Utc};
+use crate::models::file::File;
+use crate::models::money::Money;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use std::fmt::{Display, Formatter};
-use uuid::{ContextV7, Timestamp, Uuid};
-
-use crate::common::file::File;
-use crate::common::money::Money;
-
-static PART_QUOTE_VALID_DAYS: u64 = 30;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Part {
@@ -25,39 +21,6 @@ pub struct Part {
     pub part_quotes: Option<Vec<PartQuote>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-}
-
-impl Part {
-    pub fn new(
-        customer_id: String,
-        project_id: String,
-        quotation_id: String,
-        process: PartProcess,
-        attributes: PartAttributes,
-        model_file: File,
-        render_file: File,
-    ) -> Self {
-        let now = Utc::now();
-        let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
-        let encoded_id = format!("part_{}", bs58::encode(id).into_string());
-
-        Self {
-            id: encoded_id,
-            customer_id,
-            project_id,
-            quotation_id,
-            model_file,
-            render_file,
-            drawing_file: None,
-            process,
-            attributes,
-            quantity: 1,
-            selected_part_quote_id: None,
-            part_quotes: None,
-            created_at: now,
-            updated_at: now,
-        }
-    }
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
@@ -140,31 +103,4 @@ pub struct PartQuote {
     pub valid_until: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-}
-
-impl PartQuote {
-    pub fn new(
-        part_id: String,
-        unit_price: Money,
-        sub_total: Money,
-        workdays_to_complete: u64,
-    ) -> Self {
-        let now = Utc::now();
-        let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
-        let encoded_id = format!("pq_{}", bs58::encode(id).into_string());
-        let valid_until = now
-            .checked_add_days(Days::new(PART_QUOTE_VALID_DAYS))
-            .expect("error creating `valid_until` date for part quote.");
-
-        Self {
-            id: encoded_id,
-            part_id,
-            unit_price,
-            sub_total,
-            workdays_to_complete,
-            valid_until,
-            created_at: now,
-            updated_at: now,
-        }
-    }
 }

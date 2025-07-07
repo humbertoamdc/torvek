@@ -14,8 +14,8 @@ use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotalUse
 use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
 use crate::quotations::usecases::update_quotation_status::SendQuotationForReviewUseCase;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
+use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
-use api_boundary::common::into_error_response::IntoError;
 use axum::extract::{Path, Query, State};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -32,6 +32,11 @@ pub struct CreateQuotationRequest {
 pub struct SendQuotationForReviewRequest {
     pub project_id: String,
     pub quotation_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AdminQueryQuotationsByStatusQueryParams {
+    pub status: QuotationStatus,
 }
 
 pub async fn create_quotation(
@@ -196,10 +201,12 @@ pub async fn download_pdf_quote(
 
 pub async fn admin_query_quotations_by_status(
     State(app_state): State<AppState>,
-    Query(status): Query<QuotationStatus>,
+    Query(params): Query<AdminQueryQuotationsByStatusQueryParams>,
     AdminSession(_): AdminSession,
 ) -> impl IntoResponse {
-    let input = AdminQueryQuotationsByStatusInput { status };
+    let input = AdminQueryQuotationsByStatusInput {
+        status: params.status,
+    };
     let usecase =
         AdminQueryQuotationsByStatusUseCase::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;

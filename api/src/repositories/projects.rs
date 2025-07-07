@@ -1,5 +1,5 @@
+use crate::projects::models::project::Project;
 use crate::shared::{QueryResponse, Result};
-use api_boundary::projects::models::Project;
 use async_trait::async_trait;
 
 #[async_trait]

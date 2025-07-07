@@ -1,10 +1,10 @@
 use crate::orders::models::dynamodb_order_item::DynamodbOrderItem;
 use crate::orders::models::order::{Order, OrderStatus};
 use crate::repositories::orders::OrdersRepository;
+use crate::shared::error::Error;
+use crate::shared::money::Money;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
-use api_boundary::common::error::Error;
-use api_boundary::common::money::Money;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Utc;

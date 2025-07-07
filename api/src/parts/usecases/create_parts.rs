@@ -5,14 +5,14 @@ use uuid::{ContextV7, Timestamp, Uuid};
 
 use crate::parts::models::inputs::CreatePartsInput;
 use crate::parts::models::part::{CNCAttributes, Part, PartAttributes, PartProcess};
+use crate::parts::models::responses::CreatePartsResponse;
 use crate::quotations::models::quotation::QuotationStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::services::stripe_client::StripeClient;
+use crate::shared::file::File;
 use crate::shared::{Result, UseCase};
-use api_boundary::common::file::File;
-use api_boundary::parts::responses::CreatePartsResponse;
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
 static ORIGINAL_FILES_BASE_FILE_PATH: &str = "parts/originals";

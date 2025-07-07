@@ -4,8 +4,8 @@ use crate::parts::models::part::Part;
 use crate::quotations::models::quotation::QuotationStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
+use crate::shared::error::Error;
 use crate::shared::{Result, UseCase};
-use api_boundary::common::error::Error;
 use async_trait::async_trait;
 use std::sync::Arc;
 

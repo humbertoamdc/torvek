@@ -1,4 +1,4 @@
-use crate::common::api_error::ApiError;
+use crate::shared::api_error::ApiError;
 use axum::Json;
 use http::StatusCode;
 

@@ -1,16 +1,17 @@
+extern crate core;
+
 use leptos::*;
 use leptos_router::*;
 
+use self::components::loading::Loading;
+use self::pages::*;
+use crate::api::auth::UnauthorizedApi;
 use api::auth::AuthorizedApi;
 use api::models::auth::UserInfo;
 use clients::orders::OrdersClient;
 
-use crate::api::auth::UnauthorizedApi;
-
-use self::components::loading::Loading;
-use self::pages::*;
-
 mod api;
+mod clients;
 mod components;
 mod models;
 mod pages;

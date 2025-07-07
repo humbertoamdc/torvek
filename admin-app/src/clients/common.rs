@@ -1,4 +1,4 @@
-use api_boundary::common::api_error::ApiError;
+use crate::models::api_error::ApiError;
 use gloo_net::http::{Request, Response};
 use http::StatusCode;
 use serde::de::DeserializeOwned;

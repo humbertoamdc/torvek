@@ -1,7 +1,6 @@
 use chrono::{DateTime, NaiveDate, Utc};
 use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
-use uuid::{ContextV7, Timestamp, Uuid};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Order {
@@ -18,40 +17,6 @@ pub struct Order {
     pub is_open: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-}
-
-impl Order {
-    pub fn new(
-        customer_id: String,
-        project_id: String,
-        quotation_id: String,
-        part_id: String,
-        part_quote_id: String,
-        deadline: NaiveDate,
-        status: OrderStatus,
-        shipping_recipient_name: String,
-        shipping_address: Address,
-    ) -> Self {
-        let now = Utc::now();
-        let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
-        let encoded_id = format!("ord_{}", bs58::encode(id).into_string());
-
-        Self {
-            id: encoded_id,
-            customer_id,
-            project_id,
-            quotation_id,
-            part_id,
-            part_quote_id,
-            deadline,
-            status,
-            shipping_recipient_name,
-            shipping_address,
-            is_open: Some(String::from("1")),
-            created_at: now,
-            updated_at: now,
-        }
-    }
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]

@@ -15,6 +15,7 @@ services:
       - DEFAULT_REGION=us-east-1
       - LAMBDA_EXECUTOR=docker
       - HOST_TMP_FOLDER=${PWD}/localstack_tmp
+      - PERSISTENCE=1
     volumes:
       - "./scripts/localstack:/etc/localstack/init/ready.d"
       # Logs, cache and generated data by AWS services live here.

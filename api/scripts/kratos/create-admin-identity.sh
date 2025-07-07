@@ -13,5 +13,8 @@ curl --request POST -sL \
         "password": "password"
       }
     }
+  },
+  "metadata_public": {
+    "role": "Admin"
   }
-}' http://127.0.0.1:4436/admin/identities
+}' http://127.0.0.1:4434/admin/identities

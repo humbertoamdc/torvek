@@ -1,7 +1,7 @@
 use crate::auth::models::session::Identity;
 use crate::parts::models::part::PartAttributes;
-use api_boundary::common::file::File;
-use api_boundary::common::money::Money;
+use crate::shared::file::File;
+use crate::shared::money::Money;
 use serde_derive::{Deserialize, Serialize};
 use url::Url;
 

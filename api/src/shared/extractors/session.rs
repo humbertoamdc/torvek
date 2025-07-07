@@ -17,11 +17,17 @@ where
     type Rejection = (StatusCode, &'static str);
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        parts
+        let customer_session = parts
             .extensions
             .get::<CustomerSession>()
             .cloned()
-            .ok_or((StatusCode::UNAUTHORIZED, "Missing customer session"))
+            .ok_or((StatusCode::UNAUTHORIZED, "Missing customer session"))?;
+
+        if !customer_session.0.active {
+            return Err((StatusCode::UNAUTHORIZED, "Expired session"));
+        }
+
+        Ok(customer_session)
     }
 }
 
@@ -33,10 +39,16 @@ where
     type Rejection = (StatusCode, &'static str);
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        parts
+        let admin_session = parts
             .extensions
             .get::<AdminSession>()
             .cloned()
-            .ok_or((StatusCode::UNAUTHORIZED, "Missing admin session"))
+            .ok_or((StatusCode::UNAUTHORIZED, "Missing admin session"))?;
+
+        if !admin_session.0.active {
+            return Err((StatusCode::UNAUTHORIZED, "Expired session"));
+        }
+
+        Ok(admin_session)
     }
 }

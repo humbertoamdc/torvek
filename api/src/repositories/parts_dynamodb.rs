@@ -1,9 +1,9 @@
 use crate::parts::models::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
 use crate::parts::models::part::Part;
 use crate::repositories::parts::PartsRepository;
+use crate::shared::error::Error;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
-use api_boundary::common::error::Error;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{
     AttributeValue, DeleteRequest, KeysAndAttributes, PutRequest, ReturnValue, WriteRequest,

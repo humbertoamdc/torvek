@@ -1,7 +1,6 @@
+use crate::models::money::Money;
 use leptos::*;
 use thaw::{Input, InputNumber, InputPrefix};
-
-use api_boundary::common::money::Money;
 
 #[component]
 pub fn PartQuoteCard(

@@ -1,9 +1,8 @@
 use leptos::*;
 use thaw::{Card, Collapse, CollapseItem};
 
-use api_boundary::quotations::models::Quotation;
-
 use crate::components::parts::part_quotes_table::PartQuotesTable;
+use crate::models::quotation::Quotation;
 
 #[component]
 pub fn CreatedQuotationsCollapsible(

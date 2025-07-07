@@ -1,14 +1,19 @@
 use gloo_net::http::Request;
+use serde_derive::{Deserialize, Serialize};
 use web_sys::RequestCredentials;
 
-use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
-use api_boundary::orders::responses::QueryOpenOrdersResponse;
-
-use crate::common::{send, Result};
+use crate::clients::common::{send, Result};
+use crate::models::money::Money;
 
 #[derive(Copy, Clone)]
 pub struct OrdersClient {
     url: &'static str,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminUpdateOrderPayoutRequest {
+    pub order_id: String,
+    pub payout: Money,
 }
 
 impl OrdersClient {
@@ -24,16 +29,6 @@ impl OrdersClient {
         let request = Request::patch(&url)
             .credentials(RequestCredentials::Include)
             .json(&request)
-            .unwrap();
-
-        send(request).await
-    }
-
-    pub async fn query_open_orders(&self) -> Result<QueryOpenOrdersResponse> {
-        let url = format!("{}/admin/orders/open", self.url);
-        let request = Request::get(&url)
-            .credentials(RequestCredentials::Include)
-            .build()
             .unwrap();
 
         send(request).await

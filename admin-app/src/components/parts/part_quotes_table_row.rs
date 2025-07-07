@@ -1,9 +1,8 @@
 use leptos::*;
 
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::{Part, PartAttributes};
-
 use crate::components::parts::part_quote_card::PartQuoteCard;
+use crate::models::money::Money;
+use crate::models::part::{Part, PartAttributes};
 
 #[component]
 pub fn PartQuotesTableRow(
@@ -83,6 +82,7 @@ pub fn PartQuotesTableRow(
                         {match part.attributes.clone() {
                             PartAttributes::CNC(attributes) => attributes.material,
                         }}
+
                     </p>
                 </div>
                 <div class="flex items-baseline">
@@ -100,9 +100,18 @@ pub fn PartQuotesTableRow(
                 </div>
             </div>
             <div class="flex flex-col w-96 space-y-2">
-                <PartQuoteCard price_option=price_options[0] workdays_to_complete_option=workdays_to_complete_options[0]/>
-                <PartQuoteCard price_option=price_options[1] workdays_to_complete_option=workdays_to_complete_options[1]/>
-                <PartQuoteCard price_option=price_options[2] workdays_to_complete_option=workdays_to_complete_options[2]/>
+                <PartQuoteCard
+                    price_option=price_options[0]
+                    workdays_to_complete_option=workdays_to_complete_options[0]
+                />
+                <PartQuoteCard
+                    price_option=price_options[1]
+                    workdays_to_complete_option=workdays_to_complete_options[1]
+                />
+                <PartQuoteCard
+                    price_option=price_options[2]
+                    workdays_to_complete_option=workdays_to_complete_options[2]
+                />
             </div>
         </div>
     }

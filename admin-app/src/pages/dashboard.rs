@@ -1,16 +1,14 @@
-use leptos::*;
-
-use api_boundary::orders::models::{Order, OrderStatus};
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
-use clients::orders::OrdersClient;
-use clients::parts::PartsClient;
-
 use crate::api::auth::AuthorizedApi;
 use crate::api::models::auth::UserInfo;
 use crate::api::quotations::QuotationsClient;
+use crate::clients::orders::OrdersClient;
+use crate::clients::parts::PartsClient;
 use crate::components::orders::add_order_payouts_table::AddOrderPayoutsTable;
 use crate::components::quotations::created_quotations_collapsible::CreatedQuotationsCollapsible;
 use crate::components::sidebar::Sidebar;
+use crate::models::order::Order;
+use crate::models::quotation::{Quotation, QuotationStatus};
+use leptos::*;
 
 pub const API_URL: &'static str = env!("API_URL");
 
@@ -50,17 +48,6 @@ pub fn Dashboard(
         }
     });
 
-    let query_open_orders = create_action(move |_| {
-        async move {
-            let result = orders_client.query_open_orders().await;
-
-            match result {
-                Ok(response) => orders.update(|o| *o = response.orders),
-                Err(_) => (), // TODO: Handle error.
-            }
-        }
-    });
-
     // Fetch user data
     create_action(move |_| async move {
         let result = auth_client.user_info().await;
@@ -68,7 +55,6 @@ pub fn Dashboard(
             Ok(user_info) => {
                 user_info_signal.update(|u| {
                     query_quotations_pending_review.dispatch(());
-                    query_open_orders.dispatch(OrderStatus::PendingPricing);
                     *u = user_info;
                 });
             }

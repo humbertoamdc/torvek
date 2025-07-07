@@ -4,8 +4,8 @@ use crate::quotations::models::quotation::QuotationStatus;
 use crate::quotations::models::responses::GetQuotationSubtotalResponse;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
+use crate::shared::money::Money;
 use crate::shared::{Result, UseCase};
-use api_boundary::common::money::Money;
 use async_trait::async_trait;
 use std::sync::Arc;
 

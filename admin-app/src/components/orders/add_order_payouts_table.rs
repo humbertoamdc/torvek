@@ -1,8 +1,7 @@
 use leptos::*;
 
-use api_boundary::orders::models::Order;
-
 use crate::components::orders::add_order_payouts_table_row::AddOrderPayoutsTableRow;
+use crate::models::order::Order;
 
 #[component]
 pub fn AddOrderPayoutsTable(#[prop(into)] orders: RwSignal<Vec<Order>>) -> impl IntoView {

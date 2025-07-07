@@ -1,8 +1,8 @@
 use crate::parts::models::part::PartQuote;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::quotations::models::quotation::QuotationStatus;
+use crate::shared::error::Error;
 use crate::shared::Result;
-use api_boundary::common::error::Error;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;

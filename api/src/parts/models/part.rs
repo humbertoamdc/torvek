@@ -1,5 +1,5 @@
-use api_boundary::common::file::File;
-use api_boundary::common::money::Money;
+use crate::shared::file::File;
+use crate::shared::money::Money;
 use chrono::{DateTime, Days, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};

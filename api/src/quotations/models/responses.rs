@@ -1,5 +1,5 @@
 use crate::quotations::models::quotation::Quotation;
-use api_boundary::common::money::Money;
+use crate::shared::money::Money;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]

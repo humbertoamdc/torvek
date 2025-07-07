@@ -1,7 +1,7 @@
 use crate::projects::models::inputs::GetProjectByIdInput;
+use crate::projects::models::project::Project;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::projects::models::Project;
 use async_trait::async_trait;
 use std::sync::Arc;
 

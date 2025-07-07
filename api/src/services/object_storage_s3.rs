@@ -1,5 +1,4 @@
 use crate::shared::Result;
-use api_boundary::common::error::Error;
 use async_trait::async_trait;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::types::builders::DeleteBuilder;
@@ -8,6 +7,7 @@ use std::time::Duration;
 use url::Url;
 
 use crate::services::object_storage::ObjectStorage;
+use crate::shared::error::Error;
 
 #[derive(Clone)]
 pub struct S3ObjectStorage {

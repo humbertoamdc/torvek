@@ -1,8 +1,8 @@
 use crate::payments::models::inputs::CreateCheckoutSessionInput;
+use crate::payments::models::responses::CreateCheckoutSessionResponse;
 use crate::repositories::parts::PartsRepository;
 use crate::services::stripe_client::StripeClient;
 use crate::shared::{Result, UseCase};
-use api_boundary::payments::responses::CreateCheckoutSessionResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
 

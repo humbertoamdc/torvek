@@ -1,9 +1,8 @@
 use leptos::*;
 
-use api_boundary::common::money::Money;
-use api_boundary::orders::models::Order;
-use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
-use clients::orders::OrdersClient;
+use crate::clients::orders::{AdminUpdateOrderPayoutRequest, OrdersClient};
+use crate::models::money::Money;
+use crate::models::order::Order;
 
 #[component]
 pub fn AddOrderPayoutsTableRow(
@@ -46,8 +45,8 @@ pub fn AddOrderPayoutsTableRow(
                             alt="User Image"
                         />
                     </div>
-                    <div class="ml-3">// <p class="text-gray-900 whitespace-no-wrap">{order.model_file.name}</p>
-                    </div>
+                    // <p class="text-gray-900 whitespace-no-wrap">{order.model_file.name}</p>
+                    <div class="ml-3"></div>
                 </div>
             </td>
             <td class="px-2 py-5 border-b border-gray-200 bg-white text-sm">

@@ -1,6 +1,6 @@
 use crate::parts::models::inputs::UpdatePartInput;
 use crate::parts::models::part::PartAttributes;
-use api_boundary::common::file::File;
+use crate::shared::file::File;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]

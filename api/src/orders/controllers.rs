@@ -1,5 +1,3 @@
-use api_boundary::common::into_error_response::IntoError;
-use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -7,10 +5,11 @@ use http::StatusCode;
 use serde_derive::Deserialize;
 
 use crate::app_state::AppState;
-use crate::orders::models::inputs::QueryOrdersForCustomerInput;
+use crate::orders::models::inputs::{AdminUpdateOrderPayoutRequest, QueryOrdersForCustomerInput};
 use crate::orders::usecases::admin_update_order_payout::AdminUpdateOrderPayoutUsecase;
 use crate::orders::usecases::query_orders_for_customer::QueryOrdersForCustomer;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
+use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
 
 #[derive(Deserialize)]

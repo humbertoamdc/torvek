@@ -1,6 +1,5 @@
-use crate::common::api_error::ApiError;
-use crate::common::error::Error::*;
-use crate::common::into_error_response::IntoError;
+use crate::shared::api_error::ApiError;
+use crate::shared::into_error_response::IntoError;
 use axum::Json;
 use http::StatusCode;
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
@@ -34,39 +33,39 @@ pub enum Error {
 impl IntoError for Error {
     fn into_error_response(self) -> (StatusCode, Json<ApiError>) {
         let (status_code, api_error) = match self {
-            EmailTakenRegistrationError => (
+            Error::EmailTakenRegistrationError => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: EmailTakenRegistrationError.to_string(),
+                    message: Error::EmailTakenRegistrationError.to_string(),
                 },
             ),
-            InvalidCredentialsLoginError => (
+            Error::InvalidCredentialsLoginError => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: InvalidCredentialsLoginError.to_string(),
+                    message: Error::InvalidCredentialsLoginError.to_string(),
                 },
             ),
-            BreachedPasswordRegistrationError => (
+            Error::BreachedPasswordRegistrationError => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: BreachedPasswordRegistrationError.to_string(),
+                    message: Error::BreachedPasswordRegistrationError.to_string(),
                 },
             ),
-            ItemNotFoundError => (
+            Error::ItemNotFoundError => (
                 StatusCode::NOT_FOUND,
                 ApiError {
                     status_code: StatusCode::NOT_FOUND.as_u16(),
                     code: ErrorCode::MissingUserInput,
-                    message: ItemNotFoundError.to_string(),
+                    message: Error::ItemNotFoundError.to_string(),
                 },
             ),
-            NoSelectedQuoteAvailableForPart(message) => (
+            Error::NoSelectedQuoteAvailableForPart(message) => (
                 StatusCode::BAD_REQUEST,
                 ApiError {
                     status_code: StatusCode::BAD_REQUEST.as_u16(),
@@ -74,44 +73,44 @@ impl IntoError for Error {
                     message,
                 },
             ),
-            UpdatePartAfterPayingQuotation => (
+            Error::UpdatePartAfterPayingQuotation => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: UpdatePartAfterPayingQuotation.to_string(),
+                    message: Error::UpdatePartAfterPayingQuotation.to_string(),
                 },
             ),
-            InvalidUrl => (
+            Error::InvalidUrl => (
                 StatusCode::BAD_REQUEST,
                 ApiError {
                     status_code: StatusCode::BAD_REQUEST.as_u16(),
                     code: ErrorCode::BadInput,
-                    message: InvalidUrl.to_string(),
+                    message: Error::InvalidUrl.to_string(),
                 },
             ),
-            DeleteLockedProject => (
+            Error::DeleteLockedProject => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: DeleteLockedProject.to_string(),
+                    message: Error::DeleteLockedProject.to_string(),
                 },
             ),
-            DeletePayedQuotation => (
+            Error::DeletePayedQuotation => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: DeletePayedQuotation.to_string(),
+                    message: Error::DeletePayedQuotation.to_string(),
                 },
             ),
-            NoPdfQuoteAvailable => (
+            Error::NoPdfQuoteAvailable => (
                 StatusCode::BAD_REQUEST,
                 ApiError {
                     status_code: StatusCode::BAD_REQUEST.as_u16(),
                     code: ErrorCode::ItemNotFound,
-                    message: NoPdfQuoteAvailable.to_string(),
+                    message: Error::NoPdfQuoteAvailable.to_string(),
                 },
             ),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ApiError::default()),
