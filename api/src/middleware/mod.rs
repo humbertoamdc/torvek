@@ -12,31 +12,31 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 #[derive(Clone)]
-pub struct SessionAuthLayer {
+pub struct SessionLayer {
     state: AppState,
 }
 
-impl SessionAuthLayer {
+impl SessionLayer {
     pub const fn new(state: AppState) -> Self {
         Self { state }
     }
 }
 
-impl<S> Layer<S> for SessionAuthLayer {
-    type Service = SessionAuth<S>;
+impl<S> Layer<S> for SessionLayer {
+    type Service = Session<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
-        SessionAuth::new(inner, self.state.clone())
+        Session::new(inner, self.state.clone())
     }
 }
 
 #[derive(Clone)]
-pub struct SessionAuth<S> {
+pub struct Session<S> {
     inner: S,
     state: AppState,
 }
 
-impl<S> SessionAuth<S> {
+impl<S> Session<S> {
     pub const fn new(inner: S, state: AppState) -> Self {
         Self { inner, state }
     }
@@ -67,7 +67,7 @@ impl<S> SessionAuth<S> {
     }
 }
 
-impl<S, Body> Service<Request<Body>> for SessionAuth<S>
+impl<S, Body> Service<Request<Body>> for Session<S>
 where
     S: Service<Request<Body>, Error = Infallible> + Clone + Send + 'static,
     S::Response: IntoResponse + 'static,

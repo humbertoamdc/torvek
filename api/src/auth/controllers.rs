@@ -4,7 +4,7 @@ use crate::auth::models::mappers::GetSessionResponseMapper;
 use crate::auth::models::session::Role;
 use crate::auth::usecases::get_session::GetSessionUseCase;
 use crate::auth::usecases::login_user::LoginUserUseCase;
-use crate::auth::usecases::logout_client::LogoutClientUseCase;
+use crate::auth::usecases::logout_user::LogoutUserUseCase;
 use crate::auth::usecases::register_user::RegisterUserUseCase;
 use crate::shared::error::Error;
 use crate::shared::UseCase;
@@ -126,7 +126,7 @@ pub async fn get_session(
 }
 
 pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> impl IntoResponse {
-    let usecase = LogoutClientUseCase::new(app_state.auth.identity_manager);
+    let usecase = LogoutUserUseCase::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -210,7 +210,7 @@ pub async fn admin_logout(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = LogoutClientUseCase::new(app_state.auth.identity_manager);
+    let usecase = LogoutUserUseCase::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(ADMIN_SESSION_TOKEN);
 
     let result = match session_cookie {

@@ -5,18 +5,18 @@ use shared::Result;
 use shared::UseCase;
 use std::sync::Arc;
 
-pub struct LogoutClientUseCase {
+pub struct LogoutUserUseCase {
     identity_manager: Arc<dyn IdentityManager>,
 }
 
-impl LogoutClientUseCase {
+impl LogoutUserUseCase {
     pub fn new(identity_manager: Arc<dyn IdentityManager>) -> Self {
         Self { identity_manager }
     }
 }
 
 #[async_trait]
-impl UseCase<String, ()> for LogoutClientUseCase {
+impl UseCase<String, ()> for LogoutUserUseCase {
     async fn execute(&self, session_token: String) -> Result<()> {
         self.identity_manager.logout_user(session_token).await
     }
