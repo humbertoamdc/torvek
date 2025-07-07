@@ -29,8 +29,8 @@ services:
     depends_on:
       - localstack
 
-  kratos-customers:
-    container_name: kratos-customers-test
+  ory-kratos:
+    container_name: ory-kratos-test
     image: oryd/kratos:v1.3.0
     ports:
       - '4443:4443' # public (shifted from 4433)
@@ -40,37 +40,9 @@ services:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
     entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint-test.sh" ]
     volumes:
-      - type: volume
-        source: kratos-customers-sqlite-test
-        target: /var/lib/sqlite
       - type: bind
-        source: ./config/kratos/customers
+        source: ./config/kratos
         target: /etc/config/kratos
       - type: bind
         source: ./scripts/kratos
         target: /etc/scripts/kratos
-
-  kratos-admins:
-    container_name: kratos-admins-test
-    image: oryd/kratos:v1.3.0
-    ports:
-      - '4435:4435' # public (shifted from 4435)
-      - '4436:4436' # admin (shifted from 4436)
-    restart: unless-stopped
-    environment:
-      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
-    entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint-test.sh" ]
-    volumes:
-      - type: volume
-        source: kratos-admins-sqlite-test
-        target: /var/lib/sqlite
-      - type: bind
-        source: ./config/kratos/admins
-        target: /etc/config/kratos
-      - type: bind
-        source: ./scripts/kratos
-        target: /etc/scripts/kratos
-
-volumes:
-  kratos-customers-sqlite-test:
-  kratos-admins-sqlite-test:

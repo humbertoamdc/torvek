@@ -20,8 +20,7 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::repositories::quotations_dynamodb::DynamodbQuotations;
-use crate::services::admin_identity_manager_ory::OryAdminIdentityManager;
-use crate::services::identity_manager::{AdminIdentityManager, IdentityManager};
+use crate::services::identity_manager::IdentityManager;
 use crate::services::identity_manager_ory::OryIdentityManager;
 use crate::services::stripe::Stripe;
 use crate::services::stripe_client::StripeClient;
@@ -41,7 +40,6 @@ pub struct AppState {
 #[derive(Clone)]
 pub struct AppStateAuth {
     pub identity_manager: Arc<dyn IdentityManager>,
-    pub admin_identity_manager: Arc<dyn AdminIdentityManager>,
 }
 
 #[derive(Clone)]
@@ -100,15 +98,7 @@ impl AppStateAuth {
             config.auth.ory_clients_api_key.clone(),
         ));
 
-        let admin_identity_manager = Arc::new(OryAdminIdentityManager::new(
-            config.auth.ory_admins_url.clone(),
-            reqwest_client,
-        ));
-
-        Self {
-            identity_manager,
-            admin_identity_manager,
-        }
+        Self { identity_manager }
     }
 
     fn reqwest_client(config: &Config) -> reqwest::Client {

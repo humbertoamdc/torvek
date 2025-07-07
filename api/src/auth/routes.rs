@@ -4,12 +4,12 @@ use axum::Router;
 
 use crate::app_state::AppState;
 use crate::auth::controllers::{
-    admin_login, admin_logout, get_admin_session, get_session, login, logout, register_client,
+    admin_login, admin_logout, get_admin_session, get_session, login, logout, register_customer,
 };
 
 pub fn create_public_router() -> Router<AppState> {
     Router::new()
-        .route("/accounts/customers/register", post(register_client))
+        .route("/accounts/customers/register", post(register_customer))
         .route("/accounts/customers/login", post(login))
         .route("/accounts/admins/login", post(admin_login))
 }

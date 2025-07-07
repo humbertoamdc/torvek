@@ -91,7 +91,7 @@ where
         Box::pin(async move {
             for token in session_tokens {
                 if let Ok(session) = state.auth.identity_manager.get_session(token).await {
-                    match session.clone().identity.metadata_public.unwrap().role {
+                    match session.clone().identity.metadata_public.role {
                         auth::models::session::Role::Admin => {
                             req.extensions_mut().insert(AdminSession(session));
                         }

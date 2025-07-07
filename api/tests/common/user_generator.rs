@@ -1,6 +1,7 @@
 use crate::common::app::get_app_state;
-use api::auth::models::requests::RegisterClientRequest;
-use api::auth::usecases::register_client::RegisterClientUseCase;
+use api::auth::models::inputs::RegisterUserInput;
+use api::auth::models::session::Role;
+use api::auth::usecases::register_user::RegisterUserUseCase;
 use api::shared::UseCase;
 
 pub struct TestUser {
@@ -15,15 +16,15 @@ impl TestUser {
         let email = format!("{id:?}@test.com");
         let password = String::from("password");
 
-        // Create registration request
-        let register_request = RegisterClientRequest {
+        let register_request = RegisterUserInput {
             email: email.clone(),
             password: password.clone(),
             name: String::from("Test Name"),
+            role: Role::Customer,
         };
 
         let app_state = get_app_state().await;
-        let register_client_usecase = RegisterClientUseCase::new(
+        let register_client_usecase = RegisterUserUseCase::new(
             app_state.auth.identity_manager.clone(),
             app_state.payments.stripe_client.clone(),
         );

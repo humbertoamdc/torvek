@@ -1,5 +1,5 @@
-use crate::auth::models::requests::RegisterClientRequest;
-use crate::auth::models::session::{MetadataPublic, Role, SessionWithToken};
+use crate::auth::models::inputs::RegisterUserInput;
+use crate::auth::models::session::{MetadataPublic, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::services::stripe_client::StripeClient;
 use crate::shared;
@@ -8,12 +8,12 @@ use shared::Result;
 use shared::UseCase;
 use std::sync::Arc;
 
-pub struct RegisterClientUseCase {
+pub struct RegisterUserUseCase {
     identity_manager: Arc<dyn IdentityManager>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl RegisterClientUseCase {
+impl RegisterUserUseCase {
     pub fn new(
         identity_manager: Arc<dyn IdentityManager>,
         stripe_client: Arc<dyn StripeClient>,
@@ -26,28 +26,33 @@ impl RegisterClientUseCase {
 }
 
 #[async_trait]
-impl UseCase<RegisterClientRequest, SessionWithToken> for RegisterClientUseCase {
-    async fn execute(&self, request: RegisterClientRequest) -> Result<SessionWithToken> {
-        let mut session_with_token = self.identity_manager.register_user(request.clone()).await?;
-
-        let identity = self
-            .identity_manager
-            .get_identity(session_with_token.session.identity.id)
-            .await?;
-        session_with_token.session.identity = identity.clone();
+impl UseCase<RegisterUserInput, SessionWithToken> for RegisterUserUseCase {
+    async fn execute(&self, input: RegisterUserInput) -> Result<SessionWithToken> {
+        let (session_token, identity_id) =
+            self.identity_manager.register_user(input.clone()).await?;
 
         let stripe_customer = self
             .stripe_client
-            .create_customer(request.name, request.email)
+            .create_customer(input.name, input.email)
             .await?;
 
         let public_metadata = MetadataPublic {
             stripe_customer_id: Some(stripe_customer.id.to_string()),
-            role: Role::Customer,
+            role: input.role,
         };
         self.identity_manager
-            .update_public_metadata(&identity.id, public_metadata)
+            .update_public_metadata(&identity_id, public_metadata)
             .await?;
+
+        let session = self
+            .identity_manager
+            .get_session(session_token.clone())
+            .await?;
+
+        let session_with_token = SessionWithToken {
+            session_token,
+            session,
+        };
 
         Ok(session_with_token)
     }

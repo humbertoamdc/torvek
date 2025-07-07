@@ -1,10 +1,11 @@
 use crate::app_state::AppState;
+use crate::auth::models::inputs::{LoginUserInput, RegisterUserInput};
 use crate::auth::models::mappers::GetSessionResponseMapper;
-use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
+use crate::auth::models::session::Role;
 use crate::auth::usecases::get_session::GetSessionUseCase;
-use crate::auth::usecases::login_client::LoginClientUseCase;
+use crate::auth::usecases::login_user::LoginUserUseCase;
 use crate::auth::usecases::logout_client::LogoutClientUseCase;
-use crate::auth::usecases::register_client::RegisterClientUseCase;
+use crate::auth::usecases::register_user::RegisterUserUseCase;
 use crate::shared::error::Error;
 use crate::shared::UseCase;
 use axum::extract::State;
@@ -13,21 +14,41 @@ use axum::response::IntoResponse;
 use axum::Json;
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
+use serde_derive::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 pub static CUSTOMER_SESSION_TOKEN: &'static str = "x-customer-session";
 pub static ADMIN_SESSION_TOKEN: &'static str = "x-admin-session";
 
-pub async fn register_client(
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct RegisterClientRequest {
+    pub email: String,
+    pub name: String,
+    pub password: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct LoginUserRequest {
+    pub email: String,
+    pub password: String,
+}
+
+pub async fn register_customer(
     cookies: CookieJar,
     State(app_state): State<AppState>,
     Json(request): Json<RegisterClientRequest>,
 ) -> impl IntoResponse {
-    let usecase = RegisterClientUseCase::new(
+    let input = RegisterUserInput {
+        email: request.email,
+        name: request.name,
+        password: request.password,
+        role: Role::Customer,
+    };
+    let usecase = RegisterUserUseCase::new(
         app_state.auth.identity_manager,
         app_state.payments.stripe_client,
     );
-    let result = usecase.execute(request).await;
+    let result = usecase.execute(input).await;
 
     match result {
         Ok(auth_session) => (
@@ -49,10 +70,15 @@ pub async fn register_client(
 pub async fn login(
     cookies: CookieJar,
     State(app_state): State<AppState>,
-    Json(request): Json<LoginClientRequest>,
+    Json(request): Json<LoginUserRequest>,
 ) -> impl IntoResponse {
-    let usecases = LoginClientUseCase::new(app_state.auth.identity_manager);
-    let result = usecases.execute(request).await;
+    let input = LoginUserInput {
+        email: request.email,
+        password: request.password,
+        role: Role::Customer,
+    };
+    let usecases = LoginUserUseCase::new(app_state.auth.identity_manager);
+    let result = usecases.execute(input).await;
 
     match result {
         Ok(auth_session) => (
@@ -125,10 +151,15 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
 pub async fn admin_login(
     cookies: CookieJar,
     State(app_state): State<AppState>,
-    Json(request): Json<LoginClientRequest>,
+    Json(request): Json<LoginUserRequest>,
 ) -> impl IntoResponse {
-    let usecases = LoginClientUseCase::new(app_state.auth.identity_manager);
-    let result = usecases.execute(request).await;
+    let input = LoginUserInput {
+        email: request.email,
+        password: request.password,
+        role: Role::Admin,
+    };
+    let usecases = LoginUserUseCase::new(app_state.auth.identity_manager);
+    let result = usecases.execute(input).await;
 
     match result {
         Ok(auth_session) => (

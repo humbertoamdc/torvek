@@ -1,22 +1,17 @@
+use crate::auth::models::session::Role;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct RegisterClientRequest {
+pub struct RegisterUserInput {
     pub email: String,
     pub name: String,
     pub password: String,
+    pub role: Role,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct LoginClientRequest {
+pub struct LoginUserInput {
     pub email: String,
     pub password: String,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct AdminLoginRequest {
-    pub email: String,
-    pub password: String,
-    pub flow_id: String,
-    pub csrf_token: String,
+    pub role: Role,
 }

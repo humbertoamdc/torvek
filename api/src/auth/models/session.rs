@@ -2,10 +2,13 @@ use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 
+pub type SessionToken = String;
+pub type IdentityId = String;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SessionWithToken {
     #[serde(rename = "session_token")]
-    pub session_token: String,
+    pub session_token: SessionToken,
     #[serde(rename = "session")]
     pub session: Session,
 }
@@ -20,9 +23,9 @@ pub struct Session {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Identity {
-    pub id: String,
+    pub id: IdentityId,
     pub traits: Traits,
-    pub metadata_public: Option<MetadataPublic>,
+    pub metadata_public: MetadataPublic,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -36,7 +39,7 @@ pub struct MetadataPublic {
     pub role: Role,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub enum Role {
     Admin,
     Customer,

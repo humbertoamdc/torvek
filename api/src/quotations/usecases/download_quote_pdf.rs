@@ -49,7 +49,6 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DownloadQuotePdfUseCase {
         let stripe_customer_id = input
             .identity
             .metadata_public
-            .expect("metadata_public is required")
             .stripe_customer_id
             .expect("No stripe-customer ID configured");
 

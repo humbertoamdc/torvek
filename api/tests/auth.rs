@@ -3,7 +3,9 @@ mod common;
 
 mod register_customer {
     use crate::common::app::init_test_server;
-    use api::auth::models::requests::RegisterClientRequest;
+    use api::auth::controllers::CUSTOMER_SESSION_TOKEN;
+    use api::auth::models::inputs::RegisterUserInput;
+    use api::auth::models::session::Role;
     use http::StatusCode;
 
     #[tokio::test]
@@ -11,20 +13,21 @@ mod register_customer {
         let server = init_test_server().await;
 
         let id = uuid::Uuid::new_v4();
-        let register_request = RegisterClientRequest {
+        let register_request = RegisterUserInput {
             email: format!("{:?}@test.com", id),
             password: String::from("password"),
             name: String::from("Test Name"),
+            role: Role::Customer,
         };
 
         let response = server
-            .post("/api/v1/register")
+            .post("/api/v1/accounts/customers/register")
             .json(&register_request)
             .await;
 
         assert_eq!(response.status_code(), StatusCode::NO_CONTENT);
         assert!(
-            response.maybe_cookie("customer_session_token").is_some(),
+            response.maybe_cookie(CUSTOMER_SESSION_TOKEN).is_some(),
             "Expected session cookie to be set"
         );
     }
@@ -33,7 +36,9 @@ mod register_customer {
 mod customer_login {
     use crate::common::app::init_test_server;
     use crate::common::user_generator::TestUser;
-    use api::auth::models::requests::LoginClientRequest;
+    use api::auth::controllers::CUSTOMER_SESSION_TOKEN;
+    use api::auth::models::inputs::LoginUserInput;
+    use api::auth::models::session::Role;
     use http::StatusCode;
 
     #[tokio::test]
@@ -41,16 +46,20 @@ mod customer_login {
         let server = init_test_server().await;
 
         let user = TestUser::new().await;
-        let login_request = LoginClientRequest {
+        let login_request = LoginUserInput {
             email: user.email,
             password: user.password,
+            role: Role::Customer,
         };
 
-        let response = server.post("/api/v1/login").json(&login_request).await;
+        let response = server
+            .post("/api/v1/accounts/customers/login")
+            .json(&login_request)
+            .await;
 
         assert_eq!(response.status_code(), StatusCode::OK);
         assert!(
-            response.maybe_cookie("customer_session_token").is_some(),
+            response.maybe_cookie(CUSTOMER_SESSION_TOKEN).is_some(),
             "Expected session cookie to be set"
         );
     }
@@ -59,6 +68,7 @@ mod customer_login {
 mod get_active_session {
     use crate::common::app::init_test_server;
     use crate::common::user_generator::TestUser;
+    use api::auth::controllers::CUSTOMER_SESSION_TOKEN;
     use api::auth::models::responses::GetSessionResponse;
     use cookie::Cookie;
 
@@ -68,10 +78,10 @@ mod get_active_session {
 
         let user = TestUser::new().await;
 
-        server.add_cookie(Cookie::new("customer_session_token", user.session_token));
+        server.add_cookie(Cookie::new(CUSTOMER_SESSION_TOKEN, user.session_token));
 
         let session = server
-            .get("/api/v1/session")
+            .get("/api/v1/accounts/customers/session")
             .await
             .json::<GetSessionResponse>();
 
@@ -82,6 +92,7 @@ mod get_active_session {
 mod customer_logout {
     use crate::common::app::init_test_server;
     use crate::common::user_generator::TestUser;
+    use api::auth::controllers::CUSTOMER_SESSION_TOKEN;
     use cookie::Cookie;
     use http::StatusCode;
 
@@ -91,14 +102,14 @@ mod customer_logout {
 
         let user = TestUser::new().await;
 
-        server.add_cookie(Cookie::new("customer_session_token", user.session_token));
+        server.add_cookie(Cookie::new(CUSTOMER_SESSION_TOKEN, user.session_token));
 
-        let response = server.post("/api/v1/logout").await;
+        let response = server.post("/api/v1/accounts/customers/logout").await;
 
         assert_eq!(response.status_code(), StatusCode::NO_CONTENT);
         assert!(
             response
-                .maybe_cookie("customer_session_token")
+                .maybe_cookie(CUSTOMER_SESSION_TOKEN)
                 .unwrap()
                 .value()
                 .is_empty(),
