@@ -1,8 +1,8 @@
-use crate::parts::domain::dynamodb_requests::UpdatablePart;
+use crate::parts::models::dynamodb_requests::UpdatablePart;
+use crate::parts::models::inputs::UpdateSelectedPartQuoteInput;
+use crate::parts::models::responses::UpdateSelectedPartQuoteResponse;
 use crate::repositories::parts::PartsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::parts::requests::UpdateSelectedPartQuoteRequest;
-use api_boundary::parts::responses::UpdateSelectedPartQuoteResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -17,17 +17,17 @@ impl UpdateSelectedPartQuoteUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdateSelectedPartQuoteRequest, UpdateSelectedPartQuoteResponse>
+impl UseCase<UpdateSelectedPartQuoteInput, UpdateSelectedPartQuoteResponse>
     for UpdateSelectedPartQuoteUseCase
 {
     async fn execute(
         &self,
-        request: UpdateSelectedPartQuoteRequest,
+        input: UpdateSelectedPartQuoteInput,
     ) -> Result<UpdateSelectedPartQuoteResponse> {
         // Update selected part quote id in part.
         let mut updatable_part =
-            UpdatablePart::partial_new(request.quotation_id.clone(), request.part_id.clone());
-        updatable_part.selected_part_quote_id = Some(request.selected_part_quote_id.clone());
+            UpdatablePart::partial_new(input.quotation_id.clone(), input.part_id.clone());
+        updatable_part.selected_part_quote_id = Some(input.selected_part_quote_id.clone());
 
         let part = self.parts_repository.update_part(updatable_part).await?;
 

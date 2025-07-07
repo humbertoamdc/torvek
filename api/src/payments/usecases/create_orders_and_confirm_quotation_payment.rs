@@ -1,32 +1,28 @@
-use api_boundary::common::error::Error;
+use crate::orders::models::order::{Order, OrderStatus};
+use crate::parts::models::part::PartQuote;
+use crate::payments::models::inputs::CompleteCheckoutSessionWebhookRequest;
+use crate::payments::services::orders_creation::OrdersCreationService;
+use crate::repositories::parts::PartsRepository;
+use crate::shared::{Result, UseCase};
+use crate::utils::workdays::Workdays;
 use async_trait::async_trait;
 use chrono::Utc;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use api_boundary::orders::models::{Order, OrderStatus};
-use api_boundary::parts::models::PartQuote;
-use api_boundary::parts::requests::QueryPartsForQuotationRequest;
-
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::payments::domain::requests::CompleteCheckoutSessionWebhookRequest;
-use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::shared::{Result, UseCase};
-use crate::utils::workdays::Workdays;
-
 pub struct CreateOrdersAndConfirmQuotationPaymentUseCase {
     orders_creation_service: Arc<dyn OrdersCreationService>,
-    query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+    parts_repository: Arc<dyn PartsRepository>,
 }
 
 impl CreateOrdersAndConfirmQuotationPaymentUseCase {
     pub fn new(
         orders_creation_service: Arc<dyn OrdersCreationService>,
-        query_parts_for_quotation_usecase: QueryPartsForQuotationUseCase,
+        parts_repository: Arc<dyn PartsRepository>,
     ) -> Self {
         Self {
             orders_creation_service,
-            query_parts_for_quotation_usecase,
+            parts_repository,
         }
     }
 }
@@ -36,20 +32,13 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()>
     for CreateOrdersAndConfirmQuotationPaymentUseCase
 {
     async fn execute(&self, request: CompleteCheckoutSessionWebhookRequest) -> Result<()> {
-        let query_parts_for_quotation_request = QueryPartsForQuotationRequest {
-            quotation_id: request.quotation_id.clone(),
-            with_quotation_subtotal: false,
-            cursor: None,
-            limit: 100,
-        };
         let query_parts_for_quotation_response = self
-            .query_parts_for_quotation_usecase
-            .execute(query_parts_for_quotation_request)
-            .await
-            .map_err(|_| Error::UnknownError)?;
+            .parts_repository
+            .query_parts_for_quotation(request.quotation_id.clone(), None, 100)
+            .await?;
 
         let selected_part_quote_for_part = query_parts_for_quotation_response
-            .parts
+            .data
             .iter()
             .map(|part| {
                 (
@@ -68,7 +57,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()>
             .collect::<HashMap<String, PartQuote>>();
 
         let orders = query_parts_for_quotation_response
-            .parts
+            .data
             .into_iter()
             .map(|part| {
                 let part_quote = selected_part_quote_for_part[&part.id].clone();

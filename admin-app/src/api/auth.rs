@@ -58,7 +58,7 @@ impl AuthorizedApi {
     }
 
     pub async fn logout(&self) -> Result<UnauthorizedApi> {
-        let url = format!("{}/account/admins/logout", self.url);
+        let url = format!("{}/accounts/admins/logout", self.url);
         Request::post(&url)
             .credentials(RequestCredentials::Include)
             .send()

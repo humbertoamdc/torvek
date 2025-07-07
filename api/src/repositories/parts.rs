@@ -1,8 +1,7 @@
-use api_boundary::parts::models::Part;
-use async_trait::async_trait;
-
-use crate::parts::domain::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
+use crate::parts::models::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
+use crate::parts::models::part::Part;
 use crate::shared::{QueryResponse, Result};
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait PartsRepository: Send + Sync + 'static {

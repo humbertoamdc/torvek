@@ -1,7 +1,9 @@
 use crate::app_state::AppState;
+use crate::auth;
 use crate::auth::controllers::{ADMIN_SESSION_TOKEN, CUSTOMER_SESSION_TOKEN};
+use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use axum::response::{IntoResponse, Response};
-use http::{header, HeaderMap, HeaderValue, Request, StatusCode};
+use http::{header, HeaderMap, HeaderValue, Request};
 use lambda_http::tower::Layer;
 use lambda_http::Service;
 use std::convert::Infallible;
@@ -10,47 +12,49 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 #[derive(Clone)]
-pub struct SessionAuthLayer {
+pub struct SessionLayer {
     state: AppState,
 }
 
-impl SessionAuthLayer {
+impl SessionLayer {
     pub const fn new(state: AppState) -> Self {
         Self { state }
     }
 }
 
-impl<S> Layer<S> for SessionAuthLayer {
-    type Service = SessionAuth<S>;
+impl<S> Layer<S> for SessionLayer {
+    type Service = Session<S>;
 
     fn layer(&self, inner: S) -> Self::Service {
-        SessionAuth::new(inner, self.state.clone())
+        Session::new(inner, self.state.clone())
     }
 }
 
 #[derive(Clone)]
-pub struct SessionAuth<S> {
+pub struct Session<S> {
     inner: S,
     state: AppState,
 }
 
-impl<S> SessionAuth<S> {
+impl<S> Session<S> {
     pub const fn new(inner: S, state: AppState) -> Self {
         Self { inner, state }
     }
 
-    fn get_session_token(&self, header_map: &HeaderMap) -> Option<String> {
+    fn get_session_tokens(&self, header_map: &HeaderMap) -> Vec<String> {
+        let mut tokens = Vec::new();
+
         if !header_map.contains_key(header::COOKIE) {
-            return None;
+            return tokens;
         }
 
         for cookie in self.get_cookie_str(header_map).split(';') {
             let (token_name, token_value) = cookie.trim().split_once('=').unwrap();
             if token_name == CUSTOMER_SESSION_TOKEN || token_name == ADMIN_SESSION_TOKEN {
-                return Some(token_value.to_owned());
+                tokens.push(token_value.to_owned());
             }
         }
-        None
+        tokens
     }
 
     fn get_cookie_str(&self, header_map: &HeaderMap<HeaderValue>) -> String {
@@ -63,7 +67,7 @@ impl<S> SessionAuth<S> {
     }
 }
 
-impl<S, Body> Service<Request<Body>> for SessionAuth<S>
+impl<S, Body> Service<Request<Body>> for Session<S>
 where
     S: Service<Request<Body>, Error = Infallible> + Clone + Send + 'static,
     S::Response: IntoResponse + 'static,
@@ -80,22 +84,26 @@ where
     }
 
     fn call(&mut self, mut req: Request<Body>) -> Self::Future {
-        let session_token = self.get_session_token(req.headers());
+        let session_tokens = self.get_session_tokens(req.headers());
         let mut inner = self.inner.clone();
         let state = self.state.clone();
 
         Box::pin(async move {
-            match session_token.clone() {
-                Some(token) => match state.auth.identity_manager.get_session(token).await {
-                    Ok(session) => {
-                        req.extensions_mut().insert(session);
-                        let res = inner.call(req).await?;
-                        Ok(res.into_response())
-                    }
-                    Err(_) => Ok(StatusCode::UNAUTHORIZED.into_response()),
-                },
-                None => Ok(StatusCode::UNAUTHORIZED.into_response()),
+            for token in session_tokens {
+                if let Ok(session) = state.auth.identity_manager.get_session(token).await {
+                    match session.clone().identity.metadata_public.role {
+                        auth::models::session::Role::Admin => {
+                            req.extensions_mut().insert(AdminSession(session));
+                        }
+                        auth::models::session::Role::Customer => {
+                            req.extensions_mut().insert(CustomerSession(session));
+                        }
+                    };
+                }
             }
+
+            let res = inner.call(req).await?;
+            Ok(res.into_response())
         })
     }
 }

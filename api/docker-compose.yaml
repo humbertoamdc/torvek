@@ -15,6 +15,7 @@ services:
       - DEFAULT_REGION=us-east-1
       - LAMBDA_EXECUTOR=docker
       - HOST_TMP_FOLDER=${PWD}/localstack_tmp
+      - PERSISTENCE=1
     volumes:
       - "./scripts/localstack:/etc/localstack/init/ready.d"
       # Logs, cache and generated data by AWS services live here.
@@ -30,8 +31,8 @@ services:
     depends_on:
       - localstack
 
-  kratos-customers:
-    container_name: kratos-customers
+  ory-kratos:
+    container_name: ory-kratos
     image: oryd/kratos:v1.3.0
     ports:
       - '4433:4433' # public
@@ -42,36 +43,14 @@ services:
     entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint.sh" ]
     volumes:
       - type: volume
-        source: kratos-customers-sqlite
+        source: kratos-sqlite
         target: /var/lib/sqlite
       - type: bind
-        source: ./config/kratos/customers
-        target: /etc/config/kratos
-      - type: bind
-        source: ./scripts/kratos
-        target: /etc/scripts/kratos
-
-  kratos-admins:
-    container_name: kratos-admins
-    image: oryd/kratos:v1.3.0
-    ports:
-      - '4435:4435' # public
-      - '4436:4436' # admin
-    restart: unless-stopped
-    environment:
-      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
-    entrypoint: [ "sh", "/etc/scripts/kratos/entrypoint.sh" ]
-    volumes:
-      - type: volume
-        source: kratos-admins-sqlite
-        target: /var/lib/sqlite
-      - type: bind
-        source: ./config/kratos/admins
+        source: ./config/kratos
         target: /etc/config/kratos
       - type: bind
         source: ./scripts/kratos
         target: /etc/scripts/kratos
 
 volumes:
-  kratos-customers-sqlite:
-  kratos-admins-sqlite:
+  kratos-sqlite:

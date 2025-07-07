@@ -1,11 +1,11 @@
-use crate::parts::domain::dynamodb_requests::BatchDeletePartObject;
+use crate::parts::models::dynamodb_requests::BatchDeletePartObject;
+use crate::parts::models::part::Part;
+use crate::quotations::models::inputs::DeleteQuotationInput;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::UseCase;
-use api_boundary::parts::models::Part;
-use api_boundary::quotations::requests::DeleteQuotationRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -30,26 +30,21 @@ impl DeleteQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeleteQuotationRequest, ()> for DeleteQuotationUseCase {
-    async fn execute(&self, request: DeleteQuotationRequest) -> crate::shared::Result<()> {
+impl UseCase<DeleteQuotationInput, ()> for DeleteQuotationUseCase {
+    async fn execute(&self, input: DeleteQuotationInput) -> crate::shared::Result<()> {
         self.quotations_repository
-            .try_delete_quotation(request.project_id, request.quotation_id.clone())
+            .try_delete_quotation(input.project_id, input.quotation_id.clone())
             .await?;
 
         let parts_repository = self.parts_repository.clone();
         let object_storage = self.object_storage.clone();
 
-        // Spawn a background task to cascade delete all the parts belonging to the project.
-        // This allows us to return early because we don't have to wait for the deletes to
-        // happen.
-        tokio::task::spawn(async move {
-            Self::cascade_delete_parts_for_quotation(
-                request.quotation_id.clone(),
-                parts_repository,
-                object_storage,
-            )
-            .await;
-        });
+        Self::cascade_delete_parts_for_quotation(
+            input.quotation_id.clone(),
+            parts_repository,
+            object_storage,
+        )
+        .await;
 
         Ok(())
     }

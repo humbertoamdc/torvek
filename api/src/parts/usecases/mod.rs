@@ -1,3 +1,4 @@
+pub mod admin_query_parts_for_quotation;
 pub mod create_part_quotes;
 pub mod create_parts;
 pub mod delete_part;

@@ -1,5 +1,5 @@
+use crate::orders::models::order::Order;
 use crate::shared::Result;
-use api_boundary::orders::models::Order;
 use async_trait::async_trait;
 
 #[async_trait]

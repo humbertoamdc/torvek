@@ -1,13 +1,12 @@
-use api_boundary::common::error::Error;
+use crate::parts::models::part::PartQuote;
+use crate::parts::services::part_quotes_creation::PartQuotesCreation;
+use crate::quotations::models::quotation::QuotationStatus;
+use crate::shared::error::Error;
+use crate::shared::Result;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use std::collections::HashMap;
-
-use crate::parts::services::part_quotes_creation::PartQuotesCreation;
-use crate::shared::Result;
-use api_boundary::parts::models::PartQuote;
-use api_boundary::quotations::models::QuotationStatus;
 
 pub struct DynamodbParQuotesCreation {
     client: aws_sdk_dynamodb::Client,

@@ -1,7 +1,7 @@
+use crate::quotations::models::inputs::GetQuotationByIdInput;
+use crate::quotations::models::quotation::Quotation;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::quotations::models::Quotation;
-use api_boundary::quotations::requests::GetQuotationByIdRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -18,10 +18,10 @@ impl GetQuotationByIdUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetQuotationByIdRequest, Quotation> for GetQuotationByIdUseCase {
-    async fn execute(&self, request: GetQuotationByIdRequest) -> Result<Quotation> {
+impl UseCase<GetQuotationByIdInput, Quotation> for GetQuotationByIdUseCase {
+    async fn execute(&self, input: GetQuotationByIdInput) -> Result<Quotation> {
         self.quotations_repository
-            .get_quotation_by_id(request.project_id, request.quotation_id)
+            .get_quotation_by_id(input.project_id, input.quotation_id)
             .await
     }
 }

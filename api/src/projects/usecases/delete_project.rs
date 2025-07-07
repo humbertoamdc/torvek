@@ -1,14 +1,14 @@
-use crate::parts::domain::dynamodb_requests::BatchDeletePartObject;
-use crate::quotations::domain::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::parts::models::dynamodb_requests::BatchDeletePartObject;
+use crate::parts::models::part::Part;
+use crate::projects::models::inputs::DeleteProjectInput;
+use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::quotations::models::quotation::Quotation;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::UseCase;
-use api_boundary::parts::models::Part;
-use api_boundary::projects::requests::DeleteProjectRequest;
-use api_boundary::quotations::models::Quotation;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -36,29 +36,24 @@ impl DeleteProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeleteProjectRequest, ()> for DeleteProjectUseCase {
-    async fn execute(&self, request: DeleteProjectRequest) -> crate::shared::Result<()> {
+impl UseCase<DeleteProjectInput, ()> for DeleteProjectUseCase {
+    async fn execute(&self, input: DeleteProjectInput) -> crate::shared::Result<()> {
         let _ = self
             .projects_repository
-            .try_delete_project(request.customer_id, request.project_id.clone())
+            .try_delete_project(input.identity.id, input.project_id.clone())
             .await;
 
         let quotations_repository = self.quotations_repository.clone();
         let parts_repository = self.parts_repository.clone();
         let object_storage = self.object_storage.clone();
 
-        // Spawn a background task to cascade delete all the quotation and parts
-        // belonging to the project. This allows us to return early because
-        // we don't have to wait for the deletes to happen.
-        tokio::task::spawn(async move {
-            Self::cascade_delete_quotations_for_project(
-                request.project_id.clone(),
-                quotations_repository,
-                parts_repository,
-                object_storage,
-            )
-            .await;
-        });
+        Self::cascade_delete_quotations_for_project(
+            input.project_id.clone(),
+            quotations_repository,
+            parts_repository,
+            object_storage,
+        )
+        .await;
 
         Ok(())
     }

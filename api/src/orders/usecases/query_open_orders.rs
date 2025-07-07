@@ -1,10 +1,8 @@
-use api_boundary::orders::requests::QueryOpenOrdersRequest;
-use api_boundary::orders::responses::QueryOpenOrdersResponse;
-use async_trait::async_trait;
-use std::sync::Arc;
-
+use crate::orders::models::responses::QueryOpenOrdersResponse;
 use crate::repositories::orders::OrdersRepository;
 use crate::shared::{Result, UseCase};
+use async_trait::async_trait;
+use std::sync::Arc;
 
 pub struct QueryOpenOrdersUseCase {
     orders_repository: Arc<dyn OrdersRepository>,
@@ -17,8 +15,8 @@ impl QueryOpenOrdersUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryOpenOrdersRequest, QueryOpenOrdersResponse> for QueryOpenOrdersUseCase {
-    async fn execute(&self, _: QueryOpenOrdersRequest) -> Result<QueryOpenOrdersResponse> {
+impl UseCase<(), QueryOpenOrdersResponse> for QueryOpenOrdersUseCase {
+    async fn execute(&self, _: ()) -> Result<QueryOpenOrdersResponse> {
         let response = self.orders_repository.query_open_orders().await?;
 
         Ok(QueryOpenOrdersResponse {

@@ -1,8 +1,10 @@
-use crate::auth::models::requests::{LoginClientRequest, RegisterClientRequest};
-use crate::auth::models::session::{Identity, MetadataAdmin, Session, SessionWithToken};
+use crate::auth::models::inputs::{LoginUserInput, RegisterUserInput};
+use crate::auth::models::session::{
+    Identity, IdentityId, MetadataPublic, Session, SessionToken, SessionWithToken,
+};
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
-use api_boundary::common::error::Error;
+use crate::shared::error::Error;
 use async_trait::async_trait;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{
@@ -47,19 +49,19 @@ impl OryIdentityManager {
 
 #[async_trait]
 impl IdentityManager for OryIdentityManager {
-    async fn register_user(&self, request: RegisterClientRequest) -> Result<SessionWithToken> {
+    async fn register_user(&self, input: RegisterUserInput) -> Result<(SessionToken, IdentityId)> {
         // TODO: Handle errors and cases where user is already registered.
         let registration_flow = self.init_registration_flow().await?;
 
-        self.execute_registration_flow(&registration_flow.id, request)
+        self.execute_registration_flow(&registration_flow.id, input)
             .await
     }
 
-    async fn login_user(&self, request: LoginClientRequest) -> Result<SessionWithToken> {
+    async fn login_user(&self, input: LoginUserInput) -> Result<SessionWithToken> {
         // TODO: Handle errors and cases where user is already registered.
         let login_flow = self.init_login_flow().await?;
 
-        self.execute_login_flow(&login_flow.id, request).await
+        self.execute_login_flow(&login_flow.id, input).await
     }
 
     async fn logout_user(&self, session_token: String) -> Result<()> {
@@ -109,15 +111,15 @@ impl IdentityManager for OryIdentityManager {
         }
     }
 
-    async fn update_admin_metadata(
+    async fn update_public_metadata(
         &self,
         identity_id: &str,
-        metadata: MetadataAdmin,
+        metadata: MetadataPublic,
     ) -> Result<Identity> {
         let patches = vec![JsonPatch {
             from: None,
             op: String::from("add"),
-            path: String::from("/metadata_admin"),
+            path: String::from("/metadata_public"),
             value: Some(json!(serde_json::to_value(&metadata).unwrap())),
         }];
 
@@ -131,7 +133,7 @@ impl IdentityManager for OryIdentityManager {
             }
             // TODO: Handle error.
             Err(err) => {
-                tracing::error!("Failed to update metadata admin metadata. {err:?}");
+                tracing::error!("Failed to update public metadata. {err:?}");
                 Err(Error::UnknownError)
             }
         }
@@ -154,23 +156,22 @@ impl OryIdentityManager {
     async fn execute_registration_flow(
         &self,
         flow_id: &str,
-        request: RegisterClientRequest,
-    ) -> Result<SessionWithToken> {
+        input: RegisterUserInput,
+    ) -> Result<(SessionToken, IdentityId)> {
         let request = UpdateRegistrationFlowWithPasswordMethod {
             csrf_token: None,
-            password: request.password,
-            traits: json!({"email": request.email }),
+            password: input.password,
+            traits: json!({"email": input.email }),
             transient_payload: None,
         };
 
         let response = update_registration_flow(&self.config, flow_id, &request, None).await;
 
         match response {
-            Ok(successful_native_registration) => {
-                let serialized = serde_json::to_string(&successful_native_registration).unwrap();
-                let auth_session = serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
-                Ok(auth_session)
-            }
+            Ok(successful_native_registration) => Ok((
+                successful_native_registration.session_token.unwrap(),
+                successful_native_registration.identity.id,
+            )),
             Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
                 let error_messages = response_content
                     .entity
@@ -210,12 +211,12 @@ impl OryIdentityManager {
     async fn execute_login_flow(
         &self,
         flow_id: &str,
-        request: LoginClientRequest,
+        input: LoginUserInput,
     ) -> Result<SessionWithToken> {
         let request = UpdateLoginFlowWithPasswordMethod {
             csrf_token: None,
-            identifier: request.email,
-            password: request.password,
+            identifier: input.email,
+            password: input.password,
             password_identifier: None,
         };
 

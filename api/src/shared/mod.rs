@@ -1,7 +1,12 @@
-use api_boundary::common::error::Error;
+use crate::shared::error::Error;
 use async_trait::async_trait;
 
+pub mod api_error;
+pub mod error;
 pub mod extractors;
+pub mod file;
+pub mod into_error_response;
+pub mod money;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

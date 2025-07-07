@@ -1,11 +1,11 @@
+use crate::parts::models::part::{Part, PartQuote};
+use crate::quotations::models::inputs::GetQuotationSubtotalInput;
+use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::responses::GetQuotationSubtotalResponse;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
+use crate::shared::money::Money;
 use crate::shared::{Result, UseCase};
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::{Part, PartQuote};
-use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::requests::GetQuotationSubtotalRequest;
-use api_boundary::quotations::responses::GetQuotationSubtotalResponse;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -27,16 +27,16 @@ impl GetQuotationSubtotalUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetQuotationSubtotalRequest, GetQuotationSubtotalResponse>
+impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse>
     for GetQuotationSubtotalUseCase
 {
     async fn execute(
         &self,
-        request: GetQuotationSubtotalRequest,
+        input: GetQuotationSubtotalInput,
     ) -> Result<GetQuotationSubtotalResponse> {
         let quotation = self
             .quotations_repository
-            .get_quotation_by_id(request.project_id, request.quotation_id.clone())
+            .get_quotation_by_id(input.project_id, input.quotation_id.clone())
             .await?;
 
         if quotation.status != QuotationStatus::PendingPayment {
@@ -47,7 +47,7 @@ impl UseCase<GetQuotationSubtotalRequest, GetQuotationSubtotalResponse>
 
         let response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id, None, 100)
+            .query_parts_for_quotation(input.quotation_id, None, 100)
             .await?;
 
         let quotation_subtotal = Some(self.calculate_quotation_subtotal(response.data));

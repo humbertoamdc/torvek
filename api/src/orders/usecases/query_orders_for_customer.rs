@@ -1,12 +1,12 @@
+use crate::orders::models::inputs::QueryOrdersForCustomerInput;
+use crate::orders::models::responses::{
+    QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,
+};
+use crate::parts::models::part::Part;
 use crate::repositories::orders::OrdersRepository;
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
-use api_boundary::orders::requests::QueryOrdersForCustomerRequest;
-use api_boundary::orders::responses::{
-    QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,
-};
-use api_boundary::parts::models::Part;
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -35,20 +35,20 @@ impl QueryOrdersForCustomer {
 }
 
 #[async_trait]
-impl UseCase<QueryOrdersForCustomerRequest, QueryOrdersForCustomerResponse>
+impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
     for QueryOrdersForCustomer
 {
     async fn execute(
         &self,
-        request: QueryOrdersForCustomerRequest,
+        input: QueryOrdersForCustomerInput,
     ) -> Result<QueryOrdersForCustomerResponse> {
         let response = self
             .orders_repository
-            .query_orders_for_customer(request.customer_id, request.cursor, request.limit)
+            .query_orders_for_customer(input.identity.id, input.cursor, input.limit)
             .await?;
 
         let mut parts_map = HashMap::<String, Part>::new();
-        if request.with_part_data && !response.data.is_empty() {
+        if input.with_part_data && !response.data.is_empty() {
             let order_and_part_ids = response
                 .data
                 .iter()

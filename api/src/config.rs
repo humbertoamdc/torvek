@@ -23,7 +23,6 @@ pub struct ConfigApp {
 pub struct ConfigAuth {
     pub ory_clients_url: String,
     pub ory_clients_api_key: String,
-    pub ory_admins_url: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

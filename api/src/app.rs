@@ -1,6 +1,6 @@
 use crate::app_state::AppState;
 use crate::config::Config;
-use crate::middleware::SessionAuthLayer;
+use crate::middleware::SessionLayer;
 use crate::{auth, orders, parts, payments, projects, quotations};
 use aws_config::BehaviorVersion;
 use axum::Router;
@@ -87,7 +87,7 @@ fn create_base_router(state: AppState) -> Router<AppState> {
         .nest("/v1", quotations::routes::create_router())
         .nest("/v1", parts::routes::create_router())
         .nest("/v1", payments::routes::create_router())
-        .layer(SessionAuthLayer::new(state));
+        .layer(SessionLayer::new(state));
 
     Router::new()
         .nest("/api", public_router)

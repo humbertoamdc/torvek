@@ -1,15 +1,15 @@
+use crate::quotations::models::inputs::SendQuotationForReviewInput;
+use crate::quotations::models::quotation::{Quotation, QuotationStatus};
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::quotations::models::Quotation;
-use api_boundary::quotations::requests::UpdateQuotationStatusRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct UpdateQuotationStatusUseCase {
+pub struct SendQuotationForReviewUseCase {
     quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
-impl UpdateQuotationStatusUseCase {
+impl SendQuotationForReviewUseCase {
     pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
         Self {
             quotations_repository,
@@ -18,10 +18,14 @@ impl UpdateQuotationStatusUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdateQuotationStatusRequest, Quotation> for UpdateQuotationStatusUseCase {
-    async fn execute(&self, request: UpdateQuotationStatusRequest) -> Result<Quotation> {
+impl UseCase<SendQuotationForReviewInput, Quotation> for SendQuotationForReviewUseCase {
+    async fn execute(&self, input: SendQuotationForReviewInput) -> Result<Quotation> {
         self.quotations_repository
-            .update_quotation_status(request.project_id, request.quotation_id, request.status)
+            .update_quotation_status(
+                input.project_id,
+                input.quotation_id,
+                QuotationStatus::PendingReview,
+            )
             .await
     }
 }

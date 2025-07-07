@@ -1,8 +1,7 @@
+use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
+use crate::quotations::models::quotation::{Quotation, QuotationStatus};
 use crate::shared::{QueryResponse, Result};
 use async_trait::async_trait;
-
-use crate::quotations::domain::dynamodb_requests::BatchDeleteQuotationObject;
-use api_boundary::quotations::models::{Quotation, QuotationStatus};
 
 #[async_trait]
 pub trait QuotationsRepository: Send + Sync + 'static {

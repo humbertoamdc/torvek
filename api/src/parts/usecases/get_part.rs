@@ -1,8 +1,8 @@
+use crate::parts::models::inputs::GetPartInput;
+use crate::parts::models::part::Part;
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
-use api_boundary::parts::models::Part;
-use api_boundary::parts::requests::GetPartRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
@@ -25,11 +25,11 @@ impl GetPartUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetPartRequest, Part> for GetPartUseCase {
-    async fn execute(&self, request: GetPartRequest) -> Result<Part> {
+impl UseCase<GetPartInput, Part> for GetPartUseCase {
+    async fn execute(&self, input: GetPartInput) -> Result<Part> {
         let mut part = self
             .parts_repository
-            .get_part(request.quotation_id, request.part_id)
+            .get_part(input.quotation_id, input.part_id)
             .await?;
 
         let presigned_url = self

@@ -1,15 +1,14 @@
-use api_boundary::common::error::Error;
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::{Part, PartQuote};
-use api_boundary::parts::requests::QueryPartsForQuotationRequest;
-use api_boundary::parts::responses::QueryPartsForQuotationResponse;
+use crate::parts::models::inputs::QueryPartsForQuotationInput;
+use crate::parts::models::part::{Part, PartQuote};
+use crate::parts::models::responses::QueryPartsForQuotationResponse;
+use crate::repositories::parts::PartsRepository;
+use crate::services::object_storage::ObjectStorage;
+use crate::shared::error::Error;
+use crate::shared::money::Money;
+use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
-
-use crate::repositories::parts::PartsRepository;
-use crate::services::object_storage::ObjectStorage;
-use crate::shared::{Result, UseCase};
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
@@ -31,22 +30,22 @@ impl QueryPartsForQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<QueryPartsForQuotationRequest, QueryPartsForQuotationResponse>
+impl UseCase<QueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     for QueryPartsForQuotationUseCase
 {
     async fn execute(
         &self,
-        request: QueryPartsForQuotationRequest,
+        input: QueryPartsForQuotationInput,
     ) -> Result<QueryPartsForQuotationResponse> {
         let mut response = self
             .parts_repository
-            .query_parts_for_quotation(request.quotation_id, request.cursor, request.limit)
+            .query_parts_for_quotation(input.quotation_id, input.cursor, input.limit)
             .await?;
 
         self.sign_part_render_urls(&mut response.data).await?;
 
         let quotation_subtotal: Option<Money> = {
-            match request.with_quotation_subtotal {
+            match input.with_quotation_subtotal {
                 true => match self.get_quotation_subtotal(&response.data).await {
                     Ok(money) => Ok(Some(money)),
                     Err(err) => match err {

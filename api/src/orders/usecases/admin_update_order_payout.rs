@@ -1,9 +1,8 @@
+use crate::orders::models::inputs::AdminUpdateOrderPayoutRequest;
 use crate::repositories::orders::OrdersRepository;
-use api_boundary::orders::requests::AdminUpdateOrderPayoutRequest;
+use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
-
-use crate::shared::{Result, UseCase};
 
 pub struct AdminUpdateOrderPayoutUsecase {
     pub orders_repository: Arc<dyn OrdersRepository>,

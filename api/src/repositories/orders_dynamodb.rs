@@ -1,17 +1,16 @@
-use api_boundary::common::error::Error;
+use crate::orders::models::dynamodb_order_item::DynamodbOrderItem;
+use crate::orders::models::order::{Order, OrderStatus};
+use crate::repositories::orders::OrdersRepository;
+use crate::shared::error::Error;
+use crate::shared::money::Money;
+use crate::shared::{QueryResponse, Result};
+use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::to_item;
 use serde_dynamo::from_items;
 use std::collections::HashMap;
-
-use crate::orders::domain::dynamodb_order_item::DynamodbOrderItem;
-use crate::repositories::orders::OrdersRepository;
-use crate::shared::{QueryResponse, Result};
-use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
-use api_boundary::common::money::Money;
-use api_boundary::orders::models::{Order, OrderStatus};
 
 static OPEN_ORDERS_INDEX: &'static str = "OpenOrders";
 

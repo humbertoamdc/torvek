@@ -1,7 +1,7 @@
+use crate::projects::models::inputs::GetProjectByIdInput;
+use crate::projects::models::project::Project;
 use crate::repositories::projects::ProjectsRepository;
 use crate::shared::{Result, UseCase};
-use api_boundary::projects::models::Project;
-use api_boundary::projects::requests::GetProjectByIdRequest;
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -18,10 +18,10 @@ impl GetProjectByIdUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetProjectByIdRequest, Project> for GetProjectByIdUseCase {
-    async fn execute(&self, request: GetProjectByIdRequest) -> Result<Project> {
+impl UseCase<GetProjectByIdInput, Project> for GetProjectByIdUseCase {
+    async fn execute(&self, input: GetProjectByIdInput) -> Result<Project> {
         self.projects_repository
-            .get_project_by_id(request.customer_id, request.project_id)
+            .get_project_by_id(input.identity.id, input.project_id)
             .await
     }
 }

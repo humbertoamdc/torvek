@@ -1,11 +1,15 @@
 use gloo_net::http::Request;
 use serde::de::DeserializeOwned;
+use serde_derive::{Deserialize, Serialize};
 use web_sys::RequestCredentials;
 
-use api_boundary::quotations::models::QuotationStatus;
-use api_boundary::quotations::responses::AdminQueryQuotationsByStatusResponse;
-
 use crate::api::common::{into_json, Result};
+use crate::models::quotation::{Quotation, QuotationStatus};
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct AdminQueryQuotationsByStatusResponse {
+    pub quotations: Vec<Quotation>,
+}
 
 #[derive(Clone, Copy)]
 pub struct QuotationsClient {

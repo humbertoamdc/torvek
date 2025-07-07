@@ -1,5 +1,5 @@
+use crate::parts::models::part::PartQuote;
 use crate::shared::Result;
-use api_boundary::parts::models::PartQuote;
 use async_trait::async_trait;
 use std::collections::HashMap;
 

@@ -5,13 +5,11 @@ use leptos::*;
 use leptos_use::use_element_visibility;
 use thaw::{Button, ButtonSize};
 
-use api_boundary::common::money::Money;
-use api_boundary::parts::models::Part;
-use api_boundary::parts::requests::{CreatePartQuotesRequest, CreatePartQuotesRequestData};
-use api_boundary::quotations::models::Quotation;
-use clients::parts::PartsClient;
-
+use crate::clients::parts::{CreatePartQuotesRequest, CreatePartQuotesRequestData, PartsClient};
 use crate::components::parts::part_quotes_table_row::PartQuotesTableRow;
+use crate::models::money::Money;
+use crate::models::part::Part;
+use crate::models::quotation::Quotation;
 
 #[component]
 pub fn PartQuotesTable(
@@ -152,8 +150,17 @@ pub fn PartQuotesTable(
                         create_rw_signal(0_u64),
                     ];
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
-                    workdays_to_complete_list.update(|workdays_to_complete| workdays_to_complete.push(workdays_to_complete_options.clone()));
-                    view! { <PartQuotesTableRow part=part.clone() price_options workdays_to_complete_options /> }
+                    workdays_to_complete_list
+                        .update(|workdays_to_complete| {
+                            workdays_to_complete.push(workdays_to_complete_options.clone())
+                        });
+                    view! {
+                        <PartQuotesTableRow
+                            part=part.clone()
+                            price_options
+                            workdays_to_complete_options
+                        />
+                    }
                 }
             />
 

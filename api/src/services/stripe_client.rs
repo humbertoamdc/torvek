@@ -1,5 +1,5 @@
+use crate::parts::models::part::Part;
 use crate::shared;
-use api_boundary::parts::models::Part;
 use async_trait::async_trait;
 use axum::body::Bytes;
 use serde_derive::{Deserialize, Serialize};
