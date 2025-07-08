@@ -10,10 +10,10 @@ use ory_kratos_client::apis::frontend_api::{
 };
 use ory_kratos_client::apis::identity_api::{get_identity, patch_identity};
 use ory_kratos_client::models::ui_text::TypeEnum;
-use ory_kratos_client::models::UpdateLoginFlowBody::UpdateLoginFlowWithPasswordMethod;
-use ory_kratos_client::models::UpdateRegistrationFlowBody::UpdateRegistrationFlowWithPasswordMethod;
 use ory_kratos_client::models::{
-    JsonPatch, LoginFlow, PerformNativeLogoutBody, RegistrationFlow, UiText,
+    JsonPatch, LoginFlow, PerformNativeLogoutBody, RegistrationFlow, UiText, UpdateLoginFlowBody,
+    UpdateLoginFlowWithPasswordMethod, UpdateRegistrationFlowBody,
+    UpdateRegistrationFlowWithPasswordMethod,
 };
 use serde_json::json;
 use shared::Result;
@@ -69,7 +69,7 @@ impl IdentityManager for OryIdentityManager {
 
     async fn logout(&self, session_token: String) -> Result<()> {
         let request = PerformNativeLogoutBody { session_token };
-        let response = perform_native_logout(&self.config, &request).await;
+        let response = perform_native_logout(&self.config, request).await;
 
         match response {
             Ok(_) => Ok(()),
@@ -117,7 +117,7 @@ impl IdentityManager for OryIdentityManager {
 
 impl OryIdentityManager {
     async fn init_registration_flow(&self) -> Result<RegistrationFlow> {
-        let response = create_native_registration_flow(&self.config, None, None).await;
+        let response = create_native_registration_flow(&self.config, None, None, None).await;
 
         match response {
             Ok(registration_flow) => Ok(registration_flow),
@@ -137,21 +137,32 @@ impl OryIdentityManager {
     ) -> Result<SessionWithToken> {
         let request = UpdateRegistrationFlowWithPasswordMethod {
             csrf_token: None,
+            method: String::from("password"),
             password,
             traits: json!({"email": email }),
             transient_payload: None,
         };
 
-        let response = update_registration_flow(&self.config, flow_id, &request, None).await;
+        let response = update_registration_flow(
+            &self.config,
+            flow_id,
+            UpdateRegistrationFlowBody::Password(Box::new(request)),
+            None,
+        )
+        .await;
 
         match response {
             Ok(successful_native_registration) => {
                 self.update_public_metadata(&successful_native_registration.identity.id, metadata)
                     .await?;
 
-                let serialized = serde_json::to_string(&successful_native_registration).unwrap();
-                let session_with_token =
-                    serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
+                let session_token = successful_native_registration.session_token.unwrap();
+                let session = self.get_session(session_token.clone()).await?;
+
+                let session_with_token = SessionWithToken {
+                    session_token,
+                    session,
+                };
 
                 Ok(session_with_token)
             }
@@ -180,7 +191,7 @@ impl OryIdentityManager {
 
     async fn init_login_flow(&self) -> Result<LoginFlow> {
         let response =
-            create_native_login_flow(&self.config, None, None, None, None, None, None).await;
+            create_native_login_flow(&self.config, None, None, None, None, None, None, None).await;
 
         match response {
             Ok(login_flow) => Ok(login_flow),
@@ -200,11 +211,20 @@ impl OryIdentityManager {
         let request = UpdateLoginFlowWithPasswordMethod {
             csrf_token: None,
             identifier: email,
+            method: String::from("password"),
             password,
             password_identifier: None,
+            transient_payload: None,
         };
 
-        let response = update_login_flow(&self.config, flow_id, &request, None, None).await;
+        let response = update_login_flow(
+            &self.config,
+            flow_id,
+            UpdateLoginFlowBody::Password(Box::new(request)),
+            None,
+            None,
+        )
+        .await;
 
         match response {
             Ok(successful_native_login) => {
@@ -245,7 +265,7 @@ impl OryIdentityManager {
             from: None,
             op: String::from("add"),
             path: String::from("/metadata_public"),
-            value: Some(json!(serde_json::to_value(&metadata).unwrap())),
+            value: Some(Some(json!(serde_json::to_value(&metadata).unwrap()))),
         }];
 
         let response = patch_identity(&self.config, identity_id, Some(patches)).await;
@@ -278,7 +298,7 @@ impl OryIdentityManager {
     fn extract_error_id(error_messages: &Vec<UiText>) -> i64 {
         error_messages
             .iter()
-            .find(|msg| msg._type == TypeEnum::Error)
+            .find(|msg| msg.r#type == TypeEnum::Error)
             .map(|msg| msg.id)
             .unwrap_or(0)
     }

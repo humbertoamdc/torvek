@@ -11,7 +11,6 @@ gloo-net = "0.6.0"
 leptos = { version = "0.6.5", features = ["csr"] }
 leptos_router = { version = "0.6.5", features = ["csr"] }
 log = "0.4.20"
-ory-kratos-client = { path = "../ory-kratos-client" }
 serde = { version = "1.0.193", features = ["derive"] }
 serde_derive = "1.0.193"
 thiserror = "1.0.50"
