@@ -7,12 +7,12 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
 
-pub struct GetPartUseCase {
+pub struct GetPart {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl GetPartUseCase {
+impl GetPart {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
@@ -25,11 +25,11 @@ impl GetPartUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetPartInput, Part> for GetPartUseCase {
+impl UseCase<GetPartInput, Part> for GetPart {
     async fn execute(&self, input: GetPartInput) -> Result<Part> {
         let mut part = self
             .parts_repository
-            .get_part(input.quotation_id, input.part_id)
+            .get(input.quotation_id, input.part_id)
             .await?;
 
         let presigned_url = self

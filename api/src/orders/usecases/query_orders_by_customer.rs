@@ -3,7 +3,7 @@ use crate::orders::models::responses::{
     QueryOrdersForCustomerResponse, QueryOrdersForCustomerResponseData,
 };
 use crate::parts::models::part::Part;
-use crate::repositories::orders::OrdersRepository;
+use crate::repositories::orders::{OrdersRepository, QueryBy};
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
@@ -14,13 +14,13 @@ use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct QueryOrdersForCustomer {
+pub struct QueryOrdersByCustomer {
     orders_repository: Arc<dyn OrdersRepository>,
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl QueryOrdersForCustomer {
+impl QueryOrdersByCustomer {
     pub fn new(
         orders_repository: Arc<dyn OrdersRepository>,
         parts_repository: Arc<dyn PartsRepository>,
@@ -36,7 +36,7 @@ impl QueryOrdersForCustomer {
 
 #[async_trait]
 impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
-    for QueryOrdersForCustomer
+    for QueryOrdersByCustomer
 {
     async fn execute(
         &self,
@@ -44,7 +44,12 @@ impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
     ) -> Result<QueryOrdersForCustomerResponse> {
         let response = self
             .orders_repository
-            .query_orders_for_customer(input.identity.id, input.cursor, input.limit)
+            .query(
+                Some(input.identity.id),
+                QueryBy::Customer,
+                input.cursor,
+                input.limit,
+            )
             .await?;
 
         let mut parts_map = HashMap::<String, Part>::new();
@@ -55,10 +60,7 @@ impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
                 .map(|order| (order.quotation_id.clone(), order.part_id.clone()))
                 .collect();
 
-            let mut parts = self
-                .parts_repository
-                .get_parts_batch(order_and_part_ids)
-                .await?;
+            let mut parts = self.parts_repository.batch_get(order_and_part_ids).await?;
 
             for part in parts.iter_mut() {
                 part.render_file.presigned_url = Some(

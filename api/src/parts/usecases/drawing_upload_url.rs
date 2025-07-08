@@ -1,10 +1,9 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
 use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
-use crate::quotations::models::inputs::GetQuotationByIdInput;
 use crate::quotations::models::quotation::QuotationStatus;
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::file::File;
@@ -16,29 +15,29 @@ use uuid::{ContextV7, Timestamp, Uuid};
 
 static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
-pub struct CreateDrawingUploadUrlUseCase {
+pub struct CreateDrawingUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
+    quotation_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    get_quotation_by_id_use_case: GetQuotationByIdUseCase,
 }
 
-impl CreateDrawingUploadUrlUseCase {
+impl CreateDrawingUploadUrl {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
+        quotation_repository: Arc<dyn QuotationsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        get_quotation_by_id_use_case: GetQuotationByIdUseCase,
     ) -> Self {
         Self {
             parts_repository,
+            quotation_repository,
             object_storage,
-            get_quotation_by_id_use_case,
         }
     }
 }
 
 #[async_trait]
 impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
-    for CreateDrawingUploadUrlUseCase
+    for CreateDrawingUploadUrl
 {
     async fn execute(
         &self,
@@ -84,24 +83,18 @@ impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
             selected_part_quote_id: None,
             clear_part_quotes: Some(true),
         };
-        self.parts_repository.update_part(updatable_part).await?;
+        self.parts_repository.update(updatable_part).await?;
 
         Ok(CreateDrawingUploadUrlResponse::new(url, presigned_url))
     }
 }
 
-impl CreateDrawingUploadUrlUseCase {
+impl CreateDrawingUploadUrl {
     async fn quotation_is_payed(&self, input: &CreateDrawingUploadUrlInput) -> Result<bool> {
-        let get_quotation_input = GetQuotationByIdInput {
-            identity: input.identity.clone(),
-            project_id: input.project_id.clone(),
-            quotation_id: input.quotation_id.clone(),
-        };
         let quotation = self
-            .get_quotation_by_id_use_case
-            .execute(get_quotation_input)
-            .await
-            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
+            .quotation_repository
+            .get(input.project_id.clone(), input.quotation_id.clone())
+            .await?;
 
         Ok(quotation.status == QuotationStatus::Payed)
     }

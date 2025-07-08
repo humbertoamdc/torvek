@@ -70,15 +70,15 @@ pub struct CreateModelUploadUrlInput {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreatePartQuotesRequest {
+pub struct CreatePartQuotesInput {
     pub customer_id: String,
     pub project_id: String,
     pub quotation_id: String,
-    pub data: Vec<CreatePartQuotesRequestData>,
+    pub data: Vec<CreatePartQuotesInputData>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreatePartQuotesRequestData {
+pub struct CreatePartQuotesInputData {
     pub part_id: String,
     pub unit_price: Money,
     pub sub_total: Money,

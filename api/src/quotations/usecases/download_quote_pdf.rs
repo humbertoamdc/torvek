@@ -12,13 +12,13 @@ use iso_currency::Currency;
 use shared::Result;
 use std::sync::Arc;
 
-pub struct DownloadQuotePdfUseCase {
+pub struct DowanloadQuotePdf {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl DownloadQuotePdfUseCase {
+impl DowanloadQuotePdf {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -33,11 +33,11 @@ impl DownloadQuotePdfUseCase {
 }
 
 #[async_trait]
-impl UseCase<DownloadQuotePdfInput, Bytes> for DownloadQuotePdfUseCase {
+impl UseCase<DownloadQuotePdfInput, Bytes> for DowanloadQuotePdf {
     async fn execute(&self, input: DownloadQuotePdfInput) -> crate::shared::Result<Bytes> {
         let quote = self
             .quotations_repository
-            .get_quotation_by_id(input.project_id, input.quotation_id.clone())
+            .get(input.project_id, input.quotation_id.clone())
             .await?;
 
         if !self.is_valid_quote_status(quote).await {
@@ -65,7 +65,7 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DownloadQuotePdfUseCase {
     }
 }
 
-impl DownloadQuotePdfUseCase {
+impl DowanloadQuotePdf {
     async fn is_valid_quote_status(&self, quote: Quotation) -> bool {
         quote.status == QuotationStatus::PendingPayment || quote.status == QuotationStatus::Payed
     }
@@ -74,7 +74,7 @@ impl DownloadQuotePdfUseCase {
         let page_limit = 100;
         let query_part_response = self
             .parts_repository
-            .query_parts_for_quotation(quotation_id, None, page_limit)
+            .query(quotation_id, None, page_limit)
             .await?;
 
         let quote_line_items = query_part_response

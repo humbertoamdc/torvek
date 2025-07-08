@@ -5,11 +5,11 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct CreateProjectUseCase {
+pub struct CreateProject {
     projects_repository: Arc<dyn ProjectsRepository>,
 }
 
-impl CreateProjectUseCase {
+impl CreateProject {
     pub fn new(projects_repository: Arc<dyn ProjectsRepository>) -> Self {
         Self {
             projects_repository,
@@ -18,9 +18,9 @@ impl CreateProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateProjectInput, ()> for CreateProjectUseCase {
+impl UseCase<CreateProjectInput, ()> for CreateProject {
     async fn execute(&self, input: CreateProjectInput) -> Result<()> {
         let project = Project::new(input.identity.id, input.project_name);
-        self.projects_repository.create_project(project).await
+        self.projects_repository.create(project).await
     }
 }

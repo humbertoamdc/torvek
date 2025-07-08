@@ -19,14 +19,14 @@ static ORIGINAL_FILES_BASE_FILE_PATH: &str = "parts/originals";
 static RENDER_FILES_BASE_FILE_PATH: &str = "parts/web_ready";
 static RENDER_FILE_FORMAT: &str = ".stl";
 
-pub struct CreatePartsUseCase {
+pub struct CreateParts {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl CreatePartsUseCase {
+impl CreateParts {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -43,7 +43,7 @@ impl CreatePartsUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreatePartsInput, CreatePartsResponse> for CreatePartsUseCase {
+impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
     async fn execute(&self, input: CreatePartsInput) -> Result<CreatePartsResponse> {
         let file_ids = (0..input.file_names.len())
             .map(|_| {
@@ -115,20 +115,20 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreatePartsUseCase {
         }
 
         self.quotations_repository
-            .update_quotation_status(
+            .update(
                 input.project_id,
                 input.quotation_id,
-                QuotationStatus::Created,
+                Some(QuotationStatus::Created),
             )
             .await?;
 
-        self.parts_repository.create_parts(parts).await?;
+        self.parts_repository.batch_create(parts).await?;
 
         Ok(CreatePartsResponse::new(original_presigned_urls))
     }
 }
 
-impl CreatePartsUseCase {
+impl CreateParts {
     async fn generate_presigned_urls(
         &self,
         file_names: &Vec<String>,

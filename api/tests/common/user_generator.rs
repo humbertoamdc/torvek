@@ -1,7 +1,7 @@
 use crate::common::app::get_app_state;
 use api::auth::models::inputs::RegisterUserInput;
 use api::auth::models::session::Role;
-use api::auth::usecases::register_user::RegisterUserUseCase;
+use api::auth::usecases::register::Register;
 use api::shared::UseCase;
 
 pub struct TestUser {
@@ -24,7 +24,7 @@ impl TestUser {
         };
 
         let app_state = get_app_state().await;
-        let register_client_usecase = RegisterUserUseCase::new(
+        let register_client_usecase = Register::new(
             app_state.auth.identity_manager.clone(),
             app_state.payments.stripe_client.clone(),
         );

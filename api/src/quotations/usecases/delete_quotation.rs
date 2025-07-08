@@ -9,13 +9,13 @@ use crate::shared::UseCase;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct DeleteQuotationUseCase {
+pub struct DeleteQuotation {
     quotations_repository: Arc<dyn QuotationsRepository>,
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl DeleteQuotationUseCase {
+impl DeleteQuotation {
     pub fn new(
         quotations_repository: Arc<dyn QuotationsRepository>,
         parts_repository: Arc<dyn PartsRepository>,
@@ -30,10 +30,10 @@ impl DeleteQuotationUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeleteQuotationInput, ()> for DeleteQuotationUseCase {
+impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
     async fn execute(&self, input: DeleteQuotationInput) -> crate::shared::Result<()> {
         self.quotations_repository
-            .try_delete_quotation(input.project_id, input.quotation_id.clone())
+            .delete(input.project_id, input.quotation_id.clone())
             .await?;
 
         let parts_repository = self.parts_repository.clone();
@@ -50,7 +50,7 @@ impl UseCase<DeleteQuotationInput, ()> for DeleteQuotationUseCase {
     }
 }
 
-impl DeleteQuotationUseCase {
+impl DeleteQuotation {
     async fn cascade_delete_parts_for_quotation(
         quotation_id: String,
         parts_repository: Arc<dyn PartsRepository>,
@@ -61,7 +61,7 @@ impl DeleteQuotationUseCase {
 
         loop {
             let result = parts_repository
-                .query_parts_for_quotation(quotation_id.clone(), cursor, page_limit)
+                .query(quotation_id.clone(), cursor, page_limit)
                 .await;
 
             match result {
@@ -97,9 +97,7 @@ impl DeleteQuotationUseCase {
             })
             .collect();
 
-        parts_repository
-            .batch_delete_parts(batch_delete_objects)
-            .await
+        parts_repository.batch_delete(batch_delete_objects).await
     }
 
     async fn delete_associated_objects(parts: &Vec<Part>, object_storage: Arc<dyn ObjectStorage>) {

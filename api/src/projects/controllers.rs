@@ -2,10 +2,10 @@ use crate::app_state::AppState;
 use crate::projects::models::inputs::{
     CreateProjectInput, DeleteProjectInput, GetProjectByIdInput, QueryProjectsForClientInput,
 };
-use crate::projects::usecases::create_project::CreateProjectUseCase;
-use crate::projects::usecases::delete_project::DeleteProjectUseCase;
-use crate::projects::usecases::get_project_by_id::GetProjectByIdUseCase;
-use crate::projects::usecases::query_projects_for_client::QueryProjectsForClientUseCase;
+use crate::projects::usecases::create_project::CreateProject;
+use crate::projects::usecases::delete_project::DeleteProject;
+use crate::projects::usecases::get_project::GetProject;
+use crate::projects::usecases::query_projects_by_customer::QueryProjectsByCustomer;
 use crate::shared::extractors::session::CustomerSession;
 use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
@@ -29,7 +29,7 @@ pub async fn create_project(
         identity: session.identity,
         project_name: request.project_name,
     };
-    let usecase = CreateProjectUseCase::new(app_state.projects.projects_repository);
+    let usecase = CreateProject::new(app_state.projects.projects_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -45,7 +45,7 @@ pub async fn query_projects_for_client(
     let input = QueryProjectsForClientInput {
         identity: session.identity,
     };
-    let usecase = QueryProjectsForClientUseCase::new(app_state.projects.projects_repository);
+    let usecase = QueryProjectsByCustomer::new(app_state.projects.projects_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -63,7 +63,7 @@ pub async fn get_project_by_id(
         identity: session.identity,
         project_id,
     };
-    let usecase = GetProjectByIdUseCase::new(app_state.projects.projects_repository);
+    let usecase = GetProject::new(app_state.projects.projects_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -81,7 +81,7 @@ pub async fn delete_project(
         identity: session.identity,
         project_id,
     };
-    let usecase = DeleteProjectUseCase::new(
+    let usecase = DeleteProject::new(
         app_state.projects.projects_repository,
         app_state.quotations.quotations_repository,
         app_state.parts.parts_repository,

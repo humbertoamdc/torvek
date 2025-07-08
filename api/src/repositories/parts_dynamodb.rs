@@ -27,7 +27,36 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
-    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part> {
+    async fn delete(&self, quotation_id: String, part_id: String) -> Result<Part> {
+        let response = self
+            .client
+            .delete_item()
+            .table_name(&self.table)
+            .key("quotation_id", AttributeValue::S(quotation_id))
+            .key("id", AttributeValue::S(part_id))
+            .return_values(ReturnValue::AllOld)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.attributes {
+                Some(item) => match from_item::<Part>(item) {
+                    Ok(part) => Ok(part),
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                },
+                None => Err(Error::ItemNotFoundError),
+            },
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn get(&self, quotation_id: String, part_id: String) -> Result<Part> {
         let response = self
             .client
             .get_item()
@@ -60,104 +89,16 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn get_parts_batch(
-        &self,
-        quotation_and_part_ids: Vec<(String, String)>,
-    ) -> Result<Vec<Part>> {
-        let keys_and_attributes = quotation_and_part_ids
-            .into_iter()
-            .fold(
-                KeysAndAttributes::builder(),
-                |mut keys_and_attributes_builder, (quotation_id, part_id)| {
-                    keys_and_attributes_builder =
-                        keys_and_attributes_builder.keys(HashMap::from([
-                            (
-                                String::from("quotation_id"),
-                                AttributeValue::S(quotation_id),
-                            ),
-                            (String::from("id"), AttributeValue::S(part_id)),
-                        ]));
-
-                    keys_and_attributes_builder
-                },
-            )
-            .build()
-            .expect("unable to build batch get request keys and attributes");
-
-        let response = self
-            .client
-            .batch_get_item()
-            .request_items(&self.table, keys_and_attributes)
-            .send()
-            .await;
-
-        match response {
-            Ok(output) => {
-                let items = output
-                    .responses
-                    .unwrap()
-                    .into_values()
-                    .flatten()
-                    .collect::<Vec<_>>();
-
-                match from_items(items) {
-                    Ok(parts) => Ok(parts),
-                    Err(err) => {
-                        tracing::error!("{err:?}");
-                        Err(Error::UnknownError)
-                    }
-                }
-            }
-            Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
-
-    async fn create_parts(&self, parts: Vec<Part>) -> Result<()> {
-        let items: Vec<WriteRequest> = parts
-            .into_iter()
-            .map(|part| {
-                WriteRequest::builder()
-                    .put_request(
-                        PutRequest::builder()
-                            .set_item(Some(
-                                to_item(part).expect("error converting to dynamodb item"),
-                            ))
-                            .build()
-                            .unwrap(),
-                    )
-                    .build()
-            })
-            .collect();
-
-        let response = self
-            .client
-            .batch_write_item()
-            .request_items(&self.table, items)
-            .send()
-            .await;
-
-        match response {
-            Ok(_) => Ok(()),
-            Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
-
-    async fn query_parts_for_quotation(
+    async fn query(
         &self,
         quotation_id: String,
         cursor: Option<String>,
-        page_limit: i32,
+        limit: i32,
     ) -> Result<QueryResponse<Vec<Part>, String>> {
         let response = self
             .client
             .query()
-            .limit(page_limit)
+            .limit(limit)
             .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
             .key_condition_expression("quotation_id = :value")
             .expression_attribute_values(":value", AttributeValue::S(quotation_id))
@@ -186,7 +127,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part> {
+    async fn update(&self, updatable_part: UpdatablePart) -> Result<Part> {
         let mut update_expression = String::from("SET ");
         let mut expression_attribute_values = HashMap::new();
 
@@ -278,28 +219,32 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn delete_part(&self, quotation_id: String, part_id: String) -> Result<Part> {
+    async fn batch_create(&self, parts: Vec<Part>) -> Result<()> {
+        let items: Vec<WriteRequest> = parts
+            .into_iter()
+            .map(|part| {
+                WriteRequest::builder()
+                    .put_request(
+                        PutRequest::builder()
+                            .set_item(Some(
+                                to_item(part).expect("error converting to dynamodb item"),
+                            ))
+                            .build()
+                            .unwrap(),
+                    )
+                    .build()
+            })
+            .collect();
+
         let response = self
             .client
-            .delete_item()
-            .table_name(&self.table)
-            .key("quotation_id", AttributeValue::S(quotation_id))
-            .key("id", AttributeValue::S(part_id))
-            .return_values(ReturnValue::AllOld)
+            .batch_write_item()
+            .request_items(&self.table, items)
             .send()
             .await;
 
         match response {
-            Ok(output) => match output.attributes {
-                Some(item) => match from_item::<Part>(item) {
-                    Ok(part) => Ok(part),
-                    Err(err) => {
-                        tracing::error!("{err:?}");
-                        Err(Error::UnknownError)
-                    }
-                },
-                None => Err(Error::ItemNotFoundError),
-            },
+            Ok(_) => Ok(()),
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)
@@ -307,7 +252,7 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn batch_delete_parts(&self, data: Vec<BatchDeletePartObject>) -> Result<()> {
+    async fn batch_delete(&self, data: Vec<BatchDeletePartObject>) -> Result<()> {
         let write_requests = data
             .into_iter()
             .map(|delete_object| {
@@ -337,6 +282,58 @@ impl PartsRepository for DynamodbParts {
 
         match response {
             Ok(_) => Ok(()),
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn batch_get(&self, quotation_and_part_ids: Vec<(String, String)>) -> Result<Vec<Part>> {
+        let keys_and_attributes = quotation_and_part_ids
+            .into_iter()
+            .fold(
+                KeysAndAttributes::builder(),
+                |mut keys_and_attributes_builder, (quotation_id, part_id)| {
+                    keys_and_attributes_builder =
+                        keys_and_attributes_builder.keys(HashMap::from([
+                            (
+                                String::from("quotation_id"),
+                                AttributeValue::S(quotation_id),
+                            ),
+                            (String::from("id"), AttributeValue::S(part_id)),
+                        ]));
+
+                    keys_and_attributes_builder
+                },
+            )
+            .build()
+            .expect("unable to build batch get request keys and attributes");
+
+        let response = self
+            .client
+            .batch_get_item()
+            .request_items(&self.table, keys_and_attributes)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => {
+                let items = output
+                    .responses
+                    .unwrap()
+                    .into_values()
+                    .flatten()
+                    .collect::<Vec<_>>();
+
+                match from_items(items) {
+                    Ok(parts) => Ok(parts),
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                }
+            }
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)

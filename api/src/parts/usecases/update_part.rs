@@ -9,12 +9,12 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct UpdatePartUseCase {
+pub struct UpdatePart {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
-impl UpdatePartUseCase {
+impl UpdatePart {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -27,11 +27,11 @@ impl UpdatePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
+impl UseCase<UpdatePartInput, Part> for UpdatePart {
     async fn execute(&self, input: UpdatePartInput) -> Result<Part> {
         let quotation = self
             .quotations_repository
-            .get_quotation_by_id(input.project_id.clone(), input.quotation_id.clone())
+            .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status and change status to created after making an update.
@@ -40,10 +40,10 @@ impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
             QuotationStatus::PendingReview | QuotationStatus::PendingPayment => {
                 let _ = self
                     .quotations_repository
-                    .update_quotation_status(
+                    .update(
                         input.project_id.clone(),
                         input.quotation_id.clone(),
-                        QuotationStatus::Created,
+                        Some(QuotationStatus::Created),
                     )
                     .await?;
             }
@@ -52,6 +52,6 @@ impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
 
         let updatable_part = UpdatablePart::from(&input);
 
-        self.parts_repository.update_part(updatable_part).await
+        self.parts_repository.update(updatable_part).await
     }
 }
