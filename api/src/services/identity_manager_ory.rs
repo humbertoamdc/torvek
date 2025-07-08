@@ -180,7 +180,7 @@ impl OryIdentityManager {
                     })
                     .unwrap_or_default();
 
-                Err(Self::match_error(&error_messages))
+                Err(Self::match_error(error_messages))
             }
             Err(err) => {
                 tracing::error!("Failed to update registration flow. {err:?}");
@@ -247,7 +247,7 @@ impl OryIdentityManager {
                     })
                     .unwrap_or_default();
 
-                Err(Self::match_error(&error_messages))
+                Err(Self::match_error(error_messages))
             }
             Err(err) => {
                 tracing::error!("Failed to update login flow. {err:?}");
@@ -284,10 +284,9 @@ impl OryIdentityManager {
         }
     }
 
-    fn match_error(error_messages: &Vec<UiText>) -> Error {
+    fn match_error(error_messages: Vec<UiText>) -> Error {
         tracing::error!("{error_messages:?}");
-        // TODO: Map error ids to a custom enum.
-        match Self::extract_error_id(&error_messages) {
+        match Self::extract_error_id(error_messages) {
             4000006 => Error::InvalidCredentialsLoginError,
             4000028 => Error::EmailTakenRegistrationError,
             4000034 => Error::BreachedPasswordRegistrationError,
@@ -295,7 +294,7 @@ impl OryIdentityManager {
         }
     }
 
-    fn extract_error_id(error_messages: &Vec<UiText>) -> i64 {
+    fn extract_error_id(error_messages: Vec<UiText>) -> i64 {
         error_messages
             .iter()
             .find(|msg| msg.r#type == TypeEnum::Error)
