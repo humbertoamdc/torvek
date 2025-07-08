@@ -1,15 +1,15 @@
-use crate::quotations::models::inputs::SendQuotationForReviewInput;
+use crate::quotations::models::inputs::UpdateQuotationInput;
 use crate::quotations::models::quotation::{Quotation, QuotationStatus};
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct SendQuotationForReviewUseCase {
+pub struct UpdateQuotation {
     quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
-impl SendQuotationForReviewUseCase {
+impl UpdateQuotation {
     pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
         Self {
             quotations_repository,
@@ -18,8 +18,8 @@ impl SendQuotationForReviewUseCase {
 }
 
 #[async_trait]
-impl UseCase<SendQuotationForReviewInput, Quotation> for SendQuotationForReviewUseCase {
-    async fn execute(&self, input: SendQuotationForReviewInput) -> Result<Quotation> {
+impl UseCase<UpdateQuotationInput, Quotation> for UpdateQuotation {
+    async fn execute(&self, input: UpdateQuotationInput) -> Result<Quotation> {
         self.quotations_repository
             .update(
                 input.project_id,

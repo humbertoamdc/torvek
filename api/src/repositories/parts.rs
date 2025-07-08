@@ -5,19 +5,16 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub trait PartsRepository: Send + Sync + 'static {
-    async fn get_part(&self, quotation_id: String, part_id: String) -> Result<Part>;
-    async fn get_parts_batch(
-        &self,
-        quotation_and_part_ids: Vec<(String, String)>,
-    ) -> Result<Vec<Part>>;
-    async fn create_parts(&self, parts: Vec<Part>) -> Result<()>;
-    async fn query_parts_for_quotation(
+    async fn delete(&self, quotation_id: String, part_id: String) -> Result<Part>;
+    async fn get(&self, quotation_id: String, part_id: String) -> Result<Part>;
+    async fn query(
         &self,
         quotation_id: String,
         cursor: Option<String>,
-        page_limit: i32,
+        limit: i32,
     ) -> Result<QueryResponse<Vec<Part>, String>>;
-    async fn update_part(&self, updatable_part: UpdatablePart) -> Result<Part>;
-    async fn delete_part(&self, quotation_id: String, part_id: String) -> Result<Part>;
-    async fn batch_delete_parts(&self, data: Vec<BatchDeletePartObject>) -> Result<()>;
+    async fn update(&self, updatable_part: UpdatablePart) -> Result<Part>;
+    async fn batch_create(&self, parts: Vec<Part>) -> Result<()>;
+    async fn batch_delete(&self, data: Vec<BatchDeletePartObject>) -> Result<()>;
+    async fn batch_get(&self, quotation_and_part_ids: Vec<(String, String)>) -> Result<Vec<Part>>;
 }

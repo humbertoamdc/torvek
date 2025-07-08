@@ -37,7 +37,7 @@ pub struct DeleteQuotationInput {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct SendQuotationForReviewInput {
+pub struct UpdateQuotationInput {
     pub identity: Identity,
     pub project_id: String,
     pub quotation_id: String,

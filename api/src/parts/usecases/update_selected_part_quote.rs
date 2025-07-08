@@ -6,11 +6,11 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct UpdateSelectedPartQuoteUseCase {
+pub struct UpdateSelectedPartQuote {
     parts_repository: Arc<dyn PartsRepository>,
 }
 
-impl UpdateSelectedPartQuoteUseCase {
+impl UpdateSelectedPartQuote {
     pub fn new(parts_repository: Arc<dyn PartsRepository>) -> Self {
         Self { parts_repository }
     }
@@ -18,7 +18,7 @@ impl UpdateSelectedPartQuoteUseCase {
 
 #[async_trait]
 impl UseCase<UpdateSelectedPartQuoteInput, UpdateSelectedPartQuoteResponse>
-    for UpdateSelectedPartQuoteUseCase
+    for UpdateSelectedPartQuote
 {
     async fn execute(
         &self,
@@ -29,7 +29,7 @@ impl UseCase<UpdateSelectedPartQuoteInput, UpdateSelectedPartQuoteResponse>
             UpdatablePart::partial_new(input.quotation_id.clone(), input.part_id.clone());
         updatable_part.selected_part_quote_id = Some(input.selected_part_quote_id.clone());
 
-        let part = self.parts_repository.update_part(updatable_part).await?;
+        let part = self.parts_repository.update(updatable_part).await?;
 
         Ok(UpdateSelectedPartQuoteResponse { part })
     }

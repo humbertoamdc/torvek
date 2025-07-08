@@ -5,11 +5,11 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct GetQuotationByIdUseCase {
+pub struct GetQuotation {
     quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
-impl GetQuotationByIdUseCase {
+impl GetQuotation {
     pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
         Self {
             quotations_repository,
@@ -18,7 +18,7 @@ impl GetQuotationByIdUseCase {
 }
 
 #[async_trait]
-impl UseCase<GetQuotationByIdInput, Quotation> for GetQuotationByIdUseCase {
+impl UseCase<GetQuotationByIdInput, Quotation> for GetQuotation {
     async fn execute(&self, input: GetQuotationByIdInput) -> Result<Quotation> {
         self.quotations_repository
             .get(input.project_id, input.quotation_id)

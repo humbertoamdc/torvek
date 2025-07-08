@@ -6,12 +6,12 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct CreateCheckoutSessionUseCase {
+pub struct CreateCheckoutSession {
     stripe_client: Arc<dyn StripeClient>,
     parts_repository: Arc<dyn PartsRepository>,
 }
 
-impl CreateCheckoutSessionUseCase {
+impl CreateCheckoutSession {
     pub const fn new(
         stripe_client: Arc<dyn StripeClient>,
         parts_repository: Arc<dyn PartsRepository>,
@@ -24,16 +24,14 @@ impl CreateCheckoutSessionUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse>
-    for CreateCheckoutSessionUseCase
-{
+impl UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse> for CreateCheckoutSession {
     async fn execute(
         &self,
         input: CreateCheckoutSessionInput,
     ) -> Result<CreateCheckoutSessionResponse> {
         let query_response = self
             .parts_repository
-            .query_parts_for_quotation(input.quotation_id.clone(), None, 100)
+            .query(input.quotation_id.clone(), None, 100)
             .await?;
 
         let url = self

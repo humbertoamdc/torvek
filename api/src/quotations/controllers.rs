@@ -2,17 +2,17 @@ use crate::app_state::AppState;
 use crate::quotations::models::inputs::{
     AdminQueryQuotationsByStatusInput, CreateQuotationInput, DeleteQuotationInput,
     DownloadQuotePdfInput, GetQuotationByIdInput, GetQuotationSubtotalInput,
-    QueryQuotationsForProjectInput, SendQuotationForReviewInput,
+    QueryQuotationsForProjectInput, UpdateQuotationInput,
 };
 use crate::quotations::models::quotation::QuotationStatus;
-use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatusUseCase;
-use crate::quotations::usecases::create_quotation::CreateQuotationUseCase;
-use crate::quotations::usecases::delete_quotation::DeleteQuotationUseCase;
-use crate::quotations::usecases::download_quote_pdf::DownloadQuotePdfUseCase;
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
-use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotalUseCase;
-use crate::quotations::usecases::query_quotations_for_project::QueryQuotationsForProjectUseCase;
-use crate::quotations::usecases::update_quotation_status::SendQuotationForReviewUseCase;
+use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatus;
+use crate::quotations::usecases::create_quotation::CreateQuotation;
+use crate::quotations::usecases::delete_quotation::DeleteQuotation;
+use crate::quotations::usecases::download_quote_pdf::DowanloadQuotePdf;
+use crate::quotations::usecases::get_quotation::GetQuotation;
+use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotal;
+use crate::quotations::usecases::query_quotations_by_project::QueryQuotationsByProject;
+use crate::quotations::usecases::update_quotation::UpdateQuotation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
@@ -49,7 +49,7 @@ pub async fn create_quotation(
         project_id: request.project_id,
         quotation_name: request.quotation_name,
     };
-    let usecase = CreateQuotationUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = CreateQuotation::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -67,7 +67,7 @@ pub async fn query_quotations_for_project(
         identity: session.identity,
         project_id,
     };
-    let usecase = QueryQuotationsForProjectUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = QueryQuotationsByProject::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -86,7 +86,7 @@ pub async fn get_quotation_by_id(
         project_id,
         quotation_id,
     };
-    let usecase = GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = GetQuotation::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -105,7 +105,7 @@ pub async fn get_quotation_subtotal(
         project_id,
         quotation_id,
     };
-    let usecase = GetQuotationSubtotalUseCase::new(
+    let usecase = GetQuotationSubtotal::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
     );
@@ -127,7 +127,7 @@ pub async fn delete_quotation(
         project_id,
         quotation_id,
     };
-    let usecase = DeleteQuotationUseCase::new(
+    let usecase = DeleteQuotation::new(
         app_state.quotations.quotations_repository,
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
@@ -145,12 +145,12 @@ pub async fn send_quotation_for_review(
     CustomerSession(session): CustomerSession,
     Json(request): Json<SendQuotationForReviewRequest>,
 ) -> impl IntoResponse {
-    let input = SendQuotationForReviewInput {
+    let input = UpdateQuotationInput {
         identity: session.identity,
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = SendQuotationForReviewUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = UpdateQuotation::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -169,7 +169,7 @@ pub async fn download_pdf_quote(
         project_id,
         quotation_id,
     };
-    let usecase = DownloadQuotePdfUseCase::new(
+    let usecase = DowanloadQuotePdf::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
         app_state.payments.stripe_client,
@@ -207,8 +207,7 @@ pub async fn admin_query_quotations_by_status(
     let input = AdminQueryQuotationsByStatusInput {
         status: params.status,
     };
-    let usecase =
-        AdminQueryQuotationsByStatusUseCase::new(app_state.quotations.quotations_repository);
+    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotations.quotations_repository);
     let result = usecase.execute(input).await;
 
     match result {

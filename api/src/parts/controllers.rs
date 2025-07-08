@@ -5,17 +5,17 @@ use crate::parts::models::inputs::{
     QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
 use crate::parts::models::part::PartAttributes;
-use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotationUseCase;
-use crate::parts::usecases::create_part_quotes::CreatePartQuotesUseCase;
-use crate::parts::usecases::create_parts::CreatePartsUseCase;
-use crate::parts::usecases::delete_part::DeletePartUseCase;
-use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrlUseCase;
-use crate::parts::usecases::get_part::GetPartUseCase;
-use crate::parts::usecases::model_upload_url::ModelUploadUrlUseCase;
-use crate::parts::usecases::query_parts_for_quotation::QueryPartsForQuotationUseCase;
-use crate::parts::usecases::update_part::UpdatePartUseCase;
-use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuoteUseCase;
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotation;
+use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
+use crate::parts::usecases::create_parts::CreateParts;
+use crate::parts::usecases::delete_part::DeletePart;
+use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrl;
+use crate::parts::usecases::get_part::GetPart;
+use crate::parts::usecases::model_upload_url::ModelUploadUrl;
+use crate::parts::usecases::query_parts_by_quotation::QueryPartsByQuotation;
+use crate::parts::usecases::update_part::UpdatePart;
+use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuote;
+use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::file::File;
 use crate::shared::into_error_response::IntoError;
@@ -81,7 +81,7 @@ pub async fn admin_create_part_quotes(
     AdminSession(_): AdminSession,
     Json(request): Json<CreatePartQuotesRequest>,
 ) -> impl IntoResponse {
-    let usecase = CreatePartQuotesUseCase::new(app_state.parts.part_quotes_creation);
+    let usecase = CreatePartQuotes::new(app_state.parts.part_quotes_creation);
     let result = usecase.execute(request).await;
 
     match result {
@@ -102,7 +102,7 @@ pub async fn admin_query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase = AdminQueryPartsForQuotationUseCase::new(
+    let usecase = AdminQueryPartsForQuotation::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
@@ -125,7 +125,7 @@ pub async fn get_part(
         quotation_id,
         part_id,
     };
-    let get_part_usecase = GetPartUseCase::new(
+    let get_part_usecase = GetPart::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
@@ -148,7 +148,7 @@ pub async fn create_parts(
         quotation_id: request.quotation_id,
         file_names: request.file_names,
     };
-    let usecase = CreatePartsUseCase::new(
+    let usecase = CreateParts::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
         app_state.parts.object_storage,
@@ -176,7 +176,7 @@ pub async fn query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase = QueryPartsForQuotationUseCase::new(
+    let usecase = QueryPartsByQuotation::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
@@ -203,7 +203,7 @@ pub async fn update_part(
         attributes: request.attributes,
         quantity: request.quantity,
     };
-    let usecase = UpdatePartUseCase::new(
+    let usecase = UpdatePart::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
     );
@@ -226,7 +226,7 @@ pub async fn update_selected_part_quote(
         part_id: request.part_id,
         selected_part_quote_id: request.selected_part_quote_id,
     };
-    let usecase = UpdateSelectedPartQuoteUseCase::new(app_state.parts.parts_repository);
+    let usecase = UpdateSelectedPartQuote::new(app_state.parts.parts_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -246,9 +246,8 @@ pub async fn create_model_file_upload_url(
         quotation_id: request.quotation_id,
         part_id: request.part_id,
     };
-    let get_quotation_by_id_usecase =
-        GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
-    let usecase = ModelUploadUrlUseCase::new(
+    let get_quotation_by_id_usecase = GetQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = ModelUploadUrl::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
         get_quotation_by_id_usecase,
@@ -274,9 +273,8 @@ pub async fn create_drawing_upload_url(
         file_name: request.file_name,
         file_url: request.file_url,
     };
-    let get_quotation_by_id_usecase =
-        GetQuotationByIdUseCase::new(app_state.quotations.quotations_repository);
-    let usecase = CreateDrawingUploadUrlUseCase::new(
+    let get_quotation_by_id_usecase = GetQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = CreateDrawingUploadUrl::new(
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
         get_quotation_by_id_usecase,
@@ -300,7 +298,7 @@ pub async fn delete_part(
         quotation_id,
         part_id,
     };
-    let usecase = DeletePartUseCase::new(
+    let usecase = DeletePart::new(
         app_state.parts.parts_repository,
         app_state.quotations.quotations_repository,
         app_state.parts.object_storage,

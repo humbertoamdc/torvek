@@ -5,21 +5,21 @@ use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
 use crate::quotations::models::quotation::Quotation;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
-use crate::repositories::quotations::{QueryOrderBy, QuotationsRepository};
+use crate::repositories::quotations::{QueryBy, QuotationsRepository};
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::UseCase;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct DeleteProjectUseCase {
+pub struct DeleteProject {
     projects_repository: Arc<dyn ProjectsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl DeleteProjectUseCase {
+impl DeleteProject {
     pub fn new(
         projects_repository: Arc<dyn ProjectsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -36,7 +36,7 @@ impl DeleteProjectUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeleteProjectInput, ()> for DeleteProjectUseCase {
+impl UseCase<DeleteProjectInput, ()> for DeleteProject {
     async fn execute(&self, input: DeleteProjectInput) -> crate::shared::Result<()> {
         let _ = self
             .projects_repository
@@ -59,7 +59,7 @@ impl UseCase<DeleteProjectInput, ()> for DeleteProjectUseCase {
     }
 }
 
-impl DeleteProjectUseCase {
+impl DeleteProject {
     async fn cascade_delete_quotations_for_project(
         project_id: String,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -74,7 +74,7 @@ impl DeleteProjectUseCase {
                 .query(
                     Some(project_id.clone()),
                     None,
-                    QueryOrderBy::ProjectID,
+                    QueryBy::Project,
                     page_limit,
                     cursor,
                 )
@@ -143,7 +143,7 @@ impl DeleteProjectUseCase {
 
         loop {
             let result = parts_repository
-                .query_parts_for_quotation(quotation_id.clone(), cursor, page_limit)
+                .query(quotation_id.clone(), cursor, page_limit)
                 .await;
 
             match result {
@@ -179,9 +179,7 @@ impl DeleteProjectUseCase {
             })
             .collect();
 
-        parts_repository
-            .batch_delete_parts(batch_delete_objects)
-            .await
+        parts_repository.batch_delete(batch_delete_objects).await
     }
 
     async fn delete_associated_objects(parts: &Vec<Part>, object_storage: Arc<dyn ObjectStorage>) {

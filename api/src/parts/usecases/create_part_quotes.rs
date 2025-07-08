@@ -6,11 +6,11 @@ use async_trait::async_trait;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-pub struct CreatePartQuotesUseCase {
+pub struct CreatePartQuotes {
     part_quotes_creation_service: Arc<dyn PartQuotesCreation>,
 }
 
-impl CreatePartQuotesUseCase {
+impl CreatePartQuotes {
     pub fn new(part_quotes_creation_service: Arc<dyn PartQuotesCreation>) -> Self {
         Self {
             part_quotes_creation_service,
@@ -19,7 +19,7 @@ impl CreatePartQuotesUseCase {
 }
 
 #[async_trait]
-impl UseCase<CreatePartQuotesRequest, ()> for CreatePartQuotesUseCase {
+impl UseCase<CreatePartQuotesRequest, ()> for CreatePartQuotes {
     async fn execute(&self, request: CreatePartQuotesRequest) -> Result<()> {
         let mut part_quotes_by_part: HashMap<String, Vec<PartQuote>> = HashMap::new();
         let mut selected_part_quote_by_part: HashMap<String, String> = HashMap::new();

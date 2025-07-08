@@ -43,69 +43,6 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn query(
-        &self,
-        customer_id: String,
-        page_limit: i32,
-        cursor: Option<String>,
-    ) -> Result<QueryResponse<Vec<Project>, String>> {
-        let response = self
-            .client
-            .query()
-            .limit(page_limit)
-            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
-            .table_name(&self.table)
-            .key_condition_expression("customer_id = :customer_id")
-            .expression_attribute_values(":customer_id", AttributeValue::S(customer_id))
-            .scan_index_forward(false)
-            .send()
-            .await;
-
-        match response {
-            Ok(output) => {
-                let items = output.items().to_vec();
-                match from_items(items) {
-                    Ok(projects) => Ok(QueryResponse {
-                        data: projects,
-                        cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
-                    }),
-                    Err(_) => Err(Error::UnknownError),
-                }
-            }
-            Err(_) => Err(Error::UnknownError),
-        }
-    }
-
-    async fn get(&self, customer_id: String, project_id: String) -> Result<Project> {
-        let response = self
-            .client
-            .get_item()
-            .table_name(&self.table)
-            .set_key(Some(HashMap::from([
-                (String::from("customer_id"), AttributeValue::S(customer_id)),
-                (String::from("id"), AttributeValue::S(project_id)),
-            ])))
-            .send()
-            .await;
-
-        match response {
-            Ok(output) => match output.item {
-                Some(item) => match from_item::<Project>(item) {
-                    Ok(project) => Ok(project),
-                    Err(err) => {
-                        tracing::error!("{err:?}");
-                        Err(Error::UnknownError)
-                    }
-                },
-                None => Err(Error::ItemNotFoundError),
-            },
-            Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
-
     async fn delete(&self, customer_id: String, project_id: String) -> Result<()> {
         let response = self
             .client
@@ -143,6 +80,69 @@ impl ProjectsRepository for DynamodbProjects {
                     Err(Error::UnknownError)
                 }
             },
+        }
+    }
+
+    async fn get(&self, customer_id: String, project_id: String) -> Result<Project> {
+        let response = self
+            .client
+            .get_item()
+            .table_name(&self.table)
+            .set_key(Some(HashMap::from([
+                (String::from("customer_id"), AttributeValue::S(customer_id)),
+                (String::from("id"), AttributeValue::S(project_id)),
+            ])))
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.item {
+                Some(item) => match from_item::<Project>(item) {
+                    Ok(project) => Ok(project),
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                },
+                None => Err(Error::ItemNotFoundError),
+            },
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn query(
+        &self,
+        customer_id: String,
+        cursor: Option<String>,
+        limit: i32,
+    ) -> Result<QueryResponse<Vec<Project>, String>> {
+        let response = self
+            .client
+            .query()
+            .limit(limit)
+            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
+            .table_name(&self.table)
+            .key_condition_expression("customer_id = :customer_id")
+            .expression_attribute_values(":customer_id", AttributeValue::S(customer_id))
+            .scan_index_forward(false)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => {
+                let items = output.items().to_vec();
+                match from_items(items) {
+                    Ok(projects) => Ok(QueryResponse {
+                        data: projects,
+                        cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
+                    }),
+                    Err(_) => Err(Error::UnknownError),
+                }
+            }
+            Err(_) => Err(Error::UnknownError),
         }
     }
 }

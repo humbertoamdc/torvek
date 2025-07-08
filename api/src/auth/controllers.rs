@@ -2,10 +2,10 @@ use crate::app_state::AppState;
 use crate::auth::models::inputs::{LoginUserInput, RegisterUserInput};
 use crate::auth::models::mappers::GetSessionResponseMapper;
 use crate::auth::models::session::Role;
-use crate::auth::usecases::get_session::GetSessionUseCase;
-use crate::auth::usecases::login_user::LoginUserUseCase;
-use crate::auth::usecases::logout_user::LogoutUserUseCase;
-use crate::auth::usecases::register_user::RegisterUserUseCase;
+use crate::auth::usecases::get_session::GetSession;
+use crate::auth::usecases::login::Login;
+use crate::auth::usecases::logout::Logout;
+use crate::auth::usecases::register::Register;
 use crate::shared::error::Error;
 use crate::shared::UseCase;
 use axum::extract::State;
@@ -44,7 +44,7 @@ pub async fn register_customer(
         password: request.password,
         role: Role::Customer,
     };
-    let usecase = RegisterUserUseCase::new(
+    let usecase = Register::new(
         app_state.auth.identity_manager,
         app_state.payments.stripe_client,
     );
@@ -77,7 +77,7 @@ pub async fn login(
         password: request.password,
         role: Role::Customer,
     };
-    let usecases = LoginUserUseCase::new(app_state.auth.identity_manager);
+    let usecases = Login::new(app_state.auth.identity_manager);
     let result = usecases.execute(input).await;
 
     match result {
@@ -101,7 +101,7 @@ pub async fn get_session(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = GetSessionUseCase::new(app_state.auth.identity_manager);
+    let usecase = GetSession::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -126,7 +126,7 @@ pub async fn get_session(
 }
 
 pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> impl IntoResponse {
-    let usecase = LogoutUserUseCase::new(app_state.auth.identity_manager);
+    let usecase = Logout::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -158,7 +158,7 @@ pub async fn admin_login(
         password: request.password,
         role: Role::Admin,
     };
-    let usecases = LoginUserUseCase::new(app_state.auth.identity_manager);
+    let usecases = Login::new(app_state.auth.identity_manager);
     let result = usecases.execute(input).await;
 
     match result {
@@ -182,7 +182,7 @@ pub async fn get_admin_session(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = GetSessionUseCase::new(app_state.auth.identity_manager);
+    let usecase = GetSession::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(ADMIN_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -210,7 +210,7 @@ pub async fn admin_logout(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = LogoutUserUseCase::new(app_state.auth.identity_manager);
+    let usecase = Logout::new(app_state.auth.identity_manager);
     let session_cookie = cookies.get(ADMIN_SESSION_TOKEN);
 
     let result = match session_cookie {

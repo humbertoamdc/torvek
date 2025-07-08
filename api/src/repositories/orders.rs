@@ -3,14 +3,19 @@ use crate::shared::money::Money;
 use crate::shared::{QueryResponse, Result};
 use async_trait::async_trait;
 
+pub enum QueryBy {
+    Customer,
+    IsOpen,
+}
+
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {
-    async fn query_orders_for_customer(
+    async fn query(
         &self,
-        customer_id: String,
+        customer_id: Option<String>,
+        query_by: QueryBy,
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Order>, String>>;
-    async fn query_open_orders(&self) -> Result<QueryResponse<Vec<Order>, String>>;
-    async fn update_order_payout(&self, order_id: String, payout: Money) -> Result<()>;
+    async fn update(&self, order_id: String, payout: Option<Money>) -> Result<()>;
 }

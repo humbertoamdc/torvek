@@ -2,8 +2,8 @@ use crate::app_state::AppState;
 use crate::payments::models::inputs::{
     CompleteCheckoutSessionWebhookRequest, CreateCheckoutSessionInput,
 };
-use crate::payments::usecases::create_checkout_session::CreateCheckoutSessionUseCase;
-use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPaymentUseCase;
+use crate::payments::usecases::create_checkout_session::CreateCheckoutSession;
+use crate::payments::usecases::create_orders_and_confirm_quotation_payment::CreateOrdersAndConfirmQuotationPayment;
 use crate::shared::extractors::session::CustomerSession;
 use crate::shared::extractors::stripe_event::StripeEvent;
 use crate::shared::into_error_response::IntoError;
@@ -31,7 +31,7 @@ pub async fn create_checkout_session(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = CreateCheckoutSessionUseCase::new(
+    let usecase = CreateCheckoutSession::new(
         app_state.payments.stripe_client,
         app_state.parts.parts_repository,
     );
@@ -51,7 +51,7 @@ pub async fn complete_checkout_session_webhook(
         EventType::CheckoutSessionCompleted => {
             if let EventObject::CheckoutSession(session) = event.data.object {
                 if let Ok(request) = CompleteCheckoutSessionWebhookRequest::try_from(session) {
-                    let usecase = CreateOrdersAndConfirmQuotationPaymentUseCase::new(
+                    let usecase = CreateOrdersAndConfirmQuotationPayment::new(
                         app_state.payments.orders_creation_service,
                         app_state.parts.parts_repository,
                     );

@@ -9,13 +9,13 @@ use crate::shared::UseCase;
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct DeletePartUseCase {
+pub struct DeletePart {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl DeletePartUseCase {
+impl DeletePart {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -30,7 +30,7 @@ impl DeletePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<DeletePartInput, ()> for DeletePartUseCase {
+impl UseCase<DeletePartInput, ()> for DeletePart {
     async fn execute(&self, input: DeletePartInput) -> Result<()> {
         let quotation = self
             .quotations_repository
@@ -45,7 +45,7 @@ impl UseCase<DeletePartInput, ()> for DeletePartUseCase {
 
         let part = self
             .parts_repository
-            .delete_part(input.quotation_id, input.part_id)
+            .delete(input.quotation_id, input.part_id)
             .await?;
 
         let _ = self

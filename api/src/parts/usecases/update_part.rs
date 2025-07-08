@@ -9,12 +9,12 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct UpdatePartUseCase {
+pub struct UpdatePart {
     parts_repository: Arc<dyn PartsRepository>,
     quotations_repository: Arc<dyn QuotationsRepository>,
 }
 
-impl UpdatePartUseCase {
+impl UpdatePart {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
         quotations_repository: Arc<dyn QuotationsRepository>,
@@ -27,7 +27,7 @@ impl UpdatePartUseCase {
 }
 
 #[async_trait]
-impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
+impl UseCase<UpdatePartInput, Part> for UpdatePart {
     async fn execute(&self, input: UpdatePartInput) -> Result<Part> {
         let quotation = self
             .quotations_repository
@@ -52,6 +52,6 @@ impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
 
         let updatable_part = UpdatablePart::from(&input);
 
-        self.parts_repository.update_part(updatable_part).await
+        self.parts_repository.update(updatable_part).await
     }
 }

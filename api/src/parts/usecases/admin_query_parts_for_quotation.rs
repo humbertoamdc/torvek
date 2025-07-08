@@ -12,12 +12,12 @@ use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct AdminQueryPartsForQuotationUseCase {
+pub struct AdminQueryPartsForQuotation {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl AdminQueryPartsForQuotationUseCase {
+impl AdminQueryPartsForQuotation {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
@@ -31,7 +31,7 @@ impl AdminQueryPartsForQuotationUseCase {
 
 #[async_trait]
 impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
-    for AdminQueryPartsForQuotationUseCase
+    for AdminQueryPartsForQuotation
 {
     async fn execute(
         &self,
@@ -39,7 +39,7 @@ impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     ) -> Result<QueryPartsForQuotationResponse> {
         let mut response = self
             .parts_repository
-            .query_parts_for_quotation(input.quotation_id, input.cursor, input.limit)
+            .query(input.quotation_id, input.cursor, input.limit)
             .await?;
 
         self.sign_part_render_urls(&mut response.data).await?;
@@ -65,7 +65,7 @@ impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     }
 }
 
-impl AdminQueryPartsForQuotationUseCase {
+impl AdminQueryPartsForQuotation {
     async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
         for part in parts.iter_mut() {
             let presigned_url = self

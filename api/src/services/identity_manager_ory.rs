@@ -1,7 +1,4 @@
-use crate::auth::models::inputs::{LoginUserInput, RegisterUserInput};
-use crate::auth::models::session::{
-    Identity, IdentityId, MetadataPublic, Session, SessionToken, SessionWithToken,
-};
+use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use crate::shared::error::Error;
@@ -49,22 +46,28 @@ impl OryIdentityManager {
 
 #[async_trait]
 impl IdentityManager for OryIdentityManager {
-    async fn register_user(&self, input: RegisterUserInput) -> Result<(SessionToken, IdentityId)> {
+    async fn register(
+        &self,
+        email: String,
+        password: String,
+        metadata: MetadataPublic,
+    ) -> Result<SessionWithToken> {
         // TODO: Handle errors and cases where user is already registered.
         let registration_flow = self.init_registration_flow().await?;
 
-        self.execute_registration_flow(&registration_flow.id, input)
+        self.execute_registration_flow(&registration_flow.id, email, password, metadata)
             .await
     }
 
-    async fn login_user(&self, input: LoginUserInput) -> Result<SessionWithToken> {
+    async fn login(&self, email: String, password: String) -> Result<SessionWithToken> {
         // TODO: Handle errors and cases where user is already registered.
         let login_flow = self.init_login_flow().await?;
 
-        self.execute_login_flow(&login_flow.id, input).await
+        self.execute_login_flow(&login_flow.id, email, password)
+            .await
     }
 
-    async fn logout_user(&self, session_token: String) -> Result<()> {
+    async fn logout(&self, session_token: String) -> Result<()> {
         let request = PerformNativeLogoutBody { session_token };
         let response = perform_native_logout(&self.config, &request).await;
 
@@ -110,34 +113,6 @@ impl IdentityManager for OryIdentityManager {
             }
         }
     }
-
-    async fn update_public_metadata(
-        &self,
-        identity_id: &str,
-        metadata: MetadataPublic,
-    ) -> Result<Identity> {
-        let patches = vec![JsonPatch {
-            from: None,
-            op: String::from("add"),
-            path: String::from("/metadata_public"),
-            value: Some(json!(serde_json::to_value(&metadata).unwrap())),
-        }];
-
-        let response = patch_identity(&self.config, identity_id, Some(patches)).await;
-
-        match response {
-            Ok(ory_identity) => {
-                let serialized = serde_json::to_string(&ory_identity).unwrap();
-                let identity = serde_json::from_str::<Identity>(&serialized).unwrap();
-                Ok(identity)
-            }
-            // TODO: Handle error.
-            Err(err) => {
-                tracing::error!("Failed to update public metadata. {err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
 }
 
 impl OryIdentityManager {
@@ -156,22 +131,30 @@ impl OryIdentityManager {
     async fn execute_registration_flow(
         &self,
         flow_id: &str,
-        input: RegisterUserInput,
-    ) -> Result<(SessionToken, IdentityId)> {
+        email: String,
+        password: String,
+        metadata: MetadataPublic,
+    ) -> Result<SessionWithToken> {
         let request = UpdateRegistrationFlowWithPasswordMethod {
             csrf_token: None,
-            password: input.password,
-            traits: json!({"email": input.email }),
+            password,
+            traits: json!({"email": email }),
             transient_payload: None,
         };
 
         let response = update_registration_flow(&self.config, flow_id, &request, None).await;
 
         match response {
-            Ok(successful_native_registration) => Ok((
-                successful_native_registration.session_token.unwrap(),
-                successful_native_registration.identity.id,
-            )),
+            Ok(successful_native_registration) => {
+                self.update_public_metadata(&successful_native_registration.identity.id, metadata)
+                    .await?;
+
+                let serialized = serde_json::to_string(&successful_native_registration).unwrap();
+                let session_with_token =
+                    serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
+
+                Ok(session_with_token)
+            }
             Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
                 let error_messages = response_content
                     .entity
@@ -211,12 +194,13 @@ impl OryIdentityManager {
     async fn execute_login_flow(
         &self,
         flow_id: &str,
-        input: LoginUserInput,
+        email: String,
+        password: String,
     ) -> Result<SessionWithToken> {
         let request = UpdateLoginFlowWithPasswordMethod {
             csrf_token: None,
-            identifier: input.email,
-            password: input.password,
+            identifier: email,
+            password,
             password_identifier: None,
         };
 
@@ -225,8 +209,9 @@ impl OryIdentityManager {
         match response {
             Ok(successful_native_login) => {
                 let serialized = serde_json::to_string(&successful_native_login).unwrap();
-                let auth_session = serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
-                Ok(auth_session)
+                let session_with_token =
+                    serde_json::from_str::<SessionWithToken>(&serialized).unwrap();
+                Ok(session_with_token)
             }
             Err(ory_kratos_client::apis::Error::ResponseError(response_content)) => {
                 let error_messages = response_content
@@ -246,6 +231,34 @@ impl OryIdentityManager {
             }
             Err(err) => {
                 tracing::error!("Failed to update login flow. {err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
+    async fn update_public_metadata(
+        &self,
+        identity_id: &str,
+        metadata: MetadataPublic,
+    ) -> Result<Identity> {
+        let patches = vec![JsonPatch {
+            from: None,
+            op: String::from("add"),
+            path: String::from("/metadata_public"),
+            value: Some(json!(serde_json::to_value(&metadata).unwrap())),
+        }];
+
+        let response = patch_identity(&self.config, identity_id, Some(patches)).await;
+
+        match response {
+            Ok(ory_identity) => {
+                let serialized = serde_json::to_string(&ory_identity).unwrap();
+                let identity = serde_json::from_str::<Identity>(&serialized).unwrap();
+                Ok(identity)
+            }
+            // TODO: Handle error.
+            Err(err) => {
+                tracing::error!("Failed to update public metadata. {err:?}");
                 Err(Error::UnknownError)
             }
         }

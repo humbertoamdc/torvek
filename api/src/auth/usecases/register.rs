@@ -8,12 +8,12 @@ use shared::Result;
 use shared::UseCase;
 use std::sync::Arc;
 
-pub struct RegisterUserUseCase {
+pub struct Register {
     identity_manager: Arc<dyn IdentityManager>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl RegisterUserUseCase {
+impl Register {
     pub fn new(
         identity_manager: Arc<dyn IdentityManager>,
         stripe_client: Arc<dyn StripeClient>,
@@ -26,34 +26,20 @@ impl RegisterUserUseCase {
 }
 
 #[async_trait]
-impl UseCase<RegisterUserInput, SessionWithToken> for RegisterUserUseCase {
+impl UseCase<RegisterUserInput, SessionWithToken> for Register {
     async fn execute(&self, input: RegisterUserInput) -> Result<SessionWithToken> {
-        let (session_token, identity_id) =
-            self.identity_manager.register_user(input.clone()).await?;
-
         let stripe_customer = self
             .stripe_client
-            .create_customer(input.name, input.email)
+            .create_customer(input.name.clone(), input.email.clone())
             .await?;
 
-        let public_metadata = MetadataPublic {
+        let metadata = MetadataPublic {
             stripe_customer_id: Some(stripe_customer.id.to_string()),
-            role: input.role,
+            role: input.role.clone(),
         };
+
         self.identity_manager
-            .update_public_metadata(&identity_id, public_metadata)
-            .await?;
-
-        let session = self
-            .identity_manager
-            .get_session(session_token.clone())
-            .await?;
-
-        let session_with_token = SessionWithToken {
-            session_token,
-            session,
-        };
-
-        Ok(session_with_token)
+            .register(input.email, input.password, metadata)
+            .await
     }
 }

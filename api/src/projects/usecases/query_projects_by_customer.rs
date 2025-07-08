@@ -5,11 +5,11 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct QueryProjectsForClientUseCase {
+pub struct QueryProjectsByCustomer {
     projects_repository: Arc<dyn ProjectsRepository>,
 }
 
-impl QueryProjectsForClientUseCase {
+impl QueryProjectsByCustomer {
     pub fn new(projects_repository: Arc<dyn ProjectsRepository>) -> Self {
         Self {
             projects_repository,
@@ -19,7 +19,7 @@ impl QueryProjectsForClientUseCase {
 
 #[async_trait]
 impl UseCase<QueryProjectsForClientInput, QueryProjectsForClientResponse>
-    for QueryProjectsForClientUseCase
+    for QueryProjectsByCustomer
 {
     async fn execute(
         &self,
@@ -27,7 +27,7 @@ impl UseCase<QueryProjectsForClientInput, QueryProjectsForClientResponse>
     ) -> Result<QueryProjectsForClientResponse> {
         let response = self
             .projects_repository
-            .query(input.identity.id, 100, None)
+            .query(input.identity.id, None, 100)
             .await?;
 
         Ok(QueryProjectsForClientResponse {

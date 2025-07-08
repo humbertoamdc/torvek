@@ -3,7 +3,7 @@ use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
 use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
 use crate::quotations::models::inputs::GetQuotationByIdInput;
 use crate::quotations::models::quotation::QuotationStatus;
-use crate::quotations::usecases::get_quotation_by_id::GetQuotationByIdUseCase;
+use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::repositories::parts::PartsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
@@ -16,17 +16,17 @@ use uuid::{ContextV7, Timestamp, Uuid};
 
 static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
-pub struct CreateDrawingUploadUrlUseCase {
+pub struct CreateDrawingUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    get_quotation_by_id_use_case: GetQuotationByIdUseCase,
+    get_quotation_by_id_use_case: GetQuotation,
 }
 
-impl CreateDrawingUploadUrlUseCase {
+impl CreateDrawingUploadUrl {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        get_quotation_by_id_use_case: GetQuotationByIdUseCase,
+        get_quotation_by_id_use_case: GetQuotation,
     ) -> Self {
         Self {
             parts_repository,
@@ -38,7 +38,7 @@ impl CreateDrawingUploadUrlUseCase {
 
 #[async_trait]
 impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
-    for CreateDrawingUploadUrlUseCase
+    for CreateDrawingUploadUrl
 {
     async fn execute(
         &self,
@@ -84,13 +84,13 @@ impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
             selected_part_quote_id: None,
             clear_part_quotes: Some(true),
         };
-        self.parts_repository.update_part(updatable_part).await?;
+        self.parts_repository.update(updatable_part).await?;
 
         Ok(CreateDrawingUploadUrlResponse::new(url, presigned_url))
     }
 }
 
-impl CreateDrawingUploadUrlUseCase {
+impl CreateDrawingUploadUrl {
     async fn quotation_is_payed(&self, input: &CreateDrawingUploadUrlInput) -> Result<bool> {
         let get_quotation_input = GetQuotationByIdInput {
             identity: input.identity.clone(),
