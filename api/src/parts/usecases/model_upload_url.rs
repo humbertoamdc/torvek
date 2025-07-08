@@ -1,9 +1,8 @@
 use crate::parts::models::inputs::CreateModelUploadUrlInput;
 use crate::parts::models::responses::CreateModelUploadUrlResponse;
-use crate::quotations::models::inputs::GetQuotationByIdInput;
 use crate::quotations::models::quotation::QuotationStatus;
-use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::{Result, UseCase};
@@ -16,20 +15,20 @@ static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
 pub struct ModelUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
+    quotations_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    get_quotation_by_id_use_case: GetQuotation,
 }
 
 impl ModelUploadUrl {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
+        quotations_repository: Arc<dyn QuotationsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        get_quotation_by_id_use_case: GetQuotation,
     ) -> Self {
         Self {
             parts_repository,
+            quotations_repository,
             object_storage,
-            get_quotation_by_id_use_case,
         }
     }
 }
@@ -67,16 +66,10 @@ impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelU
 
 impl ModelUploadUrl {
     async fn quotation_is_payed(&self, input: &CreateModelUploadUrlInput) -> Result<bool> {
-        let get_quotation_request = GetQuotationByIdInput {
-            identity: input.identity.clone(),
-            project_id: input.project_id.clone(),
-            quotation_id: input.quotation_id.clone(),
-        };
         let quotation = self
-            .get_quotation_by_id_use_case
-            .execute(get_quotation_request)
-            .await
-            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
+            .quotations_repository
+            .get(input.project_id.clone(), input.quotation_id.clone())
+            .await?;
 
         Ok(quotation.status == QuotationStatus::Payed)
     }

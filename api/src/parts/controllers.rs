@@ -15,7 +15,6 @@ use crate::parts::usecases::model_upload_url::ModelUploadUrl;
 use crate::parts::usecases::query_parts_by_quotation::QueryPartsByQuotation;
 use crate::parts::usecases::update_part::UpdatePart;
 use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuote;
-use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::file::File;
 use crate::shared::into_error_response::IntoError;
@@ -246,11 +245,10 @@ pub async fn create_model_file_upload_url(
         quotation_id: request.quotation_id,
         part_id: request.part_id,
     };
-    let get_quotation_by_id_usecase = GetQuotation::new(app_state.quotations.quotations_repository);
     let usecase = ModelUploadUrl::new(
         app_state.parts.parts_repository,
+        app_state.quotations.quotations_repository,
         app_state.parts.object_storage,
-        get_quotation_by_id_usecase,
     );
     let result = usecase.execute(input).await;
 
