@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::parts::models::inputs::{
     AdminQueryPartsForQuotationInput, CreateDrawingUploadUrlInput, CreateModelUploadUrlInput,
-    CreatePartQuotesRequest, CreatePartsInput, DeletePartInput, GetPartInput,
+    CreatePartQuotesInput, CreatePartsInput, DeletePartInput, GetPartInput,
     QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
 use crate::parts::models::part::PartAttributes;
@@ -79,7 +79,7 @@ pub struct CreateDrawingUploadUrlRequest {
 pub async fn admin_create_part_quotes(
     State(app_state): State<AppState>,
     AdminSession(_): AdminSession,
-    Json(request): Json<CreatePartQuotesRequest>,
+    Json(request): Json<CreatePartQuotesInput>,
 ) -> impl IntoResponse {
     let usecase = CreatePartQuotes::new(app_state.parts.part_quotes_creation);
     let result = usecase.execute(request).await;
@@ -273,11 +273,10 @@ pub async fn create_drawing_upload_url(
         file_name: request.file_name,
         file_url: request.file_url,
     };
-    let get_quotation_by_id_usecase = GetQuotation::new(app_state.quotations.quotations_repository);
     let usecase = CreateDrawingUploadUrl::new(
         app_state.parts.parts_repository,
+        app_state.quotations.quotations_repository,
         app_state.parts.object_storage,
-        get_quotation_by_id_usecase,
     );
     let result = usecase.execute(input).await;
 

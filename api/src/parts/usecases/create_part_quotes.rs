@@ -1,4 +1,4 @@
-use crate::parts::models::inputs::CreatePartQuotesRequest;
+use crate::parts::models::inputs::CreatePartQuotesInput;
 use crate::parts::models::part::PartQuote;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
 use crate::shared::{Result, UseCase};
@@ -19,8 +19,8 @@ impl CreatePartQuotes {
 }
 
 #[async_trait]
-impl UseCase<CreatePartQuotesRequest, ()> for CreatePartQuotes {
-    async fn execute(&self, request: CreatePartQuotesRequest) -> Result<()> {
+impl UseCase<CreatePartQuotesInput, ()> for CreatePartQuotes {
+    async fn execute(&self, request: CreatePartQuotesInput) -> Result<()> {
         let mut part_quotes_by_part: HashMap<String, Vec<PartQuote>> = HashMap::new();
         let mut selected_part_quote_by_part: HashMap<String, String> = HashMap::new();
         let mut part_ids_set = HashSet::new();

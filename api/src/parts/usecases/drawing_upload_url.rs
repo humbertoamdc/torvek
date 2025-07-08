@@ -1,10 +1,9 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
 use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
-use crate::quotations::models::inputs::GetQuotationByIdInput;
 use crate::quotations::models::quotation::QuotationStatus;
-use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::file::File;
@@ -18,20 +17,20 @@ static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
 pub struct CreateDrawingUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
+    quotation_repository: Arc<dyn QuotationsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
-    get_quotation_by_id_use_case: GetQuotation,
 }
 
 impl CreateDrawingUploadUrl {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
+        quotation_repository: Arc<dyn QuotationsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
-        get_quotation_by_id_use_case: GetQuotation,
     ) -> Self {
         Self {
             parts_repository,
+            quotation_repository,
             object_storage,
-            get_quotation_by_id_use_case,
         }
     }
 }
@@ -92,16 +91,10 @@ impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
 
 impl CreateDrawingUploadUrl {
     async fn quotation_is_payed(&self, input: &CreateDrawingUploadUrlInput) -> Result<bool> {
-        let get_quotation_input = GetQuotationByIdInput {
-            identity: input.identity.clone(),
-            project_id: input.project_id.clone(),
-            quotation_id: input.quotation_id.clone(),
-        };
         let quotation = self
-            .get_quotation_by_id_use_case
-            .execute(get_quotation_input)
-            .await
-            .map_err(|_| Error::UnknownError)?; // TODO: Handle error properly.
+            .quotation_repository
+            .get(input.project_id.clone(), input.quotation_id.clone())
+            .await?;
 
         Ok(quotation.status == QuotationStatus::Payed)
     }
