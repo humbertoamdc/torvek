@@ -21,10 +21,10 @@ impl SendQuotationForReviewUseCase {
 impl UseCase<SendQuotationForReviewInput, Quotation> for SendQuotationForReviewUseCase {
     async fn execute(&self, input: SendQuotationForReviewInput) -> Result<Quotation> {
         self.quotations_repository
-            .update_quotation_status(
+            .update(
                 input.project_id,
                 input.quotation_id,
-                QuotationStatus::PendingReview,
+                Some(QuotationStatus::PendingReview),
             )
             .await
     }

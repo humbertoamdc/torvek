@@ -1,6 +1,6 @@
 use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
 use crate::quotations::models::quotation::{Quotation, QuotationStatus};
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotations::{QueryOrderBy, QuotationsRepository};
 use crate::shared::error::Error;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
@@ -28,7 +28,7 @@ impl DynamodbQuotations {
 
 #[async_trait]
 impl QuotationsRepository for DynamodbQuotations {
-    async fn create_quotation(&self, quotation: Quotation) -> Result<()> {
+    async fn create(&self, quotation: Quotation) -> Result<()> {
         let item = to_item(quotation).expect("error converting to dynamodb item");
         let response = self
             .client
@@ -44,23 +44,44 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn query_quotations_for_project(
+    async fn query(
         &self,
-        project_id: String,
-        page_limit: i32,
+        project_id: Option<String>,
+        status: Option<QuotationStatus>,
+        order_by: QueryOrderBy,
+        limit: i32,
         cursor: Option<String>,
     ) -> Result<QueryResponse<Vec<Quotation>, String>> {
-        let response = self
+        let mut query = self
             .client
             .query()
             .table_name(&self.table)
-            .limit(page_limit)
-            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
-            .key_condition_expression("project_id = :value")
-            .expression_attribute_values(":value", AttributeValue::S(project_id))
-            .scan_index_forward(false)
-            .send()
-            .await;
+            .limit(limit)
+            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor));
+
+        match order_by {
+            QueryOrderBy::ProjectID => {
+                let project_id = project_id
+                    .ok_or(Error::MissingRequiredParameter(String::from("project_id")))?;
+
+                query = query
+                    .key_condition_expression("project_id = :value")
+                    .expression_attribute_values(":value", AttributeValue::S(project_id))
+                    .scan_index_forward(false)
+            }
+            QueryOrderBy::Status => {
+                let status =
+                    status.ok_or(Error::MissingRequiredParameter(String::from("status")))?;
+
+                query = query
+                    .index_name(QUOTATIONS_BY_STATUS_INDEX)
+                    .key_condition_expression("#status = :value")
+                    .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
+                    .expression_attribute_names("#status", "status");
+            }
+        };
+
+        let response = query.send().await;
 
         match response {
             Ok(output) => {
@@ -83,45 +104,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn query_quotations_by_status(
-        &self,
-        status: QuotationStatus,
-        page_limit: i32,
-        cursor: Option<String>,
-    ) -> Result<QueryResponse<Vec<Quotation>, String>> {
-        let response = self
-            .client
-            .query()
-            .table_name(&self.table)
-            .index_name(QUOTATIONS_BY_STATUS_INDEX)
-            .limit(page_limit)
-            .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
-            .key_condition_expression("#status = :value")
-            .expression_attribute_values(":value", AttributeValue::S(status.to_string()))
-            .expression_attribute_names("#status", "status")
-            .send()
-            .await;
-
-        match response {
-            Ok(output) => {
-                let items = output.items().to_vec();
-                match from_items(items) {
-                    Ok(quotations) => Ok(QueryResponse {
-                        data: quotations,
-                        cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
-                    }),
-                    Err(_) => Err(Error::UnknownError),
-                }
-            }
-            Err(_) => Err(Error::UnknownError),
-        }
-    }
-
-    async fn get_quotation_by_id(
-        &self,
-        project_id: String,
-        quotation_id: String,
-    ) -> Result<Quotation> {
+    async fn get(&self, project_id: String, quotation_id: String) -> Result<Quotation> {
         let response = self
             .client
             .get_item()
@@ -151,33 +134,40 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn update_quotation_status(
+    async fn update(
         &self,
         project_id: String,
         quotation_id: String,
-        status: QuotationStatus,
+        status: Option<QuotationStatus>,
     ) -> Result<Quotation> {
+        let mut update_expression = String::from("SET ");
+        let mut expression_attribute_values = HashMap::new();
+        let mut expression_attribute_names = HashMap::new();
+
+        update_expression.push_str("updated_at = :updated_at, ");
+        expression_attribute_values.insert(
+            ":updated_at".to_string(),
+            AttributeValue::S(Utc::now().to_rfc3339()),
+        );
+
+        if let Some(status) = status {
+            update_expression.push_str("#status = :status");
+            expression_attribute_names.insert(String::from("#status"), String::from("status"));
+            expression_attribute_values.insert(
+                String::from(":status"),
+                AttributeValue::S(status.to_string()),
+            );
+        }
+
         let response = self
             .client
             .update_item()
             .table_name(&self.table)
             .key("project_id", AttributeValue::S(project_id))
             .key("id", AttributeValue::S(quotation_id))
-            .update_expression("SET updated_at = :updated_at, #status = :status")
-            .set_expression_attribute_names(Some(HashMap::from([(
-                String::from("#status"),
-                String::from("status"),
-            )])))
-            .set_expression_attribute_values(Some(HashMap::from([
-                (
-                    String::from(":updated_at"),
-                    AttributeValue::S(Utc::now().to_rfc3339()),
-                ),
-                (
-                    String::from(":status"),
-                    AttributeValue::S(status.to_string()),
-                ),
-            ])))
+            .update_expression(update_expression)
+            .set_expression_attribute_names(Some(expression_attribute_names))
+            .set_expression_attribute_values(Some(expression_attribute_values))
             .return_values(ReturnValue::AllNew)
             .send()
             .await;
@@ -200,7 +190,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn try_delete_quotation(&self, project_id: String, quotation_id: String) -> Result<()> {
+    async fn delete(&self, project_id: String, quotation_id: String) -> Result<()> {
         let response = self
             .client
             .delete_item()
@@ -240,7 +230,7 @@ impl QuotationsRepository for DynamodbQuotations {
         }
     }
 
-    async fn batch_delete_parts(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()> {
+    async fn batch_delete(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()> {
         let write_requests = data
             .into_iter()
             .map(|delete_object| {

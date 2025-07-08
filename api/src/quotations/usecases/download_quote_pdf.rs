@@ -37,7 +37,7 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DownloadQuotePdfUseCase {
     async fn execute(&self, input: DownloadQuotePdfInput) -> crate::shared::Result<Bytes> {
         let quote = self
             .quotations_repository
-            .get_quotation_by_id(input.project_id, input.quotation_id.clone())
+            .get(input.project_id, input.quotation_id.clone())
             .await?;
 
         if !self.is_valid_quote_status(quote).await {

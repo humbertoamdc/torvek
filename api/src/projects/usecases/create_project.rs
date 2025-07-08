@@ -21,6 +21,6 @@ impl CreateProjectUseCase {
 impl UseCase<CreateProjectInput, ()> for CreateProjectUseCase {
     async fn execute(&self, input: CreateProjectInput) -> Result<()> {
         let project = Project::new(input.identity.id, input.project_name);
-        self.projects_repository.create_project(project).await
+        self.projects_repository.create(project).await
     }
 }

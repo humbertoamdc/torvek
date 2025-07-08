@@ -27,7 +27,7 @@ impl UseCase<QueryProjectsForClientInput, QueryProjectsForClientResponse>
     ) -> Result<QueryProjectsForClientResponse> {
         let response = self
             .projects_repository
-            .query_projects_for_client(input.identity.id, 100, None)
+            .query(input.identity.id, 100, None)
             .await?;
 
         Ok(QueryProjectsForClientResponse {

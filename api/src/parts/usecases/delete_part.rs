@@ -34,7 +34,7 @@ impl UseCase<DeletePartInput, ()> for DeletePartUseCase {
     async fn execute(&self, input: DeletePartInput) -> Result<()> {
         let quotation = self
             .quotations_repository
-            .get_quotation_by_id(input.project_id, input.quotation_id.clone())
+            .get(input.project_id, input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status.

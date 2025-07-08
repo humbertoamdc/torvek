@@ -5,7 +5,7 @@ use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
 use crate::quotations::models::quotation::Quotation;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotations::{QueryOrderBy, QuotationsRepository};
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::UseCase;
@@ -40,7 +40,7 @@ impl UseCase<DeleteProjectInput, ()> for DeleteProjectUseCase {
     async fn execute(&self, input: DeleteProjectInput) -> crate::shared::Result<()> {
         let _ = self
             .projects_repository
-            .try_delete_project(input.identity.id, input.project_id.clone())
+            .delete(input.identity.id, input.project_id.clone())
             .await;
 
         let quotations_repository = self.quotations_repository.clone();
@@ -71,7 +71,13 @@ impl DeleteProjectUseCase {
 
         loop {
             let result = quotations_repository
-                .query_quotations_for_project(project_id.clone(), page_limit, cursor)
+                .query(
+                    Some(project_id.clone()),
+                    None,
+                    QueryOrderBy::ProjectID,
+                    page_limit,
+                    cursor,
+                )
                 .await;
 
             match result {
@@ -123,7 +129,7 @@ impl DeleteProjectUseCase {
             .collect();
 
         quotations_repository
-            .batch_delete_parts(batch_delete_objects)
+            .batch_delete(batch_delete_objects)
             .await
     }
 

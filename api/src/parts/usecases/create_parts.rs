@@ -115,10 +115,10 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreatePartsUseCase {
         }
 
         self.quotations_repository
-            .update_quotation_status(
+            .update(
                 input.project_id,
                 input.quotation_id,
-                QuotationStatus::Created,
+                Some(QuotationStatus::Created),
             )
             .await?;
 

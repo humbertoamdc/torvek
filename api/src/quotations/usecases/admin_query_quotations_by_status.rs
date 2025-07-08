@@ -1,6 +1,6 @@
 use crate::quotations::models::inputs::AdminQueryQuotationsByStatusInput;
 use crate::quotations::models::responses::AdminQueryQuotationsByStatusResponse;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotations::{QueryOrderBy, QuotationsRepository};
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -27,7 +27,7 @@ impl UseCase<AdminQueryQuotationsByStatusInput, AdminQueryQuotationsByStatusResp
     ) -> Result<AdminQueryQuotationsByStatusResponse> {
         let response = self
             .quotations_repository
-            .query_quotations_by_status(input.status, 100, None)
+            .query(None, Some(input.status), QueryOrderBy::Status, 100, None)
             .await?;
 
         Ok(AdminQueryQuotationsByStatusResponse::new(response.data))

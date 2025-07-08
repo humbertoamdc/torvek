@@ -26,6 +26,8 @@ pub enum Error {
     DeletePayedQuotation,
     #[error("a pdf quote can't be generated because parts haven't been quoted yet")]
     NoPdfQuoteAvailable,
+    #[error("`{0}` is required")]
+    MissingRequiredParameter(String),
     #[error("an unexpected error occurred")]
     UnknownError,
 }

@@ -21,6 +21,6 @@ impl CreateQuotationUseCase {
 impl UseCase<CreateQuotationInput, ()> for CreateQuotationUseCase {
     async fn execute(&self, input: CreateQuotationInput) -> Result<()> {
         let quotation = Quotation::new(input.identity.id, input.project_id, input.quotation_name);
-        self.quotations_repository.create_quotation(quotation).await
+        self.quotations_repository.create(quotation).await
     }
 }

@@ -21,7 +21,7 @@ impl GetProjectByIdUseCase {
 impl UseCase<GetProjectByIdInput, Project> for GetProjectByIdUseCase {
     async fn execute(&self, input: GetProjectByIdInput) -> Result<Project> {
         self.projects_repository
-            .get_project_by_id(input.identity.id, input.project_id)
+            .get(input.identity.id, input.project_id)
             .await
     }
 }

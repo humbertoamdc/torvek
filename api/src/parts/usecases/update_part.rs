@@ -31,7 +31,7 @@ impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
     async fn execute(&self, input: UpdatePartInput) -> Result<Part> {
         let quotation = self
             .quotations_repository
-            .get_quotation_by_id(input.project_id.clone(), input.quotation_id.clone())
+            .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status and change status to created after making an update.
@@ -40,10 +40,10 @@ impl UseCase<UpdatePartInput, Part> for UpdatePartUseCase {
             QuotationStatus::PendingReview | QuotationStatus::PendingPayment => {
                 let _ = self
                     .quotations_repository
-                    .update_quotation_status(
+                    .update(
                         input.project_id.clone(),
                         input.quotation_id.clone(),
-                        QuotationStatus::Created,
+                        Some(QuotationStatus::Created),
                     )
                     .await?;
             }

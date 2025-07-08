@@ -24,7 +24,7 @@ impl DynamodbProjects {
 
 #[async_trait]
 impl ProjectsRepository for DynamodbProjects {
-    async fn create_project(&self, project: Project) -> Result<()> {
+    async fn create(&self, project: Project) -> Result<()> {
         let item = to_item(project).expect("error converting to dynamodb item");
         let response = self
             .client
@@ -43,7 +43,7 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn query_projects_for_client(
+    async fn query(
         &self,
         customer_id: String,
         page_limit: i32,
@@ -76,7 +76,7 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn get_project_by_id(&self, customer_id: String, project_id: String) -> Result<Project> {
+    async fn get(&self, customer_id: String, project_id: String) -> Result<Project> {
         let response = self
             .client
             .get_item()
@@ -106,7 +106,7 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn try_delete_project(&self, customer_id: String, project_id: String) -> Result<()> {
+    async fn delete(&self, customer_id: String, project_id: String) -> Result<()> {
         let response = self
             .client
             .delete_item()
