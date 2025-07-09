@@ -4,7 +4,7 @@ use crate::quotations::models::inputs::{
     DownloadQuotePdfInput, GetQuotationByIdInput, GetQuotationSubtotalInput,
     QueryQuotationsForProjectInput, UpdateQuotationInput,
 };
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatus;
 use crate::quotations::usecases::create_quotation::CreateQuotation;
 use crate::quotations::usecases::delete_quotation::DeleteQuotation;
@@ -36,7 +36,7 @@ pub struct SendQuotationForReviewRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct AdminQueryQuotationsByStatusQueryParams {
-    pub status: QuotationStatus,
+    pub status: QuoteStatus,
 }
 
 pub async fn create_quotation(

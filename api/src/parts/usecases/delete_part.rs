@@ -1,5 +1,5 @@
 use crate::parts::models::inputs::DeletePartInput;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
@@ -39,7 +39,7 @@ impl UseCase<DeletePartInput, ()> for DeletePart {
 
         // Check that the quotation is in an updatable status.
         match quotation.status {
-            QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
+            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
             _ => (),
         }
 

@@ -1,6 +1,6 @@
 use crate::parts::models::inputs::CreateModelUploadUrlInput;
 use crate::parts::models::responses::CreateModelUploadUrlResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
@@ -71,6 +71,6 @@ impl ModelUploadUrl {
             .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
-        Ok(quotation.status == QuotationStatus::Payed)
+        Ok(quotation.status == QuoteStatus::Payed)
     }
 }

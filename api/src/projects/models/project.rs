@@ -1,9 +1,7 @@
+use crate::shared::{CustomerId, ProjectId};
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};
 use uuid::{ContextV7, Timestamp, Uuid};
-
-pub type ProjectId = String;
-pub type CustomerId = String;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Project {

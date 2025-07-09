@@ -1,6 +1,6 @@
 use crate::parts::models::part::PartQuote;
 use crate::parts::services::part_quotes_creation::PartQuotesCreation;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::shared::error::Error;
 use crate::shared::Result;
 use async_trait::async_trait;
@@ -95,7 +95,7 @@ impl DynamodbParQuotesCreation {
                     .set_expression_attribute_values(Some(HashMap::from([
                         (
                             String::from(":pending_payment_status"),
-                            AttributeValue::S(QuotationStatus::PendingPayment.to_string()),
+                            AttributeValue::S(QuoteStatus::PendingPayment.to_string()),
                         ),
                         (
                             String::from(":updated_at"),

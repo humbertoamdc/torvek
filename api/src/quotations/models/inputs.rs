@@ -1,5 +1,5 @@
 use crate::auth::models::session::Identity;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -52,5 +52,5 @@ pub struct DownloadQuotePdfInput {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AdminQueryQuotationsByStatusInput {
-    pub status: QuotationStatus,
+    pub status: QuoteStatus,
 }

@@ -13,7 +13,7 @@ pub struct DynamodbOrderItem {
     pub part_id: String,
     pub part_quote_id: String,
     pub deadline: NaiveDate,
-    pub is_open: Option<String>,
+    pub is_open: Option<bool>,
     pub shipping_recipient_name: String,
     pub shipping_address: Address,
     pub created_at: DateTime<Utc>,

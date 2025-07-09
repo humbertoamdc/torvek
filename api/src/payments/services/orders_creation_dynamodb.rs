@@ -1,7 +1,7 @@
 use crate::orders::models::dynamodb_order_item::DynamodbOrderItem;
 use crate::orders::models::order::Order;
 use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::shared::error::Error;
 use crate::shared::Result;
 use async_trait::async_trait;
@@ -130,11 +130,11 @@ impl DynamodbOrdersCreationService {
                     .set_expression_attribute_values(Some(HashMap::from([
                         (
                             String::from(":payedStatus"),
-                            AttributeValue::S(QuotationStatus::Payed.to_string()),
+                            AttributeValue::S(QuoteStatus::Payed.to_string()),
                         ),
                         (
                             String::from(":awaitingPaymentStatus"),
-                            AttributeValue::S(QuotationStatus::PendingPayment.to_string()),
+                            AttributeValue::S(QuoteStatus::PendingPayment.to_string()),
                         ),
                         (
                             String::from(":updated_at"),

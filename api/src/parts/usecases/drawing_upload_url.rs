@@ -1,7 +1,7 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
 use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
@@ -96,6 +96,6 @@ impl CreateDrawingUploadUrl {
             .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
-        Ok(quotation.status == QuotationStatus::Payed)
+        Ok(quotation.status == QuoteStatus::Payed)
     }
 }

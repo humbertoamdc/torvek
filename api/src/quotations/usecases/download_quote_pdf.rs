@@ -1,5 +1,5 @@
 use crate::quotations::models::inputs::DownloadQuotePdfInput;
-use crate::quotations::models::quotation::{Quotation, QuotationStatus};
+use crate::quotations::models::quotation::{Quotation, QuoteStatus};
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::stripe_client::{PriceData, QuoteLineItem, StripeClient};
@@ -67,7 +67,7 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DowanloadQuotePdf {
 
 impl DowanloadQuotePdf {
     async fn is_valid_quote_status(&self, quote: Quotation) -> bool {
-        quote.status == QuotationStatus::PendingPayment || quote.status == QuotationStatus::Payed
+        quote.status == QuoteStatus::PendingPayment || quote.status == QuoteStatus::Payed
     }
 
     async fn generate_quote_line_items(&self, quotation_id: String) -> Result<Vec<QuoteLineItem>> {
@@ -98,7 +98,7 @@ impl DowanloadQuotePdf {
                             Currency::USD => stripe::Currency::USD,
                             _ => stripe::Currency::USD,
                         },
-                        product: selected_part_quote.part_id.clone(),
+                        product: part.id.clone(),
                         unit_amount: selected_part_quote.sub_total.amount as u64,
                     },
                     quantity: part.quantity,

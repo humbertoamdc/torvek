@@ -6,7 +6,7 @@ use uuid::{ContextV7, Timestamp, Uuid};
 use crate::parts::models::inputs::CreatePartsInput;
 use crate::parts::models::part::{CNCAttributes, Part, PartAttributes, PartProcess};
 use crate::parts::models::responses::CreatePartsResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
@@ -118,7 +118,7 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
             .update(
                 input.project_id,
                 input.quotation_id,
-                Some(QuotationStatus::Created),
+                Some(QuoteStatus::Created),
             )
             .await?;
 

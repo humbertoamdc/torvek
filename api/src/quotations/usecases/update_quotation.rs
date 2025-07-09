@@ -1,5 +1,5 @@
 use crate::quotations::models::inputs::UpdateQuotationInput;
-use crate::quotations::models::quotation::{Quotation, QuotationStatus};
+use crate::quotations::models::quotation::{Quotation, QuoteStatus};
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
@@ -24,7 +24,7 @@ impl UseCase<UpdateQuotationInput, Quotation> for UpdateQuotation {
             .update(
                 input.project_id,
                 input.quotation_id,
-                Some(QuotationStatus::PendingReview),
+                Some(QuoteStatus::PendingReview),
             )
             .await
     }

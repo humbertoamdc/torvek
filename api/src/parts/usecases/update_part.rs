@@ -1,7 +1,7 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::UpdatePartInput;
 use crate::parts::models::part::Part;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::shared::error::Error;
@@ -36,18 +36,18 @@ impl UseCase<UpdatePartInput, Part> for UpdatePart {
 
         // Check that the quotation is in an updatable status and change status to created after making an update.
         match quotation.status {
-            QuotationStatus::Created => (),
-            QuotationStatus::PendingReview | QuotationStatus::PendingPayment => {
+            QuoteStatus::Created => (),
+            QuoteStatus::PendingReview | QuoteStatus::PendingPayment => {
                 let _ = self
                     .quotations_repository
                     .update(
                         input.project_id.clone(),
                         input.quotation_id.clone(),
-                        Some(QuotationStatus::Created),
+                        Some(QuoteStatus::Created),
                     )
                     .await?;
             }
-            QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
+            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
         }
 
         let updatable_part = UpdatablePart::from(&input);

@@ -1,7 +1,7 @@
-use crate::projects::models::project::{CustomerId, Project, ProjectId};
+use crate::projects::models::project::Project;
 use crate::shared::error::Error;
 use crate::shared::error::Error::UnknownError;
-use crate::shared::{QueryResponse, Result};
+use crate::shared::{CustomerId, ProjectId, QueryResponse, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde_derive::{Deserialize, Serialize};

@@ -32,7 +32,6 @@ impl UseCase<CreatePartQuotesInput, ()> for CreatePartQuotes {
             part_ids_set.insert(quote_data.part_id.clone());
 
             let part_quote = PartQuote::new(
-                quote_data.part_id.clone(),
                 quote_data.unit_price,
                 quote_data.sub_total,
                 quote_data.workdays_to_complete,
@@ -40,7 +39,7 @@ impl UseCase<CreatePartQuotesInput, ()> for CreatePartQuotes {
 
             if selected {
                 selected_part_quote_by_part
-                    .insert(part_quote.part_id.clone(), part_quote.id.clone());
+                    .insert(quote_data.part_id.clone(), part_quote.id.clone());
             }
 
             part_quotes_by_part

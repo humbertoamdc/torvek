@@ -1,5 +1,5 @@
 use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
-use crate::quotations::models::quotation::{Quotation, QuotationStatus};
+use crate::quotations::models::quotation::{Quotation, QuoteStatus};
 use crate::repositories::quotations::{QueryBy, QuotationsRepository};
 use crate::shared::error::Error;
 use crate::shared::{QueryResponse, Result};
@@ -58,7 +58,7 @@ impl QuotationsRepository for DynamodbQuotations {
             )])))
             .set_expression_attribute_values(Some(HashMap::from([(
                 String::from(":payed"),
-                AttributeValue::S(QuotationStatus::Payed.to_string()),
+                AttributeValue::S(QuoteStatus::Payed.to_string()),
             )])))
             .send()
             .await;
@@ -117,7 +117,7 @@ impl QuotationsRepository for DynamodbQuotations {
     async fn query(
         &self,
         project_id: Option<String>,
-        status: Option<QuotationStatus>,
+        status: Option<QuoteStatus>,
         query_by: QueryBy,
         limit: i32,
         cursor: Option<String>,
@@ -178,7 +178,7 @@ impl QuotationsRepository for DynamodbQuotations {
         &self,
         project_id: String,
         quotation_id: String,
-        status: Option<QuotationStatus>,
+        status: Option<QuoteStatus>,
     ) -> Result<Quotation> {
         let mut update_expression = String::from("SET updated_at = :updated_at, ");
         let mut expression_attribute_values: HashMap<String, AttributeValue> = [
@@ -188,7 +188,7 @@ impl QuotationsRepository for DynamodbQuotations {
             ),
             (
                 String::from(":payedStatus"),
-                AttributeValue::S(QuotationStatus::Payed.to_string()),
+                AttributeValue::S(QuoteStatus::Payed.to_string()),
             ),
         ]
         .into_iter()

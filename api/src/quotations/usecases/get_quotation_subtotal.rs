@@ -1,6 +1,6 @@
 use crate::parts::models::part::{Part, PartQuote};
 use crate::quotations::models::inputs::GetQuotationSubtotalInput;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::models::responses::GetQuotationSubtotalResponse;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
@@ -37,7 +37,7 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
             .get(input.project_id, input.quotation_id.clone())
             .await?;
 
-        if quotation.status != QuotationStatus::PendingPayment {
+        if quotation.status != QuoteStatus::PendingPayment {
             return Ok(GetQuotationSubtotalResponse {
                 quotation_subtotal: None,
             });
