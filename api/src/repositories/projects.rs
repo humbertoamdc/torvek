@@ -1,4 +1,4 @@
-use crate::projects::models::project::{CustomerId, Project, ProjectId, ProjectStatus};
+use crate::projects::models::project::{CustomerId, Project, ProjectId};
 use crate::shared::error::Error;
 use crate::shared::error::Error::UnknownError;
 use crate::shared::{QueryResponse, Result};
@@ -34,7 +34,7 @@ pub struct DynamodbProject {
     pub lsi1_sk: String,
     /// name&project_id
     pub lsi2_sk: String,
-    pub status: ProjectStatus,
+    pub is_locked: bool,
     pub updated_at: DateTime<Utc>,
 }
 
@@ -65,7 +65,7 @@ impl TryInto<Project> for DynamodbProject {
                 );
                 UnknownError
             })?,
-            status: self.status,
+            is_locked: self.is_locked,
             created_at: created_at.ok_or_else(|| {
                 tracing::error!(
                     "create_at is required but not found for project with id {}",
@@ -96,7 +96,7 @@ impl From<Project> for DynamodbProject {
             sk: value.id,
             lsi1_sk,
             lsi2_sk,
-            status: value.status,
+            is_locked: value.is_locked,
             updated_at: value.updated_at,
         }
     }

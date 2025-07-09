@@ -1,7 +1,6 @@
 use crate::orders::models::dynamodb_order_item::DynamodbOrderItem;
 use crate::orders::models::order::Order;
 use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::projects::models::project::ProjectStatus;
 use crate::quotations::models::quotation::QuotationStatus;
 use crate::shared::error::Error;
 use crate::shared::Result;
@@ -95,16 +94,9 @@ impl DynamodbOrdersCreationService {
                         (String::from("customer_id"), AttributeValue::S(customer_id)),
                         (String::from("id"), AttributeValue::S(project_id)),
                     ])))
-                    .update_expression("SET #status = :locked, updated_at = :updated_at")
-                    .set_expression_attribute_names(Some(HashMap::from([(
-                        String::from("#status"),
-                        String::from("status"),
-                    )])))
+                    .update_expression("SET is_locked = :is_locked, updated_at = :updated_at")
                     .set_expression_attribute_values(Some(HashMap::from([
-                        (
-                            String::from(":locked"),
-                            AttributeValue::S(ProjectStatus::Locked.to_string()),
-                        ),
+                        (String::from(":is_locked"), AttributeValue::Bool(true)),
                         (
                             String::from(":updated_at"),
                             AttributeValue::S(chrono::Utc::now().to_rfc3339()),

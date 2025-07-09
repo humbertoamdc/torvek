@@ -1,10 +1,11 @@
-use crate::projects::models::project::{Project, ProjectStatus};
+use crate::projects::models::project::Project;
 use crate::repositories::projects::{DynamodbProject, ProjectsRepository};
 use crate::shared::error::Error;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
+use aws_sdk_dynamodb::operation::query::builders::QueryFluentBuilder;
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::{DateTime, Utc};
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -61,14 +62,10 @@ impl ProjectsRepository for DynamodbProjects {
             .table_name(&self.table)
             .key("pk", AttributeValue::S(customer_id))
             .key("sk", AttributeValue::S(project_id))
-            .condition_expression("#status <> :locked")
-            .set_expression_attribute_names(Some(HashMap::from([(
-                String::from("#status"),
-                String::from("status"),
-            )])))
+            .condition_expression("is_locked <> :is_locked")
             .set_expression_attribute_values(Some(HashMap::from([(
-                String::from(":locked"),
-                AttributeValue::S(ProjectStatus::Locked.to_string()),
+                String::from(":is_locked"),
+                AttributeValue::Bool(true),
             )])))
             .send()
             .await;
@@ -133,45 +130,19 @@ impl ProjectsRepository for DynamodbProjects {
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Project>, String>> {
-        let mut query = self
-            .client
-            .query()
+        let mut query = {
+            if let Some(name) = name {
+                self.name_query(customer_id, name)
+            } else {
+                self.datetime_range_query(customer_id, from, to)
+            }
+        };
+
+        query = query
             .table_name(&self.table)
             .limit(limit)
             .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
             .scan_index_forward(false);
-
-        if let Some(name) = name {
-            let expression_attribute_values: HashMap<String, AttributeValue> = [
-                (String::from(":customer_id"), AttributeValue::S(customer_id)),
-                (String::from(":name"), AttributeValue::S(name)),
-            ]
-            .into_iter()
-            .collect();
-
-            query = query
-                .index_name(TableIndex::LSI2ProjectName.to_string())
-                .key_condition_expression("pk = :customer_id AND begins_with(lsi2_sk, :name)")
-                .set_expression_attribute_values(Some(expression_attribute_values));
-        } else {
-            let lower_bound = from.unwrap_or(DateTime::<Utc>::UNIX_EPOCH).to_rfc3339();
-            let upper_bound = to.unwrap_or(Utc::now()).to_rfc3339();
-
-            let expression_attribute_values: HashMap<String, AttributeValue> = [
-                (String::from(":customer_id"), AttributeValue::S(customer_id)),
-                (String::from(":lower_bound"), AttributeValue::S(lower_bound)),
-                (String::from(":upper_bound"), AttributeValue::S(upper_bound)),
-            ]
-            .into_iter()
-            .collect();
-
-            query = query
-                .index_name(TableIndex::LSI1CreationTimestamp.to_string())
-                .key_condition_expression(
-                    "pk = :customer_id AND lsi1_sk BETWEEN :lower_bound AND :upper_bound",
-                )
-                .set_expression_attribute_values(Some(expression_attribute_values));
-        }
 
         let response = query.send().await;
 
@@ -200,5 +171,48 @@ impl ProjectsRepository for DynamodbProjects {
                 Err(Error::UnknownError)
             }
         }
+    }
+}
+
+impl DynamodbProjects {
+    fn name_query(&self, customer_id: String, name: String) -> QueryFluentBuilder {
+        let expression_attribute_values: HashMap<String, AttributeValue> = [
+            (String::from(":customer_id"), AttributeValue::S(customer_id)),
+            (String::from(":name"), AttributeValue::S(name)),
+        ]
+        .into_iter()
+        .collect();
+
+        self.client
+            .query()
+            .index_name(TableIndex::LSI2ProjectName.to_string())
+            .key_condition_expression("pk = :customer_id AND begins_with(lsi2_sk, :name)")
+            .set_expression_attribute_values(Some(expression_attribute_values))
+    }
+
+    fn datetime_range_query(
+        &self,
+        customer_id: String,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+    ) -> QueryFluentBuilder {
+        let lower_bound = from.unwrap_or(DateTime::<Utc>::UNIX_EPOCH).to_rfc3339();
+        let upper_bound = to.unwrap_or(Utc::now()).to_rfc3339();
+
+        let expression_attribute_values: HashMap<String, AttributeValue> = [
+            (String::from(":customer_id"), AttributeValue::S(customer_id)),
+            (String::from(":lower_bound"), AttributeValue::S(lower_bound)),
+            (String::from(":upper_bound"), AttributeValue::S(upper_bound)),
+        ]
+        .into_iter()
+        .collect();
+
+        self.client
+            .query()
+            .index_name(TableIndex::LSI1CreationTimestamp.to_string())
+            .key_condition_expression(
+                "pk = :customer_id AND lsi1_sk BETWEEN :lower_bound AND :upper_bound",
+            )
+            .set_expression_attribute_values(Some(expression_attribute_values))
     }
 }

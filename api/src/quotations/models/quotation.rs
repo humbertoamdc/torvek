@@ -34,13 +34,10 @@ impl Quotation {
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuotationStatus {
-    #[serde(rename = "001_CREATED")]
     Created,
-    #[serde(rename = "002_PENDING_REVIEW")]
     PendingReview,
-    #[serde(rename = "003_PENDING_PAYMENT")]
     PendingPayment,
-    #[serde(rename = "004_PAYED")]
     Payed,
 }
