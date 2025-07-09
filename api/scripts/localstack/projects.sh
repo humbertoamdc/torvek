@@ -13,25 +13,25 @@ awslocal dynamodb create-table \
         AttributeName=sk,KeyType=RANGE \
     --billing-mod PAY_PER_REQUEST \
     --local-secondary-indexes \
-    '[
-      {
-        "IndexName": "LSI1_CreationTimestamp",
-        "KeySchema": [
-          {"AttributeName":"pk", "KeyType":"HASH"},
-          {"AttributeName":"lsi1_sk", "KeyType":"RANGE"}
-        ],
-        "Projection": {
-          "ProjectionType": "ALL"
+      '[
+        {
+          "IndexName": "LSI1_CreationDateTime",
+          "KeySchema": [
+            {"AttributeName":"pk", "KeyType":"HASH"},
+            {"AttributeName":"lsi1_sk", "KeyType":"RANGE"}
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        },
+        {
+          "IndexName": "LSI2_ProjectName",
+          "KeySchema": [
+            {"AttributeName":"pk", "KeyType":"HASH"},
+            {"AttributeName":"lsi2_sk", "KeyType":"RANGE"}
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
         }
-      },
-      {
-        "IndexName": "LSI2_ProjectName",
-        "KeySchema": [
-          {"AttributeName":"pk", "KeyType":"HASH"},
-          {"AttributeName":"lsi2_sk", "KeyType":"RANGE"}
-        ],
-        "Projection": {
-          "ProjectionType": "ALL"
-        }
-      }
-    ]'
+      ]'

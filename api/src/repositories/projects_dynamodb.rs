@@ -15,8 +15,8 @@ use std::collections::HashMap;
 
 #[derive(Serialize_enum_str)]
 pub enum TableIndex {
-    #[serde(rename = "LSI1_CreationTimestamp")]
-    LSI1CreationTimestamp,
+    #[serde(rename = "LSI1_CreationDateTime")]
+    LSI1CreationDateTime,
     #[serde(rename = "LSI2_ProjectName")]
     LSI2ProjectName,
 }
@@ -209,7 +209,7 @@ impl DynamodbProjects {
 
         self.client
             .query()
-            .index_name(TableIndex::LSI1CreationTimestamp.to_string())
+            .index_name(TableIndex::LSI1CreationDateTime.to_string())
             .key_condition_expression(
                 "pk = :customer_id AND lsi1_sk BETWEEN :lower_bound AND :upper_bound",
             )
