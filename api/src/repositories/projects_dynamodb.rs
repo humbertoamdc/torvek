@@ -97,8 +97,8 @@ impl ProjectsRepository for DynamodbProjects {
             .get_item()
             .table_name(&self.table)
             .set_key(Some(HashMap::from([
-                (String::from("customer_id"), AttributeValue::S(customer_id)),
-                (String::from("id"), AttributeValue::S(project_id)),
+                (String::from("pk"), AttributeValue::S(customer_id)),
+                (String::from("sk"), AttributeValue::S(project_id)),
             ])))
             .send()
             .await;
