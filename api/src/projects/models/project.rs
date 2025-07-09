@@ -3,10 +3,13 @@ use serde_derive::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use uuid::{ContextV7, Timestamp, Uuid};
 
+pub type ProjectId = String;
+pub type CustomerId = String;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Project {
-    pub id: String,
-    pub customer_id: String,
+    pub id: ProjectId,
+    pub customer_id: CustomerId,
     pub name: String,
     pub status: ProjectStatus,
     pub created_at: DateTime<Utc>,

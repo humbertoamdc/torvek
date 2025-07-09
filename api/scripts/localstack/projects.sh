@@ -4,9 +4,34 @@
 awslocal dynamodb create-table \
     --table-name Projects \
     --attribute-definitions \
-        AttributeName=customer_id,AttributeType=S \
-        AttributeName=id,AttributeType=S \
+        AttributeName=pk,AttributeType=S \
+        AttributeName=sk,AttributeType=S \
+        AttributeName=lsi1_sk,AttributeType=S \
+        AttributeName=lsi2_sk,AttributeType=S \
     --key-schema \
-        AttributeName=customer_id,KeyType=HASH \
-        AttributeName=id,KeyType=RANGE \
+        AttributeName=pk,KeyType=HASH \
+        AttributeName=sk,KeyType=RANGE \
     --billing-mod PAY_PER_REQUEST \
+    --local-secondary-indexes \
+    '[
+      {
+        "IndexName": "LSI1_CreationTimestamp",
+        "KeySchema": [
+          {"AttributeName":"pk", "KeyType":"HASH"},
+          {"AttributeName":"lsi1_sk", "KeyType":"RANGE"}
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      },
+      {
+        "IndexName": "LSI2_ProjectName",
+        "KeySchema": [
+          {"AttributeName":"pk", "KeyType":"HASH"},
+          {"AttributeName":"lsi2_sk", "KeyType":"RANGE"}
+        ],
+        "Projection": {
+          "ProjectionType": "ALL"
+        }
+      }
+    ]'

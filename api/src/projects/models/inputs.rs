@@ -14,11 +14,6 @@ pub struct GetProjectByIdInput {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct QueryProjectsForClientInput {
-    pub identity: Identity,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct DeleteProjectInput {
     pub identity: Identity,
     pub project_id: String,

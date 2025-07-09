@@ -1,14 +1,24 @@
 use crate::projects::models::project::{Project, ProjectStatus};
-use crate::repositories::projects::ProjectsRepository;
+use crate::repositories::projects::{DynamodbProject, ProjectsRepository};
 use crate::shared::error::Error;
 use crate::shared::{QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
 use aws_sdk_dynamodb::types::AttributeValue;
+use chrono::{DateTime, Utc};
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
+use serde_enum_str::Serialize_enum_str;
 use std::collections::HashMap;
+
+#[derive(Serialize_enum_str)]
+pub enum TableIndex {
+    #[serde(rename = "LSI1_CreationTimestamp")]
+    LSI1CreationTimestamp,
+    #[serde(rename = "LSI2_ProjectName")]
+    LSI2ProjectName,
+}
 
 #[derive(Clone)]
 pub struct DynamodbProjects {
@@ -25,7 +35,8 @@ impl DynamodbProjects {
 #[async_trait]
 impl ProjectsRepository for DynamodbProjects {
     async fn create(&self, project: Project) -> Result<()> {
-        let item = to_item(project).expect("error converting to dynamodb item");
+        let dynamodb_project = DynamodbProject::from(project);
+        let item = to_item(dynamodb_project).expect("error converting to dynamodb item");
         let response = self
             .client
             .put_item()
@@ -48,8 +59,8 @@ impl ProjectsRepository for DynamodbProjects {
             .client
             .delete_item()
             .table_name(&self.table)
-            .key("customer_id", AttributeValue::S(customer_id))
-            .key("id", AttributeValue::S(project_id))
+            .key("pk", AttributeValue::S(customer_id))
+            .key("sk", AttributeValue::S(project_id))
             .condition_expression("#status <> :locked")
             .set_expression_attribute_names(Some(HashMap::from([(
                 String::from("#status"),
@@ -97,8 +108,8 @@ impl ProjectsRepository for DynamodbProjects {
 
         match response {
             Ok(output) => match output.item {
-                Some(item) => match from_item::<Project>(item) {
-                    Ok(project) => Ok(project),
+                Some(item) => match from_item::<DynamodbProject>(item) {
+                    Ok(dynamodb_project) => Ok(dynamodb_project.try_into()?),
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -116,33 +127,78 @@ impl ProjectsRepository for DynamodbProjects {
     async fn query(
         &self,
         customer_id: String,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
+        name: Option<String>,
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Project>, String>> {
-        let response = self
+        let mut query = self
             .client
             .query()
+            .table_name(&self.table)
             .limit(limit)
             .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
-            .table_name(&self.table)
-            .key_condition_expression("customer_id = :customer_id")
-            .expression_attribute_values(":customer_id", AttributeValue::S(customer_id))
-            .scan_index_forward(false)
-            .send()
-            .await;
+            .scan_index_forward(false);
+
+        if let Some(name) = name {
+            let expression_attribute_values: HashMap<String, AttributeValue> = [
+                (String::from(":customer_id"), AttributeValue::S(customer_id)),
+                (String::from(":name"), AttributeValue::S(name)),
+            ]
+            .into_iter()
+            .collect();
+
+            query = query
+                .index_name(TableIndex::LSI2ProjectName.to_string())
+                .key_condition_expression("pk = :customer_id AND begins_with(lsi2_sk, :name)")
+                .set_expression_attribute_values(Some(expression_attribute_values));
+        } else {
+            let lower_bound = from.unwrap_or(DateTime::<Utc>::UNIX_EPOCH).to_rfc3339();
+            let upper_bound = to.unwrap_or(Utc::now()).to_rfc3339();
+
+            let expression_attribute_values: HashMap<String, AttributeValue> = [
+                (String::from(":customer_id"), AttributeValue::S(customer_id)),
+                (String::from(":lower_bound"), AttributeValue::S(lower_bound)),
+                (String::from(":upper_bound"), AttributeValue::S(upper_bound)),
+            ]
+            .into_iter()
+            .collect();
+
+            query = query
+                .index_name(TableIndex::LSI1CreationTimestamp.to_string())
+                .key_condition_expression(
+                    "pk = :customer_id AND lsi1_sk BETWEEN :lower_bound AND :upper_bound",
+                )
+                .set_expression_attribute_values(Some(expression_attribute_values));
+        }
+
+        let response = query.send().await;
 
         match response {
             Ok(output) => {
                 let items = output.items().to_vec();
-                match from_items(items) {
-                    Ok(projects) => Ok(QueryResponse {
-                        data: projects,
-                        cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
-                    }),
-                    Err(_) => Err(Error::UnknownError),
+                match from_items::<_, DynamodbProject>(items) {
+                    Ok(dynamodb_projects) => {
+                        let mut projects = Vec::with_capacity(dynamodb_projects.len());
+                        for item in dynamodb_projects {
+                            projects.push(item.try_into()?);
+                        }
+                        Ok(QueryResponse {
+                            data: projects,
+                            cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
+                        })
+                    }
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
                 }
             }
-            Err(_) => Err(Error::UnknownError),
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 }

@@ -1,23 +1,35 @@
 use crate::app_state::AppState;
 use crate::projects::models::inputs::{
-    CreateProjectInput, DeleteProjectInput, GetProjectByIdInput, QueryProjectsForClientInput,
+    CreateProjectInput, DeleteProjectInput, GetProjectByIdInput,
 };
 use crate::projects::usecases::create_project::CreateProject;
 use crate::projects::usecases::delete_project::DeleteProject;
 use crate::projects::usecases::get_project::GetProject;
-use crate::projects::usecases::query_projects_by_customer::QueryProjectsByCustomer;
+use crate::projects::usecases::query_projects_by_customer::{
+    QueryProjectsByCustomer, QueryProjectsByCustomerInput,
+};
 use crate::shared::extractors::session::CustomerSession;
 use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
+use chrono::{DateTime, Utc};
 use http::StatusCode;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateProjectRequest {
     pub project_name: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct QueryProjectsForCustomerQuery {
+    pub from: Option<DateTime<Utc>>,
+    pub to: Option<DateTime<Utc>>,
+    pub name: Option<String>,
+    pub cursor: Option<String>,
+    pub limit: Option<i32>,
 }
 
 pub async fn create_project(
@@ -38,13 +50,19 @@ pub async fn create_project(
     }
 }
 
-pub async fn query_projects_for_client(
+pub async fn query_projects_by_customer(
     State(app_state): State<AppState>,
+    Query(query): Query<QueryProjectsForCustomerQuery>,
     CustomerSession(session): CustomerSession,
 ) -> impl IntoResponse {
-    let input = QueryProjectsForClientInput {
-        identity: session.identity,
-    };
+    let input = QueryProjectsByCustomerInput::new(
+        session.identity,
+        query.from,
+        query.to,
+        query.name,
+        query.cursor,
+        query.limit,
+    );
     let usecase = QueryProjectsByCustomer::new(app_state.projects.projects_repository);
     let result = usecase.execute(input).await;
 
