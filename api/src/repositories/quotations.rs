@@ -51,6 +51,10 @@ pub struct DynamodbQuote {
     pub lsi1_sk: String,
     /// status&project_id&quote_id
     pub gsi1_sk: String,
+    /// is_pending_review
+    pub gsi2_pk: Option<bool>,
+    /// created_at&quote_id
+    pub gsi2_sk: Option<String>,
     pub name: String,
     pub updated_at: DateTime<Utc>,
 }
@@ -120,16 +124,30 @@ impl From<Quotation> for DynamodbQuote {
             value.id
         );
 
-        let lsi2_sk = format!(
+        let gsi1_sk = format!(
             "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
             value.status, value.project_id, value.id
         );
+
+        let (gsi2_pk, gsi2_sk) = if value.status == QuoteStatus::PendingReview {
+            let gsi2_sk = format!(
+                "{}{ATTRIBUTES_SEPARATOR}{}",
+                value.created_at.to_rfc3339(),
+                value.id
+            );
+
+            (Some(true), Some(gsi2_sk))
+        } else {
+            (None, None)
+        };
 
         Self {
             pk: value.customer_id,
             sk: value.id,
             lsi1_sk,
-            gsi1_sk: lsi2_sk,
+            gsi1_sk,
+            gsi2_pk,
+            gsi2_sk,
             name: value.name,
             updated_at: value.updated_at,
         }

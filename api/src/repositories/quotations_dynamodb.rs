@@ -22,6 +22,8 @@ enum TableIndex {
     LSI1ProjectsAndCreationDateTime,
     #[serde(rename = "GSI1_QuoteStatus")]
     GSI1QuoteStatus,
+    #[serde(rename = "GSI2_QuoteIsPendingReview")]
+    GSI2IsPendingReview,
 }
 
 #[derive(Clone)]
@@ -146,7 +148,7 @@ impl QuotationsRepository for DynamodbQuotations {
                         self.datetime_range_query(customer_id, project_id, from, to)
                     }
                 }
-                QueryBy::IsPendingReview => todo!(),
+                QueryBy::IsPendingReview => self.is_pending_review_query(),
             }
         };
 
@@ -346,5 +348,13 @@ impl DynamodbQuotations {
                 "pk = :customer_id AND lsi1_sk BETWEEN :lower_bound AND :upper_bound",
             )
             .set_expression_attribute_values(Some(expression_attribute_values))
+    }
+
+    fn is_pending_review_query(&self) -> QueryFluentBuilder {
+        self.client
+            .query()
+            .index_name(TableIndex::GSI2IsPendingReview.to_string())
+            .key_condition_expression("gsi2_pk = :isPendingReview")
+            .expression_attribute_values(":isPendingReview", AttributeValue::Bool(true))
     }
 }
