@@ -51,8 +51,10 @@ pub struct DynamodbQuote {
     pub lsi1_sk: String,
     /// status&project_id&quote_id
     pub gsi1_sk: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// is_pending_review
-    pub gsi2_pk: Option<bool>,
+    pub gsi2_pk: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// created_at&quote_id
     pub gsi2_sk: Option<String>,
     pub name: String,
@@ -136,7 +138,7 @@ impl From<Quotation> for DynamodbQuote {
                 value.id
             );
 
-            (Some(true), Some(gsi2_sk))
+            (Some(String::from("true")), Some(gsi2_sk))
         } else {
             (None, None)
         };

@@ -53,7 +53,10 @@ impl QuotationsRepository for DynamodbQuotations {
 
         match response {
             Ok(_) => Ok(()),
-            Err(_) => Err(Error::UnknownError),
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
         }
     }
 

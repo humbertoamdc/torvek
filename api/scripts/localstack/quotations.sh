@@ -8,6 +8,7 @@ awslocal dynamodb create-table \
         AttributeName=sk,AttributeType=S \
         AttributeName=lsi1_sk,AttributeType=S \
         AttributeName=gsi1_sk,AttributeType=S \
+        AttributeName=gsi2_pk,AttributeType=S \
         AttributeName=gsi2_sk,AttributeType=S \
     --key-schema \
         AttributeName=pk,KeyType=HASH \
