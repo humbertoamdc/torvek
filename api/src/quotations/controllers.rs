@@ -15,7 +15,7 @@ use crate::quotations::usecases::query_quotations_by_project::QueryQuotationsByP
 use crate::quotations::usecases::update_quotation::UpdateQuotation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::into_error_response::IntoError;
-use crate::shared::UseCase;
+use crate::shared::{ProjectId, QuoteId, UseCase};
 use axum::extract::{Path, Query, State};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -24,7 +24,6 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationRequest {
-    pub project_id: String,
     pub quotation_name: String,
 }
 
@@ -42,11 +41,12 @@ pub struct AdminQueryQuotationsByStatusQueryParams {
 pub async fn create_quotation(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
+    Path(project_id): Path<ProjectId>,
     Json(request): Json<CreateQuotationRequest>,
 ) -> impl IntoResponse {
     let input = CreateQuotationInput {
         identity: session.identity,
-        project_id: request.project_id,
+        project_id,
         quotation_name: request.quotation_name,
     };
     let usecase = CreateQuotation::new(app_state.quotations.quotations_repository);
@@ -79,11 +79,10 @@ pub async fn query_quotations_for_project(
 pub async fn get_quotation_by_id(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = GetQuotationByIdInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = GetQuotation::new(app_state.quotations.quotations_repository);
@@ -98,11 +97,10 @@ pub async fn get_quotation_by_id(
 pub async fn get_quotation_subtotal(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = GetQuotationSubtotalInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = GetQuotationSubtotal::new(
@@ -120,7 +118,7 @@ pub async fn get_quotation_subtotal(
 pub async fn delete_quotation(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((_, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = DeleteQuotationInput {
         identity: session.identity,
@@ -161,11 +159,10 @@ pub async fn send_quotation_for_review(
 pub async fn download_pdf_quote(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = DownloadQuotePdfInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = DowanloadQuotePdf::new(

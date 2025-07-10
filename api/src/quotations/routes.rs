@@ -10,29 +10,23 @@ use crate::quotations::controllers::{
 
 pub fn create_router() -> Router<AppState> {
     Router::new()
-        .route("/quotations", post(create_quotation))
+        .route("/projects/:project_id/quotations", post(create_quotation))
         .route(
             "/projects/:project_id/quotations",
             get(query_quotations_for_project),
         )
+        .route("/quotations/:quotation_id", get(get_quotation_by_id))
         .route(
-            "/projects/:project_id/quotations/:quotation_id",
-            get(get_quotation_by_id),
-        )
-        .route(
-            "/projects/:project_id/quotations/:quotation_id/subtotal",
+            "/quotations/:quotation_id/subtotal",
             get(get_quotation_subtotal),
         )
-        .route(
-            "/projects/:project_id/quotations/:quotation_id",
-            delete(delete_quotation),
-        )
+        .route("/quotations/:quotation_id", delete(delete_quotation))
         .route(
             "/quotations/send_for_review",
             post(send_quotation_for_review),
         )
         .route(
-            "/projects/:project_id/quotations/:quotation_id/download_pdf",
+            "/quotations/:quotation_id/download_pdf",
             get(download_pdf_quote),
         )
         .route("/admin/quotations", get(admin_query_quotations_by_status))

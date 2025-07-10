@@ -6,8 +6,8 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_name: String,
+    pub project_id: ProjectId,
+    pub quotation_name: ProjectId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -19,15 +19,13 @@ pub struct QueryQuotationsForProjectInput {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GetQuotationByIdInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub quotation_id: QuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GetQuotationSubtotalInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub quotation_id: QuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -39,15 +37,14 @@ pub struct DeleteQuotationInput {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateQuotationInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct DownloadQuotePdfInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub quotation_id: QuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

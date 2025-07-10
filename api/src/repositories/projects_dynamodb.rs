@@ -1,7 +1,7 @@
 use crate::projects::models::project::Project;
 use crate::repositories::projects::{DynamodbProject, ProjectsRepository};
 use crate::shared::error::Error;
-use crate::shared::{CustomerId, QueryResponse, Result};
+use crate::shared::{CustomerId, ProjectId, QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
@@ -55,7 +55,7 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn delete(&self, customer_id: String, project_id: String) -> Result<()> {
+    async fn delete(&self, customer_id: CustomerId, project_id: ProjectId) -> Result<()> {
         let response = self
             .client
             .delete_item()
