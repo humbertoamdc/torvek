@@ -8,7 +8,7 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::quotations::{QueryBy, QuotationsRepository};
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
-use crate::shared::UseCase;
+use crate::shared::{CustomerId, ProjectId, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -40,20 +40,11 @@ impl UseCase<DeleteProjectInput, ()> for DeleteProject {
     async fn execute(&self, input: DeleteProjectInput) -> crate::shared::Result<()> {
         let _ = self
             .projects_repository
-            .delete(input.identity.id, input.project_id.clone())
+            .delete(input.identity.id.clone(), input.project_id.clone())
             .await;
 
-        let quotations_repository = self.quotations_repository.clone();
-        let parts_repository = self.parts_repository.clone();
-        let object_storage = self.object_storage.clone();
-
-        Self::cascade_delete_quotations_for_project(
-            input.project_id.clone(),
-            quotations_repository,
-            parts_repository,
-            object_storage,
-        )
-        .await;
+        self.cascade_delete_quotations_for_project(input.identity.id, input.project_id.clone())
+            .await;
 
         Ok(())
     }
@@ -61,20 +52,23 @@ impl UseCase<DeleteProjectInput, ()> for DeleteProject {
 
 impl DeleteProject {
     async fn cascade_delete_quotations_for_project(
-        project_id: String,
-        quotations_repository: Arc<dyn QuotationsRepository>,
-        parts_repository: Arc<dyn PartsRepository>,
-        object_storage: Arc<dyn ObjectStorage>,
+        &self,
+        customer_id: CustomerId,
+        project_id: ProjectId,
     ) {
         let page_limit = 25;
         let mut cursor = None;
 
         loop {
-            let result = quotations_repository
+            let result = self
+                .quotations_repository
                 .query(
+                    Some(customer_id.clone()),
                     Some(project_id.clone()),
                     None,
-                    QueryBy::Project,
+                    None,
+                    None,
+                    QueryBy::Customer,
                     page_limit,
                     cursor,
                 )
@@ -86,13 +80,7 @@ impl DeleteProject {
                         break;
                     }
 
-                    let _ = Self::delete_quotations(
-                        &response.data,
-                        quotations_repository.clone(),
-                        parts_repository.clone(),
-                        object_storage.clone(),
-                    )
-                    .await;
+                    let _ = self.delete_quotations(&response.data).await;
 
                     cursor = response.cursor;
                 }
@@ -105,44 +93,32 @@ impl DeleteProject {
         }
     }
 
-    async fn delete_quotations(
-        quotations: &Vec<Quotation>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
-        parts_repository: Arc<dyn PartsRepository>,
-        object_repository: Arc<dyn ObjectStorage>,
-    ) -> shared::Result<()> {
+    async fn delete_quotations(&self, quotations: &Vec<Quotation>) -> shared::Result<()> {
         for quotation in quotations {
-            Self::cascade_delete_parts_for_quotation(
-                quotation.id.clone(),
-                parts_repository.clone(),
-                object_repository.clone(),
-            )
-            .await;
+            self.cascade_delete_parts_for_quotation(quotation.id.clone())
+                .await;
         }
 
         let batch_delete_objects = quotations
             .iter()
             .map(|quotation| BatchDeleteQuotationObject {
+                customer_id: quotation.customer_id.clone(),
                 quotation_id: quotation.id.clone(),
-                project_id: quotation.project_id.clone(),
             })
             .collect();
 
-        quotations_repository
+        self.quotations_repository
             .batch_delete(batch_delete_objects)
             .await
     }
 
-    async fn cascade_delete_parts_for_quotation(
-        quotation_id: String,
-        parts_repository: Arc<dyn PartsRepository>,
-        object_storage: Arc<dyn ObjectStorage>,
-    ) {
+    async fn cascade_delete_parts_for_quotation(&self, quotation_id: String) {
         let page_limit = 25;
         let mut cursor = None;
 
         loop {
-            let result = parts_repository
+            let result = self
+                .parts_repository
                 .query(quotation_id.clone(), cursor, page_limit)
                 .await;
 
@@ -152,9 +128,9 @@ impl DeleteProject {
                         break;
                     }
 
-                    let _ = Self::delete_parts(&response.data, parts_repository.clone()).await;
+                    let _ = self.delete_parts(&response.data).await;
 
-                    Self::delete_associated_objects(&response.data, object_storage.clone()).await;
+                    self.delete_associated_objects(&response.data).await;
 
                     cursor = response.cursor;
                 }
@@ -167,10 +143,7 @@ impl DeleteProject {
         }
     }
 
-    async fn delete_parts(
-        parts: &Vec<Part>,
-        parts_repository: Arc<dyn PartsRepository>,
-    ) -> shared::Result<()> {
+    async fn delete_parts(&self, parts: &Vec<Part>) -> shared::Result<()> {
         let batch_delete_objects = parts
             .iter()
             .map(|part| BatchDeletePartObject {
@@ -179,10 +152,12 @@ impl DeleteProject {
             })
             .collect();
 
-        parts_repository.batch_delete(batch_delete_objects).await
+        self.parts_repository
+            .batch_delete(batch_delete_objects)
+            .await
     }
 
-    async fn delete_associated_objects(parts: &Vec<Part>, object_storage: Arc<dyn ObjectStorage>) {
+    async fn delete_associated_objects(&self, parts: &Vec<Part>) {
         // Merge model, render, and drawing file urls into one array to bulk delete all
         // the objects at the same time.
         let urls = parts
@@ -197,6 +172,6 @@ impl DeleteProject {
             .filter_map(|file| file.map(|f| f.url.as_ref()))
             .collect();
 
-        let _ = object_storage.bulk_delete_objects(urls).await;
+        let _ = self.object_storage.bulk_delete_objects(urls).await;
     }
 }

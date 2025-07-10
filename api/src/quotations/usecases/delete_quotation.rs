@@ -33,7 +33,7 @@ impl DeleteQuotation {
 impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
     async fn execute(&self, input: DeleteQuotationInput) -> crate::shared::Result<()> {
         self.quotations_repository
-            .delete(input.project_id, input.quotation_id.clone())
+            .delete(input.identity.id, input.quotation_id.clone())
             .await?;
 
         let parts_repository = self.parts_repository.clone();

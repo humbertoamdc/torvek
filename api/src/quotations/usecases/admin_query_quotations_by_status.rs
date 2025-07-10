@@ -27,7 +27,16 @@ impl UseCase<AdminQueryQuotationsByStatusInput, AdminQueryQuotationsByStatusResp
     ) -> Result<AdminQueryQuotationsByStatusResponse> {
         let response = self
             .quotations_repository
-            .query(None, Some(input.status), QueryBy::Status, 100, None)
+            .query(
+                None,
+                None,
+                None,
+                None,
+                Some(input.status),
+                QueryBy::IsPendingReview,
+                100,
+                None,
+            )
             .await?;
 
         Ok(AdminQueryQuotationsByStatusResponse::new(response.data))

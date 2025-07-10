@@ -11,19 +11,22 @@ use std::str::FromStr;
 pub const ATTRIBUTES_SEPARATOR: &str = "&";
 
 pub enum QueryBy {
-    Project,
-    Status,
+    Customer,
+    IsPendingReview,
 }
 
 #[async_trait]
 pub trait QuotationsRepository: Send + Sync + 'static {
     async fn create(&self, quotation: Quotation) -> Result<()>;
     /// Delete quotation ONLY if it is not in `PAYED` status.
-    async fn delete(&self, project_id: String, quotation_id: String) -> Result<()>;
-    async fn get(&self, project_id: String, quotation_id: String) -> Result<Quotation>;
+    async fn delete(&self, customer_id: CustomerId, quotation_id: QuoteId) -> Result<()>;
+    async fn get(&self, customer_id: CustomerId, quotation_id: QuoteId) -> Result<Quotation>;
     async fn query(
         &self,
-        project_id: Option<String>,
+        customer_id: Option<CustomerId>,
+        project_id: Option<ProjectId>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
         status: Option<QuoteStatus>,
         query_by: QueryBy,
         limit: i32,
@@ -32,8 +35,9 @@ pub trait QuotationsRepository: Send + Sync + 'static {
 
     async fn update(
         &self,
-        project_id: String,
-        quotation_id: String,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+        quotation_id: QuoteId,
         status: Option<QuoteStatus>,
     ) -> Result<Quotation>;
     async fn batch_delete(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()>;
@@ -45,8 +49,8 @@ pub struct DynamodbQuote {
     pub sk: QuoteId,
     /// project_id&created_at&quote_id
     pub lsi1_sk: String,
-    /// status&project_id&created_at&quote_id
-    pub lsi2_sk: String,
+    /// status&project_id&quote_id
+    pub gsi1_sk: String,
     pub name: String,
     pub updated_at: DateTime<Utc>,
 }
@@ -63,13 +67,13 @@ impl TryInto<Quotation> for DynamodbQuote {
             .lsi1_sk
             .split(ATTRIBUTES_SEPARATOR)
             .collect::<Vec<&str>>();
-        let lsi2_sk_attributes = self.lsi2_sk.split_once(ATTRIBUTES_SEPARATOR);
+        let gsi1_sk_attributes = self.gsi1_sk.split_once(ATTRIBUTES_SEPARATOR);
 
-        if let [sk_project_id, sk_created_at] = &lsi1_sk_attributes[..] {
+        if let [sk_project_id, sk_created_at, _] = &lsi1_sk_attributes[..] {
             project_id = Some(sk_project_id.to_string());
             created_at = Some(DateTime::<Utc>::from_str(sk_created_at).unwrap());
         }
-        if let Some((sk_status, _)) = lsi2_sk_attributes {
+        if let Some((sk_status, _)) = gsi1_sk_attributes {
             if let Ok(parsed_status) = sk_status.parse() {
                 status = Some(parsed_status);
             }
@@ -117,18 +121,15 @@ impl From<Quotation> for DynamodbQuote {
         );
 
         let lsi2_sk = format!(
-            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
-            value.status,
-            value.project_id,
-            value.created_at.to_rfc3339(),
-            value.id
+            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
+            value.status, value.project_id, value.id
         );
 
         Self {
             pk: value.customer_id,
             sk: value.id,
             lsi1_sk,
-            lsi2_sk,
+            gsi1_sk: lsi2_sk,
             name: value.name,
             updated_at: value.updated_at,
         }

@@ -57,7 +57,7 @@ impl TryInto<Part> for DynamodbPart {
             .split(ATTRIBUTES_SEPARATOR)
             .collect::<Vec<&str>>();
 
-        if let [sk_quote_id, sk_created_at] = &lsi1_sk_attributes[..] {
+        if let [sk_quote_id, sk_created_at, _] = &lsi1_sk_attributes[..] {
             quote_id = Some(sk_quote_id.to_string());
             created_at = Some(DateTime::<Utc>::from_str(sk_created_at).unwrap());
         }

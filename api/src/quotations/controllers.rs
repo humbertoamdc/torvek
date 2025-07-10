@@ -120,11 +120,10 @@ pub async fn get_quotation_subtotal(
 pub async fn delete_quotation(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path((_, quotation_id)): Path<(String, String)>,
 ) -> impl IntoResponse {
     let input = DeleteQuotationInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = DeleteQuotation::new(

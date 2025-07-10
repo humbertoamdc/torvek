@@ -13,11 +13,11 @@ pub const ATTRIBUTES_SEPARATOR: &str = "&";
 pub trait ProjectsRepository: Send + Sync + 'static {
     async fn create(&self, project: Project) -> Result<()>;
     /// Delete project ONLY if it is not in `LOCKED` status.
-    async fn delete(&self, customer_id: String, project_id: String) -> Result<()>;
-    async fn get(&self, customer_id: String, project_id: String) -> Result<Project>;
+    async fn delete(&self, customer_id: CustomerId, project_id: ProjectId) -> Result<()>;
+    async fn get(&self, customer_id: CustomerId, project_id: ProjectId) -> Result<Project>;
     async fn query(
         &self,
-        customer_id: String,
+        customer_id: CustomerId,
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
         name: Option<String>,
@@ -33,7 +33,7 @@ pub struct DynamodbProject {
     /// created_at&project_id
     pub lsi1_sk: String,
     /// name&project_id
-    pub lsi2_sk: String,
+    pub gsi1_sk: String,
     pub is_locked: bool,
     pub updated_at: DateTime<Utc>,
 }
@@ -46,12 +46,12 @@ impl TryInto<Project> for DynamodbProject {
         let mut name = None::<String>;
 
         let lsi1_sk_attributes = self.lsi1_sk.split_once(ATTRIBUTES_SEPARATOR);
-        let lsi2_sk_attributes = self.lsi2_sk.split_once(ATTRIBUTES_SEPARATOR);
+        let gsi1_sk_attributes = self.gsi1_sk.split_once(ATTRIBUTES_SEPARATOR);
 
         if let Some((sk_created_at, _)) = lsi1_sk_attributes {
             created_at = Some(DateTime::<Utc>::from_str(sk_created_at).unwrap());
         }
-        if let Some((sk_name, _)) = lsi2_sk_attributes {
+        if let Some((sk_name, _)) = gsi1_sk_attributes {
             name = Some(sk_name.to_string());
         }
 
@@ -89,13 +89,13 @@ impl From<Project> for DynamodbProject {
             value.id
         );
 
-        let lsi2_sk = format!("{}{}{}", value.name, ATTRIBUTES_SEPARATOR, value.id);
+        let gsi1_sk = format!("{}{}{}", value.name, ATTRIBUTES_SEPARATOR, value.id);
 
         Self {
             pk: value.customer_id,
             sk: value.id,
             lsi1_sk,
-            lsi2_sk,
+            gsi1_sk,
             is_locked: value.is_locked,
             updated_at: value.updated_at,
         }

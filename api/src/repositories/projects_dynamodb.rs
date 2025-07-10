@@ -1,7 +1,7 @@
 use crate::projects::models::project::Project;
 use crate::repositories::projects::{DynamodbProject, ProjectsRepository};
 use crate::shared::error::Error;
-use crate::shared::{QueryResponse, Result};
+use crate::shared::{CustomerId, QueryResponse, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
@@ -14,11 +14,11 @@ use serde_enum_str::Serialize_enum_str;
 use std::collections::HashMap;
 
 #[derive(Serialize_enum_str)]
-pub enum TableIndex {
+enum TableIndex {
     #[serde(rename = "LSI1_CreationDateTime")]
     LSI1CreationDateTime,
-    #[serde(rename = "LSI2_ProjectName")]
-    LSI2ProjectName,
+    #[serde(rename = "GSI2_ProjectName")]
+    GSI1ProjectName,
 }
 
 #[derive(Clone)]
@@ -175,7 +175,7 @@ impl ProjectsRepository for DynamodbProjects {
 }
 
 impl DynamodbProjects {
-    fn name_query(&self, customer_id: String, name: String) -> QueryFluentBuilder {
+    fn name_query(&self, customer_id: CustomerId, name: String) -> QueryFluentBuilder {
         let expression_attribute_values: HashMap<String, AttributeValue> = [
             (String::from(":customer_id"), AttributeValue::S(customer_id)),
             (String::from(":name"), AttributeValue::S(name)),
@@ -185,14 +185,14 @@ impl DynamodbProjects {
 
         self.client
             .query()
-            .index_name(TableIndex::LSI2ProjectName.to_string())
-            .key_condition_expression("pk = :customer_id AND begins_with(lsi2_sk, :name)")
+            .index_name(TableIndex::GSI1ProjectName.to_string())
+            .key_condition_expression("pk = :customer_id AND begins_with(gsi1_sk, :name)")
             .set_expression_attribute_values(Some(expression_attribute_values))
     }
 
     fn datetime_range_query(
         &self,
-        customer_id: String,
+        customer_id: CustomerId,
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
     ) -> QueryFluentBuilder {

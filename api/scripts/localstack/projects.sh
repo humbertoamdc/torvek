@@ -23,9 +23,12 @@ awslocal dynamodb create-table \
           "Projection": {
             "ProjectionType": "ALL"
           }
-        },
+        }
+      ]' \
+    --global-secondary-indexes \
+      '[
         {
-          "IndexName": "LSI2_ProjectName",
+          "IndexName": "GSI2_ProjectName",
           "KeySchema": [
             {"AttributeName":"pk", "KeyType":"HASH"},
             {"AttributeName":"lsi2_sk", "KeyType":"RANGE"}

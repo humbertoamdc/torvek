@@ -27,7 +27,16 @@ impl UseCase<QueryQuotationsForProjectInput, QueryQuotationsForProjectResponse>
     ) -> Result<QueryQuotationsForProjectResponse> {
         let response = self
             .quotations_repository
-            .query(Some(input.project_id), None, QueryBy::Project, 100, None)
+            .query(
+                Some(input.identity.id),
+                Some(input.project_id),
+                None,
+                None,
+                None,
+                QueryBy::Customer,
+                100,
+                None,
+            )
             .await?;
 
         Ok(QueryQuotationsForProjectResponse::new(response.data))

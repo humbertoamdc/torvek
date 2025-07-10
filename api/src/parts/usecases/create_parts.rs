@@ -116,6 +116,7 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
 
         self.quotations_repository
             .update(
+                input.identity.id,
                 input.project_id,
                 input.quotation_id,
                 Some(QuoteStatus::Created),

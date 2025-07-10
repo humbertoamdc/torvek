@@ -1,5 +1,6 @@
 use crate::auth::models::session::Identity;
 use crate::quotations::models::quotation::QuoteStatus;
+use crate::shared::{ProjectId, QuoteId};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -12,7 +13,7 @@ pub struct CreateQuotationInput {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct QueryQuotationsForProjectInput {
     pub identity: Identity,
-    pub project_id: String,
+    pub project_id: ProjectId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -32,8 +33,7 @@ pub struct GetQuotationSubtotalInput {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct DeleteQuotationInput {
     pub identity: Identity,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub quotation_id: QuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

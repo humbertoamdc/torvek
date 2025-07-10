@@ -22,6 +22,7 @@ impl UseCase<UpdateQuotationInput, Quotation> for UpdateQuotation {
     async fn execute(&self, input: UpdateQuotationInput) -> Result<Quotation> {
         self.quotations_repository
             .update(
+                input.identity.id,
                 input.project_id,
                 input.quotation_id,
                 Some(QuoteStatus::PendingReview),

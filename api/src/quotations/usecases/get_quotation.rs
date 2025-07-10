@@ -21,7 +21,7 @@ impl GetQuotation {
 impl UseCase<GetQuotationByIdInput, Quotation> for GetQuotation {
     async fn execute(&self, input: GetQuotationByIdInput) -> Result<Quotation> {
         self.quotations_repository
-            .get(input.project_id, input.quotation_id)
+            .get(input.identity.id, input.quotation_id)
             .await
     }
 }

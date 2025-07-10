@@ -35,10 +35,10 @@ pub struct DynamodbOrder {
     pub sk: OrderId,
     /// created_at&order_id
     pub lsi1_sk: String,
-    /// status&created_at&order_id
-    pub lsi2_sk: String,
     /// project_id&quote_id&part_id&order_id
-    pub lsi3_sk: String,
+    pub lsi2_sk: String,
+    /// status&created_at&order_id
+    pub gsi1_sk: String,
     pub part_quote_id: PartQuoteId,
     pub deadline: NaiveDate,
     pub shipping_recipient_name: String,
@@ -57,23 +57,23 @@ impl TryInto<Order> for DynamodbOrder {
         let mut part_id = None::<PartId>;
         let mut created_at = None::<DateTime<Utc>>;
 
+        let gsi1_sk_attributes = self
+            .lsi2_sk
+            .split(ATTRIBUTES_SEPARATOR)
+            .collect::<Vec<&str>>();
         let lsi2_sk_attributes = self
             .lsi2_sk
             .split(ATTRIBUTES_SEPARATOR)
             .collect::<Vec<&str>>();
-        let lsi3_sk_attributes = self
-            .lsi3_sk
-            .split(ATTRIBUTES_SEPARATOR)
-            .collect::<Vec<&str>>();
 
-        if let [sk_status, sk_created_at] = &lsi2_sk_attributes[..] {
+        if let [sk_status, sk_created_at] = &gsi1_sk_attributes[..] {
             if let Ok(parsed_status) = sk_status.parse() {
                 status = Some(parsed_status);
             }
             created_at = Some(DateTime::<Utc>::from_str(sk_created_at).unwrap());
         }
 
-        if let [sk_project_id, sk_quote_id, sk_part_id] = &lsi3_sk_attributes[..] {
+        if let [sk_project_id, sk_quote_id, sk_part_id] = &lsi2_sk_attributes[..] {
             project_id = Some(sk_project_id.to_string());
             quote_id = Some(sk_quote_id.to_string());
             part_id = Some(sk_part_id.to_string());
@@ -137,14 +137,14 @@ impl From<Order> for DynamodbOrder {
             value.id,
         );
         let lsi2_sk = format!(
+            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
+            value.project_id, value.quotation_id, value.part_id, value.id
+        );
+        let gsi1_sk = format!(
             "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
             value.status,
             value.created_at.to_rfc3339(),
             value.id
-        );
-        let lsi3_sk = format!(
-            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
-            value.project_id, value.quotation_id, value.part_id, value.id
         );
 
         Self {
@@ -152,7 +152,7 @@ impl From<Order> for DynamodbOrder {
             sk: value.id,
             lsi1_sk,
             lsi2_sk,
-            lsi3_sk,
+            gsi1_sk,
             part_quote_id: value.part_quote_id,
             deadline: value.deadline,
             shipping_recipient_name: value.shipping_recipient_name,

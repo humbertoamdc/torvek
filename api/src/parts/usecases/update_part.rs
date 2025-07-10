@@ -41,6 +41,7 @@ impl UseCase<UpdatePartInput, Part> for UpdatePart {
                 let _ = self
                     .quotations_repository
                     .update(
+                        input.identity.id.clone(),
                         input.project_id.clone(),
                         input.quotation_id.clone(),
                         Some(QuoteStatus::Created),
