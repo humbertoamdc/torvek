@@ -53,7 +53,6 @@ pub struct DynamodbOrder {
     pub deadline: NaiveDate,
     pub shipping_recipient_name: String,
     pub shipping_address: Address,
-    pub is_open: Option<bool>,
     pub update_at: DateTime<Utc>,
 }
 
@@ -124,7 +123,6 @@ impl TryInto<Order> for DynamodbOrder {
             })?,
             shipping_recipient_name: self.shipping_recipient_name,
             shipping_address: self.shipping_address,
-            is_open: self.is_open,
             created_at: created_at.ok_or_else(|| {
                 tracing::error!(
                     "created_at required but not found for order with id {}",
@@ -180,7 +178,6 @@ impl From<Order> for DynamodbOrder {
             deadline: value.deadline,
             shipping_recipient_name: value.shipping_recipient_name,
             shipping_address: value.shipping_address,
-            is_open: value.is_open,
             update_at: value.updated_at,
         }
     }

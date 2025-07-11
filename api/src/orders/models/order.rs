@@ -16,7 +16,6 @@ pub struct Order {
     pub status: OrderStatus,
     pub shipping_recipient_name: String,
     pub shipping_address: Address,
-    pub is_open: Option<bool>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -48,7 +47,6 @@ impl Order {
             status,
             shipping_recipient_name,
             shipping_address,
-            is_open: Some(true),
             created_at: now,
             updated_at: now,
         }
