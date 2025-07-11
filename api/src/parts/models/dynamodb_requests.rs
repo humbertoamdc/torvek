@@ -18,10 +18,10 @@ pub struct UpdatablePart {
 }
 
 impl UpdatablePart {
-    pub fn partial_new(quotation_id: QuoteId, part_id: PartId) -> Self {
+    pub fn partial_new(customer_id: CustomerId, part_id: PartId) -> Self {
         let mut updatable_part = Self::default();
+        updatable_part.customer_id = customer_id;
         updatable_part.id = part_id;
-        updatable_part.quotation_id = quotation_id;
         updatable_part
     }
 }

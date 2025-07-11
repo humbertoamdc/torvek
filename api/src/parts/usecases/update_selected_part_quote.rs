@@ -26,7 +26,7 @@ impl UseCase<UpdateSelectedPartQuoteInput, UpdateSelectedPartQuoteResponse>
     ) -> Result<UpdateSelectedPartQuoteResponse> {
         // Update selected part quote id in part.
         let mut updatable_part =
-            UpdatablePart::partial_new(input.quotation_id.clone(), input.part_id.clone());
+            UpdatablePart::partial_new(input.identity.id, input.part_id.clone());
         updatable_part.selected_part_quote_id = Some(input.selected_part_quote_id.clone());
 
         let part = self.parts_repository.update(updatable_part).await?;
