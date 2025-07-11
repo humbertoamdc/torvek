@@ -34,7 +34,7 @@ impl UseCase<DeletePartInput, ()> for DeletePart {
     async fn execute(&self, input: DeletePartInput) -> Result<()> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id, input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status.
@@ -45,7 +45,7 @@ impl UseCase<DeletePartInput, ()> for DeletePart {
 
         let part = self
             .parts_repository
-            .delete(input.quotation_id, input.part_id)
+            .delete(input.identity.id, input.part_id)
             .await?;
 
         let _ = self

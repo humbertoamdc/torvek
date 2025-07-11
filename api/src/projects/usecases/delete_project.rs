@@ -8,7 +8,7 @@ use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::quotations::{QueryBy, QuotationsRepository};
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
-use crate::shared::{CustomerId, ProjectId, UseCase};
+use crate::shared::{CustomerId, ProjectId, QuoteId, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -95,8 +95,11 @@ impl DeleteProject {
 
     async fn delete_quotations(&self, quotations: &Vec<Quotation>) -> shared::Result<()> {
         for quotation in quotations {
-            self.cascade_delete_parts_for_quotation(quotation.id.clone())
-                .await;
+            self.cascade_delete_parts_for_quotation(
+                quotation.customer_id.clone(),
+                quotation.id.clone(),
+            )
+            .await;
         }
 
         let batch_delete_objects = quotations
@@ -112,14 +115,23 @@ impl DeleteProject {
             .await
     }
 
-    async fn cascade_delete_parts_for_quotation(&self, quotation_id: String) {
+    async fn cascade_delete_parts_for_quotation(
+        &self,
+        customer_id: CustomerId,
+        quotation_id: QuoteId,
+    ) {
         let page_limit = 25;
         let mut cursor = None;
 
         loop {
             let result = self
                 .parts_repository
-                .query(quotation_id.clone(), cursor, page_limit)
+                .query(
+                    customer_id.clone(),
+                    quotation_id.clone(),
+                    cursor,
+                    page_limit,
+                )
                 .await;
 
             match result {
@@ -147,8 +159,8 @@ impl DeleteProject {
         let batch_delete_objects = parts
             .iter()
             .map(|part| BatchDeletePartObject {
+                customer_id: part.customer_id.clone(),
                 part_id: part.id.clone(),
-                quotation_id: part.quotation_id.clone(),
             })
             .collect();
 

@@ -34,7 +34,7 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
     ) -> Result<GetQuotationSubtotalResponse> {
         let quotation = self
             .quotations_repository
-            .get(input.identity.id, input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         if quotation.status != QuoteStatus::PendingPayment {
@@ -45,7 +45,7 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
 
         let response = self
             .parts_repository
-            .query(input.quotation_id, None, 100)
+            .query(input.identity.id, input.quotation_id, None, 100)
             .await?;
 
         let quotation_subtotal = Some(self.calculate_quotation_subtotal(response.data));

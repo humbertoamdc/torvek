@@ -54,9 +54,8 @@ pub struct DynamodbQuote {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// is_pending_review
     pub gsi2_pk: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     /// created_at&quote_id
-    pub gsi2_sk: Option<String>,
+    pub gsi2_sk: String,
     pub name: String,
     pub updated_at: DateTime<Utc>,
 }
@@ -130,17 +129,16 @@ impl From<Quotation> for DynamodbQuote {
             "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
             value.status, value.project_id, value.id
         );
+        let gsi2_sk = format!(
+            "{}{ATTRIBUTES_SEPARATOR}{}",
+            value.created_at.to_rfc3339(),
+            value.id
+        );
 
-        let (gsi2_pk, gsi2_sk) = if value.status == QuoteStatus::PendingReview {
-            let gsi2_sk = format!(
-                "{}{ATTRIBUTES_SEPARATOR}{}",
-                value.created_at.to_rfc3339(),
-                value.id
-            );
-
-            (Some(String::from("true")), Some(gsi2_sk))
+        let gsi2_pk = if value.status == QuoteStatus::PendingReview {
+            Some(String::from("true"))
         } else {
-            (None, None)
+            None
         };
 
         Self {

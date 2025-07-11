@@ -216,9 +216,18 @@ impl QuotationsRepository for DynamodbQuotations {
                 "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
                 status, project_id, quotation_id,
             );
-            update_expression.push_str(", #gsi1_sk = :gsi1_sk");
+
+            update_expression.push_str(", gsi1_sk = :gsi1_sk");
             expression_attribute_values
                 .insert(String::from(":gsi1_sk"), AttributeValue::S(gsi1_sk));
+
+            if status == QuoteStatus::PendingReview {
+                update_expression.push_str(", gsi2_pk = :is_pending_review");
+                expression_attribute_values.insert(
+                    String::from(":is_pending_review"),
+                    AttributeValue::S(String::from("true")),
+                );
+            }
         }
 
         let response = self
@@ -236,8 +245,8 @@ impl QuotationsRepository for DynamodbQuotations {
 
         match response {
             Ok(output) => match output.attributes {
-                Some(item) => match from_item::<Quotation>(item) {
-                    Ok(quotation) => Ok(quotation),
+                Some(item) => match from_item::<DynamodbQuote>(item) {
+                    Ok(dynamodb_quotation) => dynamodb_quotation.try_into(),
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -358,6 +367,9 @@ impl DynamodbQuotations {
             .query()
             .index_name(TableIndex::GSI2IsPendingReview.to_string())
             .key_condition_expression("gsi2_pk = :isPendingReview")
-            .expression_attribute_values(":isPendingReview", AttributeValue::Bool(true))
+            .expression_attribute_values(
+                ":isPendingReview",
+                AttributeValue::S(String::from("true")),
+            )
     }
 }

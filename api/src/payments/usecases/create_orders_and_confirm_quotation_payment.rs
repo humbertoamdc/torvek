@@ -32,7 +32,12 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfi
     async fn execute(&self, request: CompleteCheckoutSessionWebhookRequest) -> Result<()> {
         let query_parts_for_quotation_response = self
             .parts_repository
-            .query(request.quotation_id.clone(), None, 100)
+            .query(
+                request.customer_id.clone(),
+                request.quotation_id.clone(),
+                None,
+                100,
+            )
             .await?;
 
         let selected_part_quote_for_part = query_parts_for_quotation_response

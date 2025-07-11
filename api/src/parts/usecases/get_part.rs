@@ -29,7 +29,7 @@ impl UseCase<GetPartInput, Part> for GetPart {
     async fn execute(&self, input: GetPartInput) -> Result<Part> {
         let mut part = self
             .parts_repository
-            .get(input.quotation_id, input.part_id)
+            .get(input.identity.id, input.part_id)
             .await?;
 
         let presigned_url = self

@@ -4,7 +4,7 @@ use crate::parts::models::inputs::{
     CreatePartQuotesInput, CreatePartsInput, DeletePartInput, GetPartInput,
     QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
-use crate::parts::models::part::PartAttributes;
+use crate::parts::models::part::{PartAttributes, PartProcess};
 use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotation;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
 use crate::parts::usecases::create_parts::CreateParts;
@@ -18,7 +18,7 @@ use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuote;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::file::File;
 use crate::shared::into_error_response::IntoError;
-use crate::shared::UseCase;
+use crate::shared::{CustomerId, PartId, PartQuoteId, ProjectId, QuoteId, UseCase};
 use axum::extract::{Path, Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -28,8 +28,8 @@ use url::Url;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsRequest {
-    pub project_id: String,
-    pub quotation_id: String,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
     pub file_names: Vec<String>,
 }
 
@@ -42,35 +42,35 @@ pub struct QueryPartsForQuotationQueryParameters {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdatePartRequest {
-    pub customer_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-    pub part_id: String,
+    pub customer_id: CustomerId,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
+    pub part_id: PartId,
     pub drawing_file: Option<File>,
-    pub process: Option<String>,
+    pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateSelectedPartQuoteRequest {
-    pub quotation_id: String,
-    pub part_id: String,
-    pub selected_part_quote_id: String,
+    pub quotation_id: QuoteId,
+    pub part_id: PartId,
+    pub selected_part_quote_id: PartQuoteId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateModelUploadUrlRequest {
-    pub project_id: String,
-    pub quotation_id: String,
-    pub part_id: String,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
+    pub part_id: PartId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateDrawingUploadUrlRequest {
-    pub project_id: String,
-    pub quotation_id: String,
-    pub part_id: String,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
+    pub part_id: PartId,
     pub file_name: String,
     pub file_url: Option<Url>,
 }
@@ -91,11 +91,12 @@ pub async fn admin_create_part_quotes(
 
 pub async fn admin_query_parts_for_quotation(
     State(app_state): State<AppState>,
-    Path(quotation_id): Path<String>,
+    Path((customer_id, quotation_id)): Path<(CustomerId, QuoteId)>,
     Query(params): Query<QueryPartsForQuotationQueryParameters>,
     AdminSession(_): AdminSession,
 ) -> impl IntoResponse {
     let input = AdminQueryPartsForQuotationInput {
+        customer_id,
         quotation_id,
         with_quotation_subtotal: params.with_quotation_subtotal.unwrap_or(false),
         cursor: params.cursor,

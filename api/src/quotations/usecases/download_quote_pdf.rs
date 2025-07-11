@@ -5,7 +5,7 @@ use crate::repositories::quotations::QuotationsRepository;
 use crate::services::stripe_client::{PriceData, QuoteLineItem, StripeClient};
 use crate::shared;
 use crate::shared::error::Error;
-use crate::shared::UseCase;
+use crate::shared::{CustomerId, QuoteId, UseCase};
 use async_trait::async_trait;
 use axum::body::Bytes;
 use iso_currency::Currency;
@@ -37,14 +37,16 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DowanloadQuotePdf {
     async fn execute(&self, input: DownloadQuotePdfInput) -> crate::shared::Result<Bytes> {
         let quote = self
             .quotations_repository
-            .get(input.identity.id, input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         if !self.is_valid_quote_status(quote).await {
             return Err(Error::NoPdfQuoteAvailable);
         }
 
-        let quote_line_items = self.generate_quote_line_items(input.quotation_id).await?;
+        let quote_line_items = self
+            .generate_quote_line_items(input.identity.id, input.quotation_id)
+            .await?;
 
         let stripe_customer_id = input
             .identity
@@ -70,11 +72,15 @@ impl DowanloadQuotePdf {
         quote.status == QuoteStatus::PendingPayment || quote.status == QuoteStatus::Payed
     }
 
-    async fn generate_quote_line_items(&self, quotation_id: String) -> Result<Vec<QuoteLineItem>> {
+    async fn generate_quote_line_items(
+        &self,
+        customer_id: CustomerId,
+        quotation_id: QuoteId,
+    ) -> Result<Vec<QuoteLineItem>> {
         let page_limit = 100;
         let query_part_response = self
             .parts_repository
-            .query(quotation_id, None, page_limit)
+            .query(customer_id, quotation_id, None, page_limit)
             .await?;
 
         let quote_line_items = query_part_response

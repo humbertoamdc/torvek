@@ -51,9 +51,13 @@ impl PartsClient {
 
     pub async fn admin_query_parts_for_quotation(
         &self,
+        customer_id: String,
         quotation_id: String,
     ) -> Result<QueryPartsForQuotationResponse> {
-        let url = format!("{}/admin/quotations/{quotation_id}/parts", self.url);
+        let url = format!(
+            "{}/admin/customers/{customer_id}/quotations/{quotation_id}/parts",
+            self.url
+        );
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()

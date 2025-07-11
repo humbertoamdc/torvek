@@ -31,7 +31,7 @@ impl UseCase<UpdatePartInput, Part> for UpdatePart {
     async fn execute(&self, input: UpdatePartInput) -> Result<Part> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id.clone(), input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status and change status to created after making an update.

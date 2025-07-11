@@ -31,7 +31,12 @@ impl UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse> for Crea
     ) -> Result<CreateCheckoutSessionResponse> {
         let query_response = self
             .parts_repository
-            .query(input.quotation_id.clone(), None, 100)
+            .query(
+                input.identity.id.clone(),
+                input.quotation_id.clone(),
+                None,
+                100,
+            )
             .await?;
 
         let url = self

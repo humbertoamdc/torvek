@@ -1,8 +1,8 @@
 use crate::parts::models::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
 use crate::parts::models::part::Part;
-use crate::repositories::parts::PartsRepository;
+use crate::repositories::parts::{DynamodbPart, PartsRepository};
 use crate::shared::error::Error;
-use crate::shared::{QueryResponse, Result};
+use crate::shared::{CustomerId, PartId, QueryResponse, QuoteId, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{
@@ -11,7 +11,14 @@ use aws_sdk_dynamodb::types::{
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
+use serde_enum_str::Serialize_enum_str;
 use std::collections::HashMap;
+
+#[derive(Serialize_enum_str)]
+enum TableIndex {
+    #[serde(rename = "LSI1_QuoteAndCreationDateTime")]
+    LSI1QuoteAndCreationDateTime,
+}
 
 #[derive(Clone)]
 pub struct DynamodbParts {
@@ -27,21 +34,21 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
-    async fn delete(&self, quotation_id: String, part_id: String) -> Result<Part> {
+    async fn delete(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part> {
         let response = self
             .client
             .delete_item()
             .table_name(&self.table)
-            .key("quotation_id", AttributeValue::S(quotation_id))
-            .key("id", AttributeValue::S(part_id))
+            .key("pk", AttributeValue::S(customer_id))
+            .key("sk", AttributeValue::S(part_id))
             .return_values(ReturnValue::AllOld)
             .send()
             .await;
 
         match response {
             Ok(output) => match output.attributes {
-                Some(item) => match from_item::<Part>(item) {
-                    Ok(part) => Ok(part),
+                Some(item) => match from_item::<DynamodbPart>(item) {
+                    Ok(dynamodb_part) => dynamodb_part.try_into(),
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -56,25 +63,22 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn get(&self, quotation_id: String, part_id: String) -> Result<Part> {
+    async fn get(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part> {
         let response = self
             .client
             .get_item()
             .table_name(&self.table)
             .set_key(Some(HashMap::from([
-                (
-                    String::from("quotation_id"),
-                    AttributeValue::S(quotation_id),
-                ),
-                (String::from("id"), AttributeValue::S(part_id)),
+                (String::from("pk"), AttributeValue::S(customer_id)),
+                (String::from("sk"), AttributeValue::S(part_id)),
             ])))
             .send()
             .await;
 
         match response {
             Ok(output) => match output.item {
-                Some(item) => match from_item::<Part>(item) {
-                    Ok(part) => Ok(part),
+                Some(item) => match from_item::<DynamodbPart>(item) {
+                    Ok(dynamodb_part) => dynamodb_part.try_into(),
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -91,17 +95,29 @@ impl PartsRepository for DynamodbParts {
 
     async fn query(
         &self,
-        quotation_id: String,
+        customer_id: CustomerId,
+        quotation_id: QuoteId,
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Part>, String>> {
+        let expression_attrubte_values = [
+            (String::from(":customer_id"), AttributeValue::S(customer_id)),
+            (
+                String::from(":quotation_id"),
+                AttributeValue::S(quotation_id),
+            ),
+        ]
+        .into_iter()
+        .collect();
+
         let response = self
             .client
             .query()
             .limit(limit)
+            .index_name(TableIndex::LSI1QuoteAndCreationDateTime.to_string())
             .set_exclusive_start_key(DynamodbKeyCodec::decode_from_base64(cursor))
-            .key_condition_expression("quotation_id = :value")
-            .expression_attribute_values(":value", AttributeValue::S(quotation_id))
+            .key_condition_expression("pk = :customer_id AND begins_with(lsi1_sk, :quotation_id)")
+            .set_expression_attribute_values(Some(expression_attrubte_values))
             .table_name(&self.table)
             .send()
             .await;
@@ -109,11 +125,17 @@ impl PartsRepository for DynamodbParts {
         match response {
             Ok(output) => {
                 let items = output.items().to_vec();
-                match from_items(items) {
-                    Ok(parts) => Ok(QueryResponse {
-                        data: parts,
-                        cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
-                    }),
+                match from_items::<_, DynamodbPart>(items) {
+                    Ok(dynamodb_parts) => {
+                        let mut parts = Vec::with_capacity(dynamodb_parts.len());
+                        for dynamodb_part in dynamodb_parts {
+                            parts.push(dynamodb_part.try_into()?);
+                        }
+                        Ok(QueryResponse {
+                            data: parts,
+                            cursor: DynamodbKeyCodec::encode_to_base64(output.last_evaluated_key()),
+                        })
+                    }
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -128,44 +150,46 @@ impl PartsRepository for DynamodbParts {
     }
 
     async fn update(&self, updatable_part: UpdatablePart) -> Result<Part> {
-        let mut update_expression = String::from("SET ");
-        let mut expression_attribute_values = HashMap::new();
-
-        update_expression.push_str("updated_at = :updated_at, ");
-        expression_attribute_values.insert(
-            ":updated_at".to_string(),
+        let mut update_expression = String::from("SET updated_at = :updated_at");
+        let mut expression_attribute_values: HashMap<String, AttributeValue> = [(
+            String::from(":updated_at"),
             AttributeValue::S(Utc::now().to_rfc3339()),
-        );
+        )]
+        .into_iter()
+        .collect();
 
         if let Some(drawing_file) = updatable_part.drawing_file {
-            update_expression.push_str("drawing_file = :drawing_file, ");
+            update_expression.push_str(", drawing_file = :drawing_file");
             expression_attribute_values.insert(
-                ":drawing_file".to_string(),
+                String::from(":drawing_file"),
                 AttributeValue::M(to_item(drawing_file).unwrap()),
             );
         }
         if let Some(process) = updatable_part.process {
-            update_expression.push_str("process = :process, ");
-            expression_attribute_values.insert(":process".to_string(), AttributeValue::S(process));
+            update_expression.push_str(", process = :process");
+            expression_attribute_values.insert(
+                String::from(":process"),
+                AttributeValue::S(process.to_string()),
+            );
         }
         if let Some(attributes) = updatable_part.attributes {
-            update_expression.push_str("attributes = :attributes, ");
+            update_expression.push_str(", attributes = :attributes");
             expression_attribute_values.insert(
-                ":attributes".to_string(),
+                String::from(":attributes"),
                 AttributeValue::M(to_item(attributes).unwrap()),
             );
         }
         if let Some(quantity) = updatable_part.quantity {
-            update_expression.push_str("quantity = :quantity, ");
+            update_expression.push_str(", quantity = :quantity");
             expression_attribute_values.insert(
-                ":quantity".to_string(),
+                String::from(":quantity"),
                 AttributeValue::N(quantity.to_string()),
             );
         }
 
-        update_expression.push_str("selected_part_quote_id = :selected_part_quote_id, ");
+        update_expression.push_str(", selected_part_quote_id = :selected_part_quote_id");
         expression_attribute_values.insert(
-            ":selected_part_quote_id".to_string(),
+            String::from(":selected_part_quote_id"),
             match updatable_part.selected_part_quote_id {
                 Some(selected_part_quote_id) => {
                     AttributeValue::S(selected_part_quote_id.to_string())
@@ -175,26 +199,17 @@ impl PartsRepository for DynamodbParts {
         );
 
         if updatable_part.clear_part_quotes.unwrap_or(false) {
-            update_expression.push_str("part_quotes = :part_quotes, ");
+            update_expression.push_str(", part_quotes = :part_quotes");
             expression_attribute_values
-                .insert(":part_quotes".to_string(), AttributeValue::Null(true));
-        }
-
-        // Remove trailing comma and space
-        if !update_expression.is_empty() {
-            update_expression.pop();
-            update_expression.pop();
+                .insert(String::from(":part_quotes"), AttributeValue::Null(true));
         }
 
         let response = self
             .client
             .update_item()
             .table_name(&self.table)
-            .key(
-                "quotation_id",
-                AttributeValue::S(updatable_part.quotation_id),
-            )
-            .key("id", AttributeValue::S(updatable_part.id))
+            .key("pk", AttributeValue::S(updatable_part.customer_id))
+            .key("sk", AttributeValue::S(updatable_part.id))
             .update_expression(update_expression)
             .set_expression_attribute_values(Some(expression_attribute_values))
             .return_values(ReturnValue::AllNew)
@@ -203,8 +218,8 @@ impl PartsRepository for DynamodbParts {
 
         match response {
             Ok(output) => match output.attributes {
-                Some(item) => match from_item::<Part>(item) {
-                    Ok(part) => Ok(part),
+                Some(item) => match from_item::<DynamodbPart>(item) {
+                    Ok(dynamodb_part) => dynamodb_part.try_into(),
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)
@@ -223,11 +238,12 @@ impl PartsRepository for DynamodbParts {
         let items: Vec<WriteRequest> = parts
             .into_iter()
             .map(|part| {
+                let dynamodb_part = DynamodbPart::from(part);
                 WriteRequest::builder()
                     .put_request(
                         PutRequest::builder()
                             .set_item(Some(
-                                to_item(part).expect("error converting to dynamodb item"),
+                                to_item(dynamodb_part).expect("error converting to dynamodb item"),
                             ))
                             .build()
                             .unwrap(),
@@ -261,10 +277,10 @@ impl PartsRepository for DynamodbParts {
                         DeleteRequest::builder()
                             .set_key(Some(HashMap::from([
                                 (
-                                    String::from("quotation_id"),
-                                    AttributeValue::S(delete_object.quotation_id),
+                                    String::from("pk"),
+                                    AttributeValue::S(delete_object.customer_id),
                                 ),
-                                (String::from("id"), AttributeValue::S(delete_object.part_id)),
+                                (String::from("sk"), AttributeValue::S(delete_object.part_id)),
                             ])))
                             .build()
                             .unwrap(),
@@ -289,19 +305,19 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
-    async fn batch_get(&self, quotation_and_part_ids: Vec<(String, String)>) -> Result<Vec<Part>> {
-        let keys_and_attributes = quotation_and_part_ids
+    async fn batch_get(
+        &self,
+        customer_and_part_ids: Vec<(CustomerId, PartId)>,
+    ) -> Result<Vec<Part>> {
+        let keys_and_attributes = customer_and_part_ids
             .into_iter()
             .fold(
                 KeysAndAttributes::builder(),
-                |mut keys_and_attributes_builder, (quotation_id, part_id)| {
+                |mut keys_and_attributes_builder, (customer_id, part_id)| {
                     keys_and_attributes_builder =
                         keys_and_attributes_builder.keys(HashMap::from([
-                            (
-                                String::from("quotation_id"),
-                                AttributeValue::S(quotation_id),
-                            ),
-                            (String::from("id"), AttributeValue::S(part_id)),
+                            (String::from("pk"), AttributeValue::S(customer_id)),
+                            (String::from("sk"), AttributeValue::S(part_id)),
                         ]));
 
                     keys_and_attributes_builder
@@ -326,8 +342,14 @@ impl PartsRepository for DynamodbParts {
                     .flatten()
                     .collect::<Vec<_>>();
 
-                match from_items(items) {
-                    Ok(parts) => Ok(parts),
+                match from_items::<_, DynamodbPart>(items) {
+                    Ok(dynamodb_parts) => {
+                        let mut parts = Vec::with_capacity(dynamodb_parts.len());
+                        for dynamodb_part in dynamodb_parts {
+                            parts.push(dynamodb_part.try_into()?)
+                        }
+                        Ok(parts)
+                    }
                     Err(err) => {
                         tracing::error!("{err:?}");
                         Err(Error::UnknownError)

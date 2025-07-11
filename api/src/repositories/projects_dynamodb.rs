@@ -91,7 +91,7 @@ impl ProjectsRepository for DynamodbProjects {
         }
     }
 
-    async fn get(&self, customer_id: String, project_id: String) -> Result<Project> {
+    async fn get(&self, customer_id: CustomerId, project_id: ProjectId) -> Result<Project> {
         let response = self
             .client
             .get_item()
@@ -123,7 +123,7 @@ impl ProjectsRepository for DynamodbProjects {
 
     async fn query(
         &self,
-        customer_id: String,
+        customer_id: CustomerId,
         from: Option<DateTime<Utc>>,
         to: Option<DateTime<Utc>>,
         name: Option<String>,

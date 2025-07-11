@@ -12,7 +12,7 @@ pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/admin/part_quotes", post(admin_create_part_quotes))
         .route(
-            "/admin/quotations/:quotation_id/parts",
+            "/admin/customers/:customer_id/quotations/:quotation_id/parts",
             get(admin_query_parts_for_quotation),
         )
         .route("/parts", post(create_parts))

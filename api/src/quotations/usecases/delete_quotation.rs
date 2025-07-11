@@ -5,7 +5,7 @@ use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotations::QuotationsRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
-use crate::shared::UseCase;
+use crate::shared::{CustomerId, QuoteId, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -33,18 +33,11 @@ impl DeleteQuotation {
 impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
     async fn execute(&self, input: DeleteQuotationInput) -> crate::shared::Result<()> {
         self.quotations_repository
-            .delete(input.identity.id, input.quotation_id.clone())
+            .delete(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
-        let parts_repository = self.parts_repository.clone();
-        let object_storage = self.object_storage.clone();
-
-        Self::cascade_delete_parts_for_quotation(
-            input.quotation_id.clone(),
-            parts_repository,
-            object_storage,
-        )
-        .await;
+        self.cascade_delete_parts_for_quotation(input.identity.id, input.quotation_id)
+            .await;
 
         Ok(())
     }
@@ -52,16 +45,22 @@ impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
 
 impl DeleteQuotation {
     async fn cascade_delete_parts_for_quotation(
-        quotation_id: String,
-        parts_repository: Arc<dyn PartsRepository>,
-        object_storage: Arc<dyn ObjectStorage>,
+        &self,
+        customer_id: CustomerId,
+        quotation_id: QuoteId,
     ) {
         let page_limit = 25;
         let mut cursor = None;
 
         loop {
-            let result = parts_repository
-                .query(quotation_id.clone(), cursor, page_limit)
+            let result = self
+                .parts_repository
+                .query(
+                    customer_id.clone(),
+                    quotation_id.clone(),
+                    cursor,
+                    page_limit,
+                )
                 .await;
 
             match result {
@@ -70,9 +69,9 @@ impl DeleteQuotation {
                         break;
                     }
 
-                    let _ = Self::delete_parts(&response.data, parts_repository.clone()).await;
+                    let _ = self.delete_parts(&response.data).await;
 
-                    Self::delete_associated_objects(&response.data, object_storage.clone()).await;
+                    self.delete_associated_objects(&response.data).await;
 
                     cursor = response.cursor;
                 }
@@ -85,22 +84,21 @@ impl DeleteQuotation {
         }
     }
 
-    async fn delete_parts(
-        parts: &Vec<Part>,
-        parts_repository: Arc<dyn PartsRepository>,
-    ) -> shared::Result<()> {
+    async fn delete_parts(&self, parts: &Vec<Part>) -> shared::Result<()> {
         let batch_delete_objects = parts
             .iter()
             .map(|part| BatchDeletePartObject {
+                customer_id: part.customer_id.clone(),
                 part_id: part.id.clone(),
-                quotation_id: part.quotation_id.clone(),
             })
             .collect();
 
-        parts_repository.batch_delete(batch_delete_objects).await
+        self.parts_repository
+            .batch_delete(batch_delete_objects)
+            .await
     }
 
-    async fn delete_associated_objects(parts: &Vec<Part>, object_storage: Arc<dyn ObjectStorage>) {
+    async fn delete_associated_objects(&self, parts: &Vec<Part>) {
         // Merge model, render, and drawing file urls into one array to bulk delete all
         // the objects at the same time.
         let urls = parts
@@ -115,6 +113,6 @@ impl DeleteQuotation {
             .filter_map(|file| file.map(|f| f.url.as_ref()))
             .collect();
 
-        let _ = object_storage.bulk_delete_objects(urls).await;
+        let _ = self.object_storage.bulk_delete_objects(urls).await;
     }
 }

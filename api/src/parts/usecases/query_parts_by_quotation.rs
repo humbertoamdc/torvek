@@ -39,7 +39,12 @@ impl UseCase<QueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     ) -> Result<QueryPartsForQuotationResponse> {
         let mut response = self
             .parts_repository
-            .query(input.quotation_id, input.cursor, input.limit)
+            .query(
+                input.identity.id,
+                input.quotation_id,
+                input.cursor,
+                input.limit,
+            )
             .await?;
 
         self.sign_part_render_urls(&mut response.data).await?;

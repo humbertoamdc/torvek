@@ -57,7 +57,7 @@ impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
             let order_and_part_ids = response
                 .data
                 .iter()
-                .map(|order| (order.quotation_id.clone(), order.part_id.clone()))
+                .map(|order| (order.customer_id.clone(), order.part_id.clone()))
                 .collect();
 
             let mut parts = self.parts_repository.batch_get(order_and_part_ids).await?;

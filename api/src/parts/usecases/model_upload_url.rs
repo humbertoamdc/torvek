@@ -45,7 +45,7 @@ impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelU
 
         let part = self
             .parts_repository
-            .get(input.quotation_id, input.part_id)
+            .get(input.identity.id, input.part_id)
             .await?;
 
         let url = part.model_file.url.parse::<Url>().unwrap();
