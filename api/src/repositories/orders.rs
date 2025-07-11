@@ -1,7 +1,6 @@
 use crate::orders::models::order::{Address, Order, OrderStatus};
 use crate::shared::error::Error;
 use crate::shared::error::Error::UnknownError;
-use crate::shared::money::Money;
 use crate::shared::{
     CustomerId, OrderId, PartId, PartQuoteId, ProjectId, QueryResponse, QuoteId, Result,
 };
@@ -21,12 +20,18 @@ pub enum QueryBy {
 pub trait OrdersRepository: Send + Sync + 'static {
     async fn query(
         &self,
-        customer_id: Option<String>,
+        customer_id: Option<CustomerId>,
+        project_id: Option<ProjectId>,
+        quote_id: Option<QuoteId>,
+        part_id: Option<PartId>,
+        status: Option<OrderStatus>,
+        from: Option<DateTime<Utc>>,
+        to: Option<DateTime<Utc>>,
         query_by: QueryBy,
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Order>, String>>;
-    async fn update(&self, order_id: String, payout: Option<Money>) -> Result<()>;
+    async fn update(&self, customer_id: CustomerId, order_id: OrderId) -> Result<()>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -39,6 +44,11 @@ pub struct DynamodbOrder {
     pub lsi2_sk: String,
     /// status&created_at&order_id
     pub gsi1_sk: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    /// is_open
+    pub gsi2_pk: Option<String>,
+    /// created_at&order_id
+    pub gsi2_sk: String,
     pub part_quote_id: PartQuoteId,
     pub deadline: NaiveDate,
     pub shipping_recipient_name: String,
@@ -58,7 +68,7 @@ impl TryInto<Order> for DynamodbOrder {
         let mut created_at = None::<DateTime<Utc>>;
 
         let gsi1_sk_attributes = self
-            .lsi2_sk
+            .gsi1_sk
             .split(ATTRIBUTES_SEPARATOR)
             .collect::<Vec<&str>>();
         let lsi2_sk_attributes = self
@@ -66,14 +76,14 @@ impl TryInto<Order> for DynamodbOrder {
             .split(ATTRIBUTES_SEPARATOR)
             .collect::<Vec<&str>>();
 
-        if let [sk_status, sk_created_at] = &gsi1_sk_attributes[..] {
+        if let [sk_status, sk_created_at, _] = &gsi1_sk_attributes[..] {
             if let Ok(parsed_status) = sk_status.parse() {
                 status = Some(parsed_status);
             }
             created_at = Some(DateTime::<Utc>::from_str(sk_created_at).unwrap());
         }
 
-        if let [sk_project_id, sk_quote_id, sk_part_id] = &lsi2_sk_attributes[..] {
+        if let [sk_project_id, sk_quote_id, sk_part_id, _] = &lsi2_sk_attributes[..] {
             project_id = Some(sk_project_id.to_string());
             quote_id = Some(sk_quote_id.to_string());
             part_id = Some(sk_part_id.to_string());
@@ -146,6 +156,17 @@ impl From<Order> for DynamodbOrder {
             value.created_at.to_rfc3339(),
             value.id
         );
+        let gsi2_sk = format!(
+            "{}{ATTRIBUTES_SEPARATOR}{}",
+            value.created_at.to_rfc3339(),
+            value.id,
+        );
+
+        let gsi2_pk = if value.status == OrderStatus::Open {
+            Some(String::from("true"))
+        } else {
+            None
+        };
 
         Self {
             pk: value.customer_id,
@@ -153,6 +174,8 @@ impl From<Order> for DynamodbOrder {
             lsi1_sk,
             lsi2_sk,
             gsi1_sk,
+            gsi2_pk,
+            gsi2_sk,
             part_quote_id: value.part_quote_id,
             deadline: value.deadline,
             shipping_recipient_name: value.shipping_recipient_name,

@@ -9,6 +9,8 @@ awslocal dynamodb create-table \
         AttributeName=lsi1_sk,AttributeType=S \
         AttributeName=lsi2_sk,AttributeType=S \
         AttributeName=gsi1_sk,AttributeType=S \
+        AttributeName=gsi2_pk,AttributeType=S \
+        AttributeName=gsi2_sk,AttributeType=S \
     --key-schema \
         AttributeName=pk,KeyType=HASH \
         AttributeName=sk,KeyType=RANGE \
@@ -43,6 +45,16 @@ awslocal dynamodb create-table \
           "KeySchema": [
             {"AttributeName":"pk", "KeyType":"HASH"},
             {"AttributeName":"gsi1_sk", "KeyType":"RANGE"}
+          ],
+          "Projection": {
+            "ProjectionType": "ALL"
+          }
+        },
+        {
+          "IndexName": "GSI2_OrderIsOpen",
+          "KeySchema": [
+            {"AttributeName":"gsi2_pk", "KeyType":"HASH"},
+            {"AttributeName":"gsi2_sk", "KeyType":"RANGE"}
           ],
           "Projection": {
             "ProjectionType": "ALL"

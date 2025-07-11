@@ -73,7 +73,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfi
                     part.id.clone(),
                     selected_part_quote_for_part[&part.id].id.clone(),
                     deadline,
-                    OrderStatus::PendingPricing,
+                    OrderStatus::Open,
                     request.shipping_recipient_name.clone(),
                     request.shipping_address.clone(),
                 )

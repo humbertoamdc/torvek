@@ -1,9 +1,9 @@
-use crate::orders::models::dynamodb_order_item::DynamodbOrderItem;
 use crate::orders::models::order::Order;
 use crate::payments::services::orders_creation::OrdersCreationService;
 use crate::quotations::models::quotation::QuoteStatus;
+use crate::repositories::orders::{DynamodbOrder, ATTRIBUTES_SEPARATOR};
 use crate::shared::error::Error;
-use crate::shared::Result;
+use crate::shared::{CustomerId, ProjectId, QuoteId, Result};
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem, Update};
 use serde_dynamo::to_item;
@@ -37,22 +37,24 @@ impl DynamodbOrdersCreationService {
 impl OrdersCreationService for DynamodbOrdersCreationService {
     async fn create_orders_and_update_quotation_status(
         &self,
-        customer_id: String,
-        project_id: String,
-        quotation_id: String,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+        quotation_id: QuoteId,
         orders: Vec<Order>,
     ) -> Result<()> {
         // Parse to DynamoDB format.
         let items = orders
             .into_iter()
-            .map(|order| DynamodbOrderItem::from(order))
+            .map(DynamodbOrder::from)
             .collect::<Vec<_>>();
 
         // Update project status to Locked.
-        let project_transaction = self.build_project_transaction(customer_id, project_id.clone());
+        let project_transaction =
+            self.build_project_transaction(customer_id.clone(), project_id.clone());
 
         // Update quotation status to OrdersCreated.
-        let quotation_transaction = self.build_quotation_transaction(project_id, quotation_id);
+        let quotation_transaction =
+            self.build_quotation_transaction(customer_id, project_id, quotation_id);
 
         // Create orders Dynamodb items.
         let orders_transactions = self.build_orders_transactions(items);
@@ -83,16 +85,16 @@ impl OrdersCreationService for DynamodbOrdersCreationService {
 impl DynamodbOrdersCreationService {
     fn build_project_transaction(
         &self,
-        customer_id: String,
-        project_id: String,
+        customer_id: CustomerId,
+        project_id: ProjectId,
     ) -> TransactWriteItem {
         TransactWriteItem::builder()
             .update(
                 Update::builder()
                     .table_name(&self.projects_table)
                     .set_key(Some(HashMap::from([
-                        (String::from("customer_id"), AttributeValue::S(customer_id)),
-                        (String::from("id"), AttributeValue::S(project_id)),
+                        (String::from("pk"), AttributeValue::S(customer_id)),
+                        (String::from("sk"), AttributeValue::S(project_id)),
                     ])))
                     .update_expression("SET is_locked = :is_locked, updated_at = :updated_at")
                     .set_expression_attribute_values(Some(HashMap::from([
@@ -110,30 +112,31 @@ impl DynamodbOrdersCreationService {
 
     fn build_quotation_transaction(
         &self,
-        project_id: String,
-        quotation_id: String,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+        quotation_id: QuoteId,
     ) -> TransactWriteItem {
+        let gsi1_sk = format!(
+            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
+            QuoteStatus::Payed,
+            project_id,
+            quotation_id
+        );
+
         TransactWriteItem::builder()
             .update(
                 Update::builder()
                     .table_name(&self.quotations_table)
                     .set_key(Some(HashMap::from([
-                        (String::from("project_id"), AttributeValue::S(project_id)),
-                        (String::from("id"), AttributeValue::S(quotation_id)),
+                        (String::from("pk"), AttributeValue::S(customer_id)),
+                        (String::from("sk"), AttributeValue::S(quotation_id)),
                     ])))
-                    .condition_expression("#status = :awaitingPaymentStatus")
-                    .update_expression("SET #status = :payedStatus, updated_at = :updated_at")
-                    .set_expression_attribute_names(Some(HashMap::from([(
-                        String::from("#status"),
-                        String::from("status"),
-                    )])))
+                    .condition_expression(" begins_with(gsi1_sk, :pendingPaymentStatus)")
+                    .update_expression("SET gsi1_sk = :gsi1_sk, updated_at = :updated_at")
                     .set_expression_attribute_values(Some(HashMap::from([
+                        (String::from(":gsi1_sk"), AttributeValue::S(gsi1_sk)),
                         (
-                            String::from(":payedStatus"),
-                            AttributeValue::S(QuoteStatus::Payed.to_string()),
-                        ),
-                        (
-                            String::from(":awaitingPaymentStatus"),
+                            String::from(":pendingPaymentStatus"),
                             AttributeValue::S(QuoteStatus::PendingPayment.to_string()),
                         ),
                         (
@@ -147,7 +150,7 @@ impl DynamodbOrdersCreationService {
             .build()
     }
 
-    fn build_orders_transactions(&self, orders: Vec<DynamodbOrderItem>) -> Vec<TransactWriteItem> {
+    fn build_orders_transactions(&self, orders: Vec<DynamodbOrder>) -> Vec<TransactWriteItem> {
         orders
             .into_iter()
             .map(|order| {

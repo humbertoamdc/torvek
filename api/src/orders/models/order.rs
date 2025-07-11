@@ -58,7 +58,6 @@ impl Order {
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
-    PendingPricing,
     Open,
     InProgress,
     Ready,

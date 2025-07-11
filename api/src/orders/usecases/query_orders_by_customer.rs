@@ -46,6 +46,12 @@ impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
             .orders_repository
             .query(
                 Some(input.identity.id),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
                 QueryBy::Customer,
                 input.cursor,
                 input.limit,
