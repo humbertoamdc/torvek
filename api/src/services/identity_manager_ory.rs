@@ -1,8 +1,11 @@
-use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
+use crate::auth::models::session::{
+    Identity, IdentityId, MetadataPublic, Session, SessionToken, SessionWithToken,
+};
 use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use crate::shared::error::Error;
 use async_trait::async_trait;
+use lru::LruCache;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, create_native_registration_flow, perform_native_logout, to_session,
@@ -17,10 +20,16 @@ use ory_kratos_client::models::{
 };
 use serde_json::json;
 use shared::Result;
+use std::num::NonZeroUsize;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+static CACHE_LIMIT: NonZeroUsize = NonZeroUsize::new(10_000).unwrap();
 
 #[derive(Clone)]
 pub struct OryIdentityManager {
     config: Configuration,
+    cache: Arc<Mutex<LruCache<SessionToken, Session>>>,
 }
 
 impl OryIdentityManager {
@@ -40,6 +49,7 @@ impl OryIdentityManager {
                 bearer_access_token: None,
                 api_key: Some(api_key),
             },
+            cache: Arc::new(Mutex::new(LruCache::new(CACHE_LIMIT))),
         }
     }
 }
@@ -67,7 +77,7 @@ impl IdentityManager for OryIdentityManager {
             .await
     }
 
-    async fn logout(&self, session_token: String) -> Result<()> {
+    async fn logout(&self, session_token: SessionToken) -> Result<()> {
         let request = PerformNativeLogoutBody { session_token };
         let response = perform_native_logout(&self.config, request).await;
 
@@ -81,13 +91,24 @@ impl IdentityManager for OryIdentityManager {
         }
     }
 
-    async fn get_session(&self, session_token: String) -> Result<Session> {
+    async fn get_session(&self, session_token: SessionToken) -> Result<Session> {
+        {
+            let mut cache = self.cache.lock().await;
+            if let Some(session) = cache.get(&session_token) {
+                return Ok(session.clone());
+            }
+        }
+
         let result = to_session(&self.config, Some(&session_token), None, None).await;
 
         match result {
             Ok(session) => {
                 let serialized = serde_json::to_string(&session).unwrap();
                 let session = serde_json::from_str::<Session>(&serialized).unwrap();
+                {
+                    let mut cache = self.cache.lock().await;
+                    cache.put(session_token, session.clone());
+                }
                 Ok(session)
             }
             // TODO: Handle error.
@@ -98,7 +119,7 @@ impl IdentityManager for OryIdentityManager {
         }
     }
 
-    async fn get_identity(&self, identity_id: String) -> Result<Identity> {
+    async fn get_identity(&self, identity_id: IdentityId) -> Result<Identity> {
         let result = get_identity(&self.config, &identity_id, None).await;
 
         match result {
@@ -258,7 +279,7 @@ impl OryIdentityManager {
 
     async fn update_public_metadata(
         &self,
-        identity_id: &str,
+        identity_id: &IdentityId,
         metadata: MetadataPublic,
     ) -> Result<Identity> {
         let patches = vec![JsonPatch {

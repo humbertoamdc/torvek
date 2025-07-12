@@ -1,4 +1,6 @@
-use crate::auth::models::session::{Identity, MetadataPublic, Session, SessionWithToken};
+use crate::auth::models::session::{
+    Identity, IdentityId, MetadataPublic, Session, SessionToken, SessionWithToken,
+};
 use crate::shared;
 use async_trait::async_trait;
 use shared::Result;
@@ -12,7 +14,7 @@ pub trait IdentityManager: Send + Sync + 'static {
         metadata: MetadataPublic,
     ) -> Result<SessionWithToken>;
     async fn login(&self, email: String, password: String) -> Result<SessionWithToken>;
-    async fn logout(&self, session_token: String) -> Result<()>;
-    async fn get_session(&self, session_token: String) -> Result<Session>;
-    async fn get_identity(&self, identity_id: String) -> Result<Identity>;
+    async fn logout(&self, session_token: SessionToken) -> Result<()>;
+    async fn get_session(&self, session_token: SessionToken) -> Result<Session>;
+    async fn get_identity(&self, identity_id: IdentityId) -> Result<Identity>;
 }
