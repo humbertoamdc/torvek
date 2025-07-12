@@ -5,7 +5,7 @@ use crate::services::identity_manager::IdentityManager;
 use crate::shared;
 use crate::shared::error::Error;
 use async_trait::async_trait;
-use lru::LruCache;
+use moka::future::Cache;
 use ory_kratos_client::apis::configuration::{ApiKey, Configuration};
 use ory_kratos_client::apis::frontend_api::{
     create_native_login_flow, create_native_registration_flow, perform_native_logout, to_session,
@@ -20,16 +20,15 @@ use ory_kratos_client::models::{
 };
 use serde_json::json;
 use shared::Result;
-use std::num::NonZeroUsize;
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
-static CACHE_LIMIT: NonZeroUsize = NonZeroUsize::new(10_000).unwrap();
+static CACHE_LIMIT: u64 = 10_000;
 
 #[derive(Clone)]
 pub struct OryIdentityManager {
     config: Configuration,
-    cache: Arc<Mutex<LruCache<SessionToken, Session>>>,
+    cache: Arc<RwLock<Cache<SessionToken, Session>>>,
 }
 
 impl OryIdentityManager {
@@ -49,7 +48,7 @@ impl OryIdentityManager {
                 bearer_access_token: None,
                 api_key: Some(api_key),
             },
-            cache: Arc::new(Mutex::new(LruCache::new(CACHE_LIMIT))),
+            cache: Arc::new(RwLock::new(Cache::new(CACHE_LIMIT))),
         }
     }
 }
@@ -92,11 +91,8 @@ impl IdentityManager for OryIdentityManager {
     }
 
     async fn get_session(&self, session_token: SessionToken) -> Result<Session> {
-        {
-            let mut cache = self.cache.lock().await;
-            if let Some(session) = cache.get(&session_token) {
-                return Ok(session.clone());
-            }
+        if let Some(session) = self.cache.read().await.get(&session_token).await {
+            return Ok(session.clone());
         }
 
         let result = to_session(&self.config, Some(&session_token), None, None).await;
@@ -105,10 +101,13 @@ impl IdentityManager for OryIdentityManager {
             Ok(session) => {
                 let serialized = serde_json::to_string(&session).unwrap();
                 let session = serde_json::from_str::<Session>(&serialized).unwrap();
-                {
-                    let mut cache = self.cache.lock().await;
-                    cache.put(session_token, session.clone());
-                }
+
+                self.cache
+                    .write()
+                    .await
+                    .insert(session_token, session.clone())
+                    .await;
+
                 Ok(session)
             }
             // TODO: Handle error.

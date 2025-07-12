@@ -45,7 +45,7 @@ time = "0.3.41"
 url = "2.5.4"
 rusty-money = "0.4.1"
 thiserror = "2.0.12"
-lru = "0.16.0"
+moka = { version = "0.12.10", features = ["future"] }
 
 [dev-dependencies]
 cookie = "0.18.1"
