@@ -1,7 +1,7 @@
 use crate::parts::models::inputs::DeletePartInput;
 use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::Result;
@@ -11,14 +11,14 @@ use std::sync::Arc;
 
 pub struct DeletePart {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl DeletePart {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {

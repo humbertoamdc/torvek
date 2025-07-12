@@ -1,8 +1,6 @@
 use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
 use crate::quotations::models::quotation::{Quotation, QuoteStatus};
-use crate::repositories::quotations::{
-    DynamodbQuote, QueryBy, QuotationsRepository, ATTRIBUTES_SEPARATOR,
-};
+use crate::repositories::quotes::{DynamodbQuote, QueryBy, QuotesRepository, ATTRIBUTES_SEPARATOR};
 use crate::shared::error::Error;
 use crate::shared::{CustomerId, ProjectId, QueryResponse, QuoteId, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
@@ -27,19 +25,19 @@ enum TableIndex {
 }
 
 #[derive(Clone)]
-pub struct DynamodbQuotations {
+pub struct DynamodbQuotes {
     client: aws_sdk_dynamodb::Client,
     table: String,
 }
 
-impl DynamodbQuotations {
+impl DynamodbQuotes {
     pub fn new(client: aws_sdk_dynamodb::Client, table: String) -> Self {
         Self { client, table }
     }
 }
 
 #[async_trait]
-impl QuotationsRepository for DynamodbQuotations {
+impl QuotesRepository for DynamodbQuotes {
     async fn create(&self, quotation: Quotation) -> Result<()> {
         let dynamodb_quotation = DynamodbQuote::from(quotation);
         let item = to_item(dynamodb_quotation).expect("error converting to dynamodb item");
@@ -302,7 +300,7 @@ impl QuotationsRepository for DynamodbQuotations {
     }
 }
 
-impl DynamodbQuotations {
+impl DynamodbQuotes {
     fn status_query(
         &self,
         customer_id: CustomerId,

@@ -3,7 +3,7 @@ use crate::quotations::models::inputs::GetQuotationSubtotalInput;
 use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::models::responses::GetQuotationSubtotalResponse;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::shared::money::Money;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
@@ -11,13 +11,13 @@ use std::sync::Arc;
 
 pub struct GetQuotationSubtotal {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl GetQuotationSubtotal {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
     ) -> Self {
         Self {
             parts_repository,

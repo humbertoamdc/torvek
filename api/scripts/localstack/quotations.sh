@@ -2,7 +2,7 @@
 
 # DynamoDB Tables
 awslocal dynamodb create-table \
-    --table-name Quotations \
+    --table-name Quotes \
     --attribute-definitions \
         AttributeName=pk,AttributeType=S \
         AttributeName=sk,AttributeType=S \

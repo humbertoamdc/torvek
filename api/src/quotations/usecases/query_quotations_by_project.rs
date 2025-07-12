@@ -1,16 +1,16 @@
 use crate::quotations::models::inputs::QueryQuotationsForProjectInput;
 use crate::quotations::models::responses::QueryQuotationsForProjectResponse;
-use crate::repositories::quotations::{QueryBy, QuotationsRepository};
+use crate::repositories::quotes::{QueryBy, QuotesRepository};
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct QueryQuotationsByProject {
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl QueryQuotationsByProject {
-    pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
+    pub fn new(quotations_repository: Arc<dyn QuotesRepository>) -> Self {
         Self {
             quotations_repository,
         }

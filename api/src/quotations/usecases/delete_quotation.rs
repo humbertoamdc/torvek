@@ -2,7 +2,7 @@ use crate::parts::models::dynamodb_requests::BatchDeletePartObject;
 use crate::parts::models::part::Part;
 use crate::quotations::models::inputs::DeleteQuotationInput;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::{CustomerId, QuoteId, UseCase};
@@ -10,14 +10,14 @@ use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct DeleteQuotation {
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl DeleteQuotation {
     pub fn new(
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {

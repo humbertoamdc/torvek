@@ -5,7 +5,7 @@ use crate::quotations::models::dynamodb_requests::BatchDeleteQuotationObject;
 use crate::quotations::models::quotation::Quotation;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
-use crate::repositories::quotations::{QueryBy, QuotationsRepository};
+use crate::repositories::quotes::{QueryBy, QuotesRepository};
 use crate::services::object_storage::ObjectStorage;
 use crate::shared;
 use crate::shared::{CustomerId, ProjectId, QuoteId, UseCase};
@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 pub struct DeleteProject {
     projects_repository: Arc<dyn ProjectsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     parts_repository: Arc<dyn PartsRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
@@ -22,7 +22,7 @@ pub struct DeleteProject {
 impl DeleteProject {
     pub fn new(
         projects_repository: Arc<dyn ProjectsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         parts_repository: Arc<dyn PartsRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {

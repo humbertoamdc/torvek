@@ -1,7 +1,7 @@
 use crate::quotations::models::inputs::DownloadQuotePdfInput;
 use crate::quotations::models::quotation::{Quotation, QuoteStatus};
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::stripe_client::{PriceData, QuoteLineItem, StripeClient};
 use crate::shared;
 use crate::shared::error::Error;
@@ -14,14 +14,14 @@ use std::sync::Arc;
 
 pub struct DowanloadQuotePdf {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
 impl DowanloadQuotePdf {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
         Self {

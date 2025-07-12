@@ -1,16 +1,16 @@
 use crate::quotations::models::inputs::UpdateQuotationInput;
 use crate::quotations::models::quotation::{Quotation, QuoteStatus};
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct UpdateQuotation {
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl UpdateQuotation {
-    pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
+    pub fn new(quotations_repository: Arc<dyn QuotesRepository>) -> Self {
         Self {
             quotations_repository,
         }

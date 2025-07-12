@@ -49,7 +49,7 @@ pub async fn create_quotation(
         project_id,
         quotation_name: request.quotation_name,
     };
-    let usecase = CreateQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = CreateQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -67,7 +67,7 @@ pub async fn query_quotations_for_project(
         identity: session.identity,
         project_id,
     };
-    let usecase = QueryQuotationsByProject::new(app_state.quotations.quotations_repository);
+    let usecase = QueryQuotationsByProject::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -85,7 +85,7 @@ pub async fn get_quotation_by_id(
         identity: session.identity,
         quotation_id,
     };
-    let usecase = GetQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = GetQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -105,7 +105,7 @@ pub async fn get_quotation_subtotal(
     };
     let usecase = GetQuotationSubtotal::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
     );
     let result = usecase.execute(input).await;
 
@@ -125,7 +125,7 @@ pub async fn delete_quotation(
         quotation_id,
     };
     let usecase = DeleteQuotation::new(
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
@@ -147,7 +147,7 @@ pub async fn send_quotation_for_review(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = UpdateQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = UpdateQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -167,7 +167,7 @@ pub async fn download_pdf_quote(
     };
     let usecase = DowanloadQuotePdf::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.payments.stripe_client,
     );
     let result = usecase.execute(input).await;
@@ -203,7 +203,7 @@ pub async fn admin_query_quotations_by_status(
     let input = AdminQueryQuotationsByStatusInput {
         status: params.status,
     };
-    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotations.quotations_repository);
+    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {

@@ -150,7 +150,7 @@ pub async fn create_parts(
     };
     let usecase = CreateParts::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.object_storage,
         app_state.payments.stripe_client,
     );
@@ -205,7 +205,7 @@ pub async fn update_part(
     };
     let usecase = UpdatePart::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
     );
     let result = usecase.execute(input).await;
 
@@ -248,7 +248,7 @@ pub async fn create_model_file_upload_url(
     };
     let usecase = ModelUploadUrl::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.object_storage,
     );
     let result = usecase.execute(input).await;
@@ -274,7 +274,7 @@ pub async fn create_drawing_upload_url(
     };
     let usecase = CreateDrawingUploadUrl::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.object_storage,
     );
     let result = usecase.execute(input).await;
@@ -298,7 +298,7 @@ pub async fn delete_part(
     };
     let usecase = DeletePart::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.object_storage,
     );
     let result = usecase.execute(input).await;

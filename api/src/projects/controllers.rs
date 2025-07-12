@@ -101,7 +101,7 @@ pub async fn delete_project(
     };
     let usecase = DeleteProject::new(
         app_state.projects.projects_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );

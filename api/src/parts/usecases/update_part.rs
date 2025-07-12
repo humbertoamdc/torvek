@@ -3,7 +3,7 @@ use crate::parts::models::inputs::UpdatePartInput;
 use crate::parts::models::part::Part;
 use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::shared::error::Error;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
@@ -11,13 +11,13 @@ use std::sync::Arc;
 
 pub struct UpdatePart {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl UpdatePart {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
     ) -> Self {
         Self {
             parts_repository,

@@ -7,7 +7,7 @@ pub struct Config {
     pub auth: ConfigAuth,
     pub orders: ConfigOrders,
     pub projects: ConfigProjects,
-    pub quotations: ConfigQuotations,
+    pub quotes: ConfigQuotes,
     pub parts: ConfigParts,
     pub payments: ConfigPayments,
 }
@@ -37,8 +37,8 @@ pub struct ConfigProjects {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ConfigQuotations {
-    pub quotations_table: String,
+pub struct ConfigQuotes {
+    pub quotes_table: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

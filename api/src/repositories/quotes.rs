@@ -16,7 +16,7 @@ pub enum QueryBy {
 }
 
 #[async_trait]
-pub trait QuotationsRepository: Send + Sync + 'static {
+pub trait QuotesRepository: Send + Sync + 'static {
     async fn create(&self, quotation: Quotation) -> Result<()>;
     /// Delete quotation ONLY if it is not in `PAYED` status.
     async fn delete(&self, customer_id: CustomerId, quotation_id: QuoteId) -> Result<()>;
