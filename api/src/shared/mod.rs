@@ -19,3 +19,10 @@ pub struct QueryResponse<T, V> {
 pub trait UseCase<Request, Response> {
     async fn execute(&self, request: Request) -> Result<Response>;
 }
+
+pub type CustomerId = String;
+pub type ProjectId = String;
+pub type QuoteId = String;
+pub type PartId = String;
+pub type PartQuoteId = String;
+pub type OrderId = String;

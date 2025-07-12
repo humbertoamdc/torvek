@@ -6,9 +6,9 @@ use uuid::{ContextV7, Timestamp, Uuid};
 use crate::parts::models::inputs::CreatePartsInput;
 use crate::parts::models::part::{CNCAttributes, Part, PartAttributes, PartProcess};
 use crate::parts::models::responses::CreatePartsResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::services::stripe_client::StripeClient;
 use crate::shared::file::File;
@@ -21,7 +21,7 @@ static RENDER_FILE_FORMAT: &str = ".stl";
 
 pub struct CreateParts {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     object_storage: Arc<dyn ObjectStorage>,
     stripe_client: Arc<dyn StripeClient>,
 }
@@ -29,7 +29,7 @@ pub struct CreateParts {
 impl CreateParts {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         object_storage: Arc<dyn ObjectStorage>,
         stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
@@ -116,9 +116,10 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
 
         self.quotations_repository
             .update(
+                input.identity.id,
                 input.project_id,
                 input.quotation_id,
-                Some(QuotationStatus::Created),
+                Some(QuoteStatus::Created),
             )
             .await?;
 

@@ -63,7 +63,7 @@ impl IntoError for Error {
                 StatusCode::NOT_FOUND,
                 ApiError {
                     status_code: StatusCode::NOT_FOUND.as_u16(),
-                    code: ErrorCode::MissingUserInput,
+                    code: ErrorCode::ItemNotFound,
                     message: Error::ItemNotFoundError.to_string(),
                 },
             ),

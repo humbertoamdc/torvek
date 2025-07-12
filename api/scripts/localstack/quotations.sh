@@ -2,26 +2,52 @@
 
 # DynamoDB Tables
 awslocal dynamodb create-table \
-    --table-name Quotations \
+    --table-name Quotes \
     --attribute-definitions \
-        AttributeName=project_id,AttributeType=S \
-        AttributeName=id,AttributeType=S \
-        AttributeName=status,AttributeType=S \
-        AttributeName=created_at,AttributeType=S \
+        AttributeName=pk,AttributeType=S \
+        AttributeName=sk,AttributeType=S \
+        AttributeName=lsi1_sk,AttributeType=S \
+        AttributeName=gsi1_sk,AttributeType=S \
+        AttributeName=gsi2_pk,AttributeType=S \
+        AttributeName=gsi2_sk,AttributeType=S \
     --key-schema \
-        AttributeName=project_id,KeyType=HASH \
-        AttributeName=id,KeyType=RANGE \
+        AttributeName=pk,KeyType=HASH \
+        AttributeName=sk,KeyType=RANGE \
     --billing-mod PAY_PER_REQUEST \
-    --global-secondary-indexes \
-    '[
-      {
-        "IndexName": "QuotationsByStatus",
-        "KeySchema": [
-          {"AttributeName":"status","KeyType":"HASH"},
-          {"AttributeName":"created_at","KeyType":"RANGE"}
-        ],
-        "Projection":{
-          "ProjectionType":"ALL"
+    --local-secondary-indexes \
+      '[
+        {
+          "IndexName": "LSI1_ProjectAndCreationDateTime",
+          "KeySchema": [
+            {"AttributeName":"pk", "KeyType":"HASH"},
+            {"AttributeName":"lsi1_sk", "KeyType":"RANGE"}
+          ],
+          "Projection":{
+            "ProjectionType":"ALL"
+          }
         }
-      }
-    ]'
+      ]' \
+    --global-secondary-indexes \
+      '[
+        {
+          "IndexName": "GSI1_QuoteStatus",
+          "KeySchema": [
+            {"AttributeName":"pk", "KeyType":"HASH"},
+            {"AttributeName":"gsi1_sk", "KeyType":"RANGE"}
+          ],
+          "Projection":{
+            "ProjectionType":"ALL"
+          }
+        },
+        {
+          "IndexName": "GSI2_QuoteIsPendingReview",
+          "KeySchema": [
+            {"AttributeName":"gsi2_pk", "KeyType":"HASH"},
+            {"AttributeName":"gsi2_sk", "KeyType":"RANGE"}
+          ],
+          "Projection":{
+            "ProjectionType":"ALL"
+          }
+        }
+      ]'
+

@@ -1,8 +1,8 @@
 use crate::parts::models::inputs::CreateModelUploadUrlInput;
 use crate::parts::models::responses::CreateModelUploadUrlResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::{Result, UseCase};
@@ -15,14 +15,14 @@ static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
 pub struct ModelUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl ModelUploadUrl {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelU
 
         let part = self
             .parts_repository
-            .get(input.quotation_id, input.part_id)
+            .get(input.identity.id, input.part_id)
             .await?;
 
         let url = part.model_file.url.parse::<Url>().unwrap();
@@ -71,6 +71,6 @@ impl ModelUploadUrl {
             .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
-        Ok(quotation.status == QuotationStatus::Payed)
+        Ok(quotation.status == QuoteStatus::Payed)
     }
 }

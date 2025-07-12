@@ -19,9 +19,3 @@ pub struct QueryOrdersForCustomerInput {
     pub cursor: Option<String>,
     pub limit: i32,
 }
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct AdminUpdateOrderPayoutRequest {
-    pub order_id: String,
-    pub payout: Money,
-}

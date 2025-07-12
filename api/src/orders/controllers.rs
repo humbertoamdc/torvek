@@ -1,14 +1,12 @@
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::Json;
-use http::StatusCode;
 use serde_derive::Deserialize;
 
 use crate::app_state::AppState;
-use crate::orders::models::inputs::{AdminUpdateOrderPayoutRequest, QueryOrdersForCustomerInput};
-use crate::orders::usecases::admin_update_order_payout::AdminUpdateOrderPayout;
+use crate::orders::models::inputs::QueryOrdersForCustomerInput;
 use crate::orders::usecases::query_orders_by_customer::QueryOrdersByCustomer;
-use crate::shared::extractors::session::{AdminSession, CustomerSession};
+use crate::shared::extractors::session::CustomerSession;
 use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
 
@@ -39,20 +37,6 @@ pub async fn query_orders_for_customer(
 
     match result {
         Ok(response) => Ok(Json(response)),
-        Err(err) => Err(err.into_error_response()),
-    }
-}
-
-pub async fn _admin_update_order_payout(
-    State(app_state): State<AppState>,
-    AdminSession(_): AdminSession,
-    Json(request): Json<AdminUpdateOrderPayoutRequest>,
-) -> impl IntoResponse {
-    let usecase = AdminUpdateOrderPayout::new(app_state.orders.orders_repository);
-    let result = usecase.execute(request).await;
-
-    match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(err) => Err(err.into_error_response()),
     }
 }

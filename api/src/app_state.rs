@@ -18,8 +18,8 @@ use crate::repositories::parts::PartsRepository;
 use crate::repositories::parts_dynamodb::DynamodbParts;
 use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
-use crate::repositories::quotations::QuotationsRepository;
-use crate::repositories::quotations_dynamodb::DynamodbQuotations;
+use crate::repositories::quotes::QuotesRepository;
+use crate::repositories::quotes_dynamodb::DynamodbQuotes;
 use crate::services::identity_manager::IdentityManager;
 use crate::services::identity_manager_ory::OryIdentityManager;
 use crate::services::stripe::Stripe;
@@ -32,7 +32,7 @@ pub struct AppState {
     pub auth: AppStateAuth,
     pub orders: AppStateOrders,
     pub projects: AppStateProjects,
-    pub quotations: AppStateQuotations,
+    pub quotes: AppStateQuotes,
     pub parts: AppStateParts,
     pub payments: AppStatePayments,
 }
@@ -53,8 +53,8 @@ pub struct AppStateProjects {
 }
 
 #[derive(Clone)]
-pub struct AppStateQuotations {
-    pub quotations_repository: Arc<dyn QuotationsRepository>,
+pub struct AppStateQuotes {
+    pub quotes_repository: Arc<dyn QuotesRepository>,
 }
 
 #[derive(Clone)]
@@ -79,7 +79,7 @@ impl AppState {
             auth: AppStateAuth::from(config).await,
             orders: AppStateOrders::from(config).await,
             projects: AppStateProjects::from(config).await,
-            quotations: AppStateQuotations::from(config).await,
+            quotes: AppStateQuotes::from(config).await,
             parts: AppStateParts::from(config).await,
             payments: AppStatePayments::from(config).await,
         }
@@ -151,7 +151,7 @@ impl AppStateProjects {
     }
 }
 
-impl AppStateQuotations {
+impl AppStateQuotes {
     async fn from(config: &Config) -> Self {
         // Configs
         let shared_config = get_shared_config(config).await;
@@ -161,14 +161,12 @@ impl AppStateQuotations {
         let dynamodb_client = aws_sdk_dynamodb::Client::from_conf(dynamodb_config);
 
         // Services & Repositories
-        let quotations_repository = Arc::new(DynamodbQuotations::new(
+        let quotes_repository = Arc::new(DynamodbQuotes::new(
             dynamodb_client,
-            config.quotations.quotations_table.clone(),
+            config.quotes.quotes_table.clone(),
         ));
 
-        Self {
-            quotations_repository,
-        }
+        Self { quotes_repository }
     }
 }
 
@@ -196,7 +194,7 @@ impl AppStateParts {
         let part_quotes_creation = Arc::new(DynamodbParQuotesCreation::new(
             dynamodb_client,
             config.parts.parts_table.clone(),
-            config.quotations.quotations_table.clone(),
+            config.quotes.quotes_table.clone(),
         ));
 
         Self {
@@ -237,7 +235,7 @@ impl AppStatePayments {
             dynamodb_client,
             config.orders.orders_table.clone(),
             config.projects.projects_table.clone(),
-            config.quotations.quotations_table.clone(),
+            config.quotes.quotes_table.clone(),
         ));
 
         Self {

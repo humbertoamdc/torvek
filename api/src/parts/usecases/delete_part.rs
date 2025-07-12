@@ -1,7 +1,7 @@
 use crate::parts::models::inputs::DeletePartInput;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::Result;
@@ -11,14 +11,14 @@ use std::sync::Arc;
 
 pub struct DeletePart {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl DeletePart {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -34,18 +34,18 @@ impl UseCase<DeletePartInput, ()> for DeletePart {
     async fn execute(&self, input: DeletePartInput) -> Result<()> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id, input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status.
         match quotation.status {
-            QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
+            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
             _ => (),
         }
 
         let part = self
             .parts_repository
-            .delete(input.quotation_id, input.part_id)
+            .delete(input.identity.id, input.part_id)
             .await?;
 
         let _ = self

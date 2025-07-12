@@ -1,9 +1,9 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::CreateDrawingUploadUrlInput;
 use crate::parts::models::responses::CreateDrawingUploadUrlResponse;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::file::File;
@@ -17,14 +17,14 @@ static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
 
 pub struct CreateDrawingUploadUrl {
     parts_repository: Arc<dyn PartsRepository>,
-    quotation_repository: Arc<dyn QuotationsRepository>,
+    quotation_repository: Arc<dyn QuotesRepository>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl CreateDrawingUploadUrl {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotation_repository: Arc<dyn QuotationsRepository>,
+        quotation_repository: Arc<dyn QuotesRepository>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -96,6 +96,6 @@ impl CreateDrawingUploadUrl {
             .get(input.project_id.clone(), input.quotation_id.clone())
             .await?;
 
-        Ok(quotation.status == QuotationStatus::Payed)
+        Ok(quotation.status == QuoteStatus::Payed)
     }
 }

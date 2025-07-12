@@ -1,5 +1,6 @@
 use crate::shared::file::File;
 use crate::shared::money::Money;
+use crate::shared::{CustomerId, PartId, PartQuoteId, ProjectId, QuoteId};
 use chrono::{DateTime, Days, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
@@ -10,17 +11,17 @@ static PART_QUOTE_VALID_DAYS: u64 = 30;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Part {
-    pub id: String,
-    pub customer_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
+    pub id: PartId,
+    pub customer_id: CustomerId,
+    pub project_id: ProjectId,
+    pub quotation_id: QuoteId,
     pub model_file: File,
     pub render_file: File,
     pub drawing_file: Option<File>,
     pub process: PartProcess,
     pub attributes: PartAttributes,
     pub quantity: u64,
-    pub selected_part_quote_id: Option<String>,
+    pub selected_part_quote_id: Option<PartQuoteId>,
     pub part_quotes: Option<Vec<PartQuote>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -131,8 +132,7 @@ impl Display for CNCAttributes {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct PartQuote {
-    pub id: String,
-    pub part_id: String,
+    pub id: PartQuoteId,
     pub unit_price: Money,
     pub sub_total: Money,
     pub workdays_to_complete: u64,
@@ -142,12 +142,7 @@ pub struct PartQuote {
 }
 
 impl PartQuote {
-    pub fn new(
-        part_id: String,
-        unit_price: Money,
-        sub_total: Money,
-        workdays_to_complete: u64,
-    ) -> Self {
+    pub fn new(unit_price: Money, sub_total: Money, workdays_to_complete: u64) -> Self {
         let now = Utc::now();
         let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
         let encoded_id = format!("pq_{}", bs58::encode(id).into_string());
@@ -157,7 +152,6 @@ impl PartQuote {
 
         Self {
             id: encoded_id,
-            part_id,
             unit_price,
             sub_total,
             workdays_to_complete,

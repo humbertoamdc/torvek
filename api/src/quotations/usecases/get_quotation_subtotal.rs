@@ -1,9 +1,9 @@
 use crate::parts::models::part::{Part, PartQuote};
 use crate::quotations::models::inputs::GetQuotationSubtotalInput;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::models::responses::GetQuotationSubtotalResponse;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::shared::money::Money;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
@@ -11,13 +11,13 @@ use std::sync::Arc;
 
 pub struct GetQuotationSubtotal {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl GetQuotationSubtotal {
     pub fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
     ) -> Self {
         Self {
             parts_repository,
@@ -34,10 +34,10 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
     ) -> Result<GetQuotationSubtotalResponse> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id, input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
-        if quotation.status != QuotationStatus::PendingPayment {
+        if quotation.status != QuoteStatus::PendingPayment {
             return Ok(GetQuotationSubtotalResponse {
                 quotation_subtotal: None,
             });
@@ -45,7 +45,7 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
 
         let response = self
             .parts_repository
-            .query(input.quotation_id, None, 100)
+            .query(input.identity.id, input.quotation_id, None, 100)
             .await?;
 
         let quotation_subtotal = Some(self.calculate_quotation_subtotal(response.data));

@@ -1,16 +1,16 @@
 use crate::quotations::models::inputs::AdminQueryQuotationsByStatusInput;
 use crate::quotations::models::responses::AdminQueryQuotationsByStatusResponse;
-use crate::repositories::quotations::{QueryBy, QuotationsRepository};
+use crate::repositories::quotes::{QueryBy, QuotesRepository};
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
 pub struct AdminQueryQuotationsByStatus {
-    pub quotations_repository: Arc<dyn QuotationsRepository>,
+    pub quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl AdminQueryQuotationsByStatus {
-    pub fn new(quotations_repository: Arc<dyn QuotationsRepository>) -> Self {
+    pub fn new(quotations_repository: Arc<dyn QuotesRepository>) -> Self {
         Self {
             quotations_repository,
         }
@@ -27,7 +27,16 @@ impl UseCase<AdminQueryQuotationsByStatusInput, AdminQueryQuotationsByStatusResp
     ) -> Result<AdminQueryQuotationsByStatusResponse> {
         let response = self
             .quotations_repository
-            .query(None, Some(input.status), QueryBy::Status, 100, None)
+            .query(
+                None,
+                None,
+                None,
+                None,
+                Some(input.status),
+                QueryBy::IsPendingReview,
+                100,
+                None,
+            )
             .await?;
 
         Ok(AdminQueryQuotationsByStatusResponse::new(response.data))

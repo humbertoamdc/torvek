@@ -1,26 +1,27 @@
 use crate::parts::models::inputs::UpdatePartInput;
-use crate::parts::models::part::PartAttributes;
+use crate::parts::models::part::{PartAttributes, PartProcess};
 use crate::shared::file::File;
+use crate::shared::{CustomerId, PartId, PartQuoteId, QuoteId};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct UpdatablePart {
-    pub id: String,
-    pub customer_id: String,
-    pub quotation_id: String,
+    pub id: PartId,
+    pub customer_id: CustomerId,
+    pub quotation_id: QuoteId,
     pub drawing_file: Option<File>,
-    pub process: Option<String>,
+    pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
-    pub selected_part_quote_id: Option<String>,
+    pub selected_part_quote_id: Option<PartQuoteId>,
     pub clear_part_quotes: Option<bool>,
 }
 
 impl UpdatablePart {
-    pub fn partial_new(quotation_id: String, part_id: String) -> Self {
+    pub fn partial_new(customer_id: CustomerId, part_id: PartId) -> Self {
         let mut updatable_part = Self::default();
+        updatable_part.customer_id = customer_id;
         updatable_part.id = part_id;
-        updatable_part.quotation_id = quotation_id;
         updatable_part
     }
 }
@@ -42,6 +43,6 @@ impl From<&UpdatePartInput> for UpdatablePart {
 }
 
 pub struct BatchDeletePartObject {
-    pub part_id: String,
-    pub quotation_id: String,
+    pub customer_id: CustomerId,
+    pub part_id: PartId,
 }

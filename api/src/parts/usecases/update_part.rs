@@ -1,9 +1,9 @@
 use crate::parts::models::dynamodb_requests::UpdatablePart;
 use crate::parts::models::inputs::UpdatePartInput;
 use crate::parts::models::part::Part;
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
-use crate::repositories::quotations::QuotationsRepository;
+use crate::repositories::quotes::QuotesRepository;
 use crate::shared::error::Error;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
@@ -11,13 +11,13 @@ use std::sync::Arc;
 
 pub struct UpdatePart {
     parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotationsRepository>,
+    quotations_repository: Arc<dyn QuotesRepository>,
 }
 
 impl UpdatePart {
     pub const fn new(
         parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotationsRepository>,
+        quotations_repository: Arc<dyn QuotesRepository>,
     ) -> Self {
         Self {
             parts_repository,
@@ -31,23 +31,24 @@ impl UseCase<UpdatePartInput, Part> for UpdatePart {
     async fn execute(&self, input: UpdatePartInput) -> Result<Part> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id.clone(), input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         // Check that the quotation is in an updatable status and change status to created after making an update.
         match quotation.status {
-            QuotationStatus::Created => (),
-            QuotationStatus::PendingReview | QuotationStatus::PendingPayment => {
+            QuoteStatus::Created => (),
+            QuoteStatus::PendingReview | QuoteStatus::PendingPayment => {
                 let _ = self
                     .quotations_repository
                     .update(
+                        input.identity.id.clone(),
                         input.project_id.clone(),
                         input.quotation_id.clone(),
-                        Some(QuotationStatus::Created),
+                        Some(QuoteStatus::Created),
                     )
                     .await?;
             }
-            QuotationStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
+            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
         }
 
         let updatable_part = UpdatablePart::from(&input);

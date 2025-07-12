@@ -4,7 +4,7 @@ use crate::quotations::models::inputs::{
     DownloadQuotePdfInput, GetQuotationByIdInput, GetQuotationSubtotalInput,
     QueryQuotationsForProjectInput, UpdateQuotationInput,
 };
-use crate::quotations::models::quotation::QuotationStatus;
+use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatus;
 use crate::quotations::usecases::create_quotation::CreateQuotation;
 use crate::quotations::usecases::delete_quotation::DeleteQuotation;
@@ -15,7 +15,7 @@ use crate::quotations::usecases::query_quotations_by_project::QueryQuotationsByP
 use crate::quotations::usecases::update_quotation::UpdateQuotation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::into_error_response::IntoError;
-use crate::shared::UseCase;
+use crate::shared::{ProjectId, QuoteId, UseCase};
 use axum::extract::{Path, Query, State};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -24,7 +24,6 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateQuotationRequest {
-    pub project_id: String,
     pub quotation_name: String,
 }
 
@@ -36,20 +35,21 @@ pub struct SendQuotationForReviewRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct AdminQueryQuotationsByStatusQueryParams {
-    pub status: QuotationStatus,
+    pub status: QuoteStatus,
 }
 
 pub async fn create_quotation(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
+    Path(project_id): Path<ProjectId>,
     Json(request): Json<CreateQuotationRequest>,
 ) -> impl IntoResponse {
     let input = CreateQuotationInput {
         identity: session.identity,
-        project_id: request.project_id,
+        project_id,
         quotation_name: request.quotation_name,
     };
-    let usecase = CreateQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = CreateQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -67,7 +67,7 @@ pub async fn query_quotations_for_project(
         identity: session.identity,
         project_id,
     };
-    let usecase = QueryQuotationsByProject::new(app_state.quotations.quotations_repository);
+    let usecase = QueryQuotationsByProject::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -79,14 +79,13 @@ pub async fn query_quotations_for_project(
 pub async fn get_quotation_by_id(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = GetQuotationByIdInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
-    let usecase = GetQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = GetQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -98,16 +97,15 @@ pub async fn get_quotation_by_id(
 pub async fn get_quotation_subtotal(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = GetQuotationSubtotalInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = GetQuotationSubtotal::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
     );
     let result = usecase.execute(input).await;
 
@@ -120,15 +118,14 @@ pub async fn get_quotation_subtotal(
 pub async fn delete_quotation(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = DeleteQuotationInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = DeleteQuotation::new(
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.parts.parts_repository,
         app_state.parts.object_storage,
     );
@@ -150,7 +147,7 @@ pub async fn send_quotation_for_review(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = UpdateQuotation::new(app_state.quotations.quotations_repository);
+    let usecase = UpdateQuotation::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {
@@ -162,16 +159,15 @@ pub async fn send_quotation_for_review(
 pub async fn download_pdf_quote(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path((project_id, quotation_id)): Path<(String, String)>,
+    Path(quotation_id): Path<QuoteId>,
 ) -> impl IntoResponse {
     let input = DownloadQuotePdfInput {
         identity: session.identity,
-        project_id,
         quotation_id,
     };
     let usecase = DowanloadQuotePdf::new(
         app_state.parts.parts_repository,
-        app_state.quotations.quotations_repository,
+        app_state.quotes.quotes_repository,
         app_state.payments.stripe_client,
     );
     let result = usecase.execute(input).await;
@@ -207,7 +203,7 @@ pub async fn admin_query_quotations_by_status(
     let input = AdminQueryQuotationsByStatusInput {
         status: params.status,
     };
-    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotations.quotations_repository);
+    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotes.quotes_repository);
     let result = usecase.execute(input).await;
 
     match result {

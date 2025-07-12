@@ -19,7 +19,18 @@ impl UseCase<(), QueryOpenOrdersResponse> for QueryOpenOrders {
     async fn execute(&self, _: ()) -> Result<QueryOpenOrdersResponse> {
         let response = self
             .orders_repository
-            .query(None, QueryBy::IsOpen, None, 100)
+            .query(
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                QueryBy::IsOpen,
+                None,
+                100,
+            )
             .await?;
 
         Ok(QueryOpenOrdersResponse {

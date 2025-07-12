@@ -1,4 +1,6 @@
+use crate::shared::{CustomerId, QuoteId};
+
 pub struct BatchDeleteQuotationObject {
-    pub quotation_id: String,
-    pub project_id: String,
+    pub quotation_id: QuoteId,
+    pub customer_id: CustomerId,
 }
