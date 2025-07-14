@@ -8,20 +8,13 @@ use reqwest::header::{HeaderMap, HeaderValue};
 use stripe::Client;
 
 use crate::config::{Config, Environment};
-use crate::parts::services::part_quotes_creation::PartQuotesCreation;
-use crate::parts::services::part_quotes_creation_dynamodb::DynamodbParQuotesCreation;
-use crate::payments::services::orders_creation::OrdersCreationService;
-use crate::payments::services::orders_creation_dynamodb::DynamodbOrdersCreationService;
-use crate::repositories::orders::OrdersRepository;
 use crate::repositories::orders_dynamodb::DynamodbOrders;
-use crate::repositories::parts::PartsRepository;
 use crate::repositories::parts_dynamodb::DynamodbParts;
-use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
-use crate::repositories::quotes::QuotesRepository;
 use crate::repositories::quotes_dynamodb::DynamodbQuotes;
-use crate::services::identity_manager::IdentityManager;
+use crate::repositories::transaction_dynamodb::DynamodbTransaction;
 use crate::services::identity_manager_ory::OryIdentityManager;
+use crate::services::object_storage_s3::S3ObjectStorage;
 use crate::services::stripe::Stripe;
 use crate::services::stripe_client::StripeClient;
 
@@ -39,36 +32,35 @@ pub struct AppState {
 
 #[derive(Clone)]
 pub struct AppStateAuth {
-    pub identity_manager: Arc<dyn IdentityManager>,
+    pub ory_kratos: Arc<OryIdentityManager>,
 }
 
 #[derive(Clone)]
 pub struct AppStateOrders {
-    pub orders_repository: Arc<dyn OrdersRepository>,
+    pub dynamodb_orders: Arc<DynamodbOrders>,
 }
 
 #[derive(Clone)]
 pub struct AppStateProjects {
-    pub projects_repository: Arc<dyn ProjectsRepository>,
+    pub dynamodb_projects: Arc<DynamodbProjects>,
 }
 
 #[derive(Clone)]
 pub struct AppStateQuotes {
-    pub quotes_repository: Arc<dyn QuotesRepository>,
+    pub dynamodb_quotes: Arc<DynamodbQuotes>,
 }
 
 #[derive(Clone)]
 pub struct AppStateParts {
-    pub parts_repository: Arc<dyn PartsRepository>,
-    pub object_storage: Arc<dyn crate::services::object_storage::ObjectStorage>,
-    pub part_quotes_creation: Arc<dyn PartQuotesCreation>,
+    pub dynamodb_parts: Arc<DynamodbParts>,
+    pub s3: Arc<S3ObjectStorage>,
 }
 
 #[derive(Clone)]
 pub struct AppStatePayments {
     pub webhook_secret: String,
     pub stripe_client: Arc<dyn StripeClient>,
-    pub orders_creation_service: Arc<dyn OrdersCreationService>,
+    pub transaction: DynamodbTransaction,
 }
 
 impl AppState {
@@ -89,7 +81,7 @@ impl AppState {
 impl AppStateAuth {
     async fn from(config: &Config) -> Self {
         // Clients
-        let reqwest_client = Self::reqwest_client(&config);
+        let reqwest_client = Self::reqwest_client(config);
 
         // Services & Repositories
         let identity_manager = Arc::new(OryIdentityManager::new(
@@ -98,7 +90,9 @@ impl AppStateAuth {
             config.auth.ory_clients_api_key.clone(),
         ));
 
-        Self { identity_manager }
+        Self {
+            ory_kratos: identity_manager,
+        }
     }
 
     fn reqwest_client(config: &Config) -> reqwest::Client {
@@ -127,7 +121,9 @@ impl AppStateOrders {
             config.orders.orders_table.clone(),
         ));
 
-        Self { orders_repository }
+        Self {
+            dynamodb_orders: orders_repository,
+        }
     }
 }
 
@@ -146,7 +142,7 @@ impl AppStateProjects {
             config.projects.projects_table.clone(),
         ));
         Self {
-            projects_repository,
+            dynamodb_projects: projects_repository,
         }
     }
 }
@@ -166,7 +162,9 @@ impl AppStateQuotes {
             config.quotes.quotes_table.clone(),
         ));
 
-        Self { quotes_repository }
+        Self {
+            dynamodb_quotes: quotes_repository,
+        }
     }
 }
 
@@ -191,16 +189,10 @@ impl AppStateParts {
             s3_client,
             config.parts.s3_bucket.clone(),
         ));
-        let part_quotes_creation = Arc::new(DynamodbParQuotesCreation::new(
-            dynamodb_client,
-            config.parts.parts_table.clone(),
-            config.quotes.quotes_table.clone(),
-        ));
 
         Self {
-            parts_repository,
-            object_storage,
-            part_quotes_creation,
+            dynamodb_parts: parts_repository,
+            s3: object_storage,
         }
     }
 }
@@ -231,17 +223,12 @@ impl AppStatePayments {
             config.payments.success_url.clone(),
         ));
 
-        let orders_creation_service = Arc::new(DynamodbOrdersCreationService::new(
-            dynamodb_client,
-            config.orders.orders_table.clone(),
-            config.projects.projects_table.clone(),
-            config.quotes.quotes_table.clone(),
-        ));
+        let transaction = DynamodbTransaction::new(dynamodb_client);
 
         Self {
             webhook_secret: config.payments.webhook_secret.clone(),
             stripe_client,
-            orders_creation_service,
+            transaction,
         }
     }
 }

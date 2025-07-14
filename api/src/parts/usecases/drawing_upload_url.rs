@@ -13,18 +13,26 @@ use std::sync::Arc;
 use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
 
-static DRAWING_FILES_BASE_FILE_PATH: &'static str = "parts/drawings";
+static DRAWING_FILES_BASE_FILE_PATH: &str = "parts/drawings";
 
-pub struct CreateDrawingUploadUrl {
-    parts_repository: Arc<dyn PartsRepository>,
-    quotation_repository: Arc<dyn QuotesRepository>,
+pub struct CreateDrawingUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
+    quotation_repository: Arc<Q>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl CreateDrawingUploadUrl {
+impl<Q, P> CreateDrawingUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub const fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        quotation_repository: Arc<dyn QuotesRepository>,
+        parts_repository: Arc<P>,
+        quotation_repository: Arc<Q>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -36,8 +44,11 @@ impl CreateDrawingUploadUrl {
 }
 
 #[async_trait]
-impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
-    for CreateDrawingUploadUrl
+impl<Q, P> UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
+    for CreateDrawingUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
 {
     async fn execute(
         &self,
@@ -89,7 +100,11 @@ impl UseCase<CreateDrawingUploadUrlInput, CreateDrawingUploadUrlResponse>
     }
 }
 
-impl CreateDrawingUploadUrl {
+impl<Q, P> CreateDrawingUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn quotation_is_payed(&self, input: &CreateDrawingUploadUrlInput) -> Result<bool> {
         let quotation = self
             .quotation_repository

@@ -14,16 +14,24 @@ use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct QueryOrdersByCustomer {
-    orders_repository: Arc<dyn OrdersRepository>,
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct QueryOrdersByCustomer<O, P>
+where
+    O: OrdersRepository,
+    P: PartsRepository,
+{
+    orders_repository: Arc<O>,
+    parts_repository: Arc<P>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl QueryOrdersByCustomer {
+impl<O, P> QueryOrdersByCustomer<O, P>
+where
+    O: OrdersRepository,
+    P: PartsRepository,
+{
     pub fn new(
-        orders_repository: Arc<dyn OrdersRepository>,
-        parts_repository: Arc<dyn PartsRepository>,
+        orders_repository: Arc<O>,
+        parts_repository: Arc<P>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -35,8 +43,11 @@ impl QueryOrdersByCustomer {
 }
 
 #[async_trait]
-impl UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
-    for QueryOrdersByCustomer
+impl<O, P> UseCase<QueryOrdersForCustomerInput, QueryOrdersForCustomerResponse>
+    for QueryOrdersByCustomer<O, P>
+where
+    O: OrdersRepository,
+    P: PartsRepository,
 {
     async fn execute(
         &self,

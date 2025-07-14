@@ -39,12 +39,15 @@ impl QueryProjectsByCustomerInput {
     }
 }
 
-pub struct QueryProjectsByCustomer {
-    projects_repository: Arc<dyn ProjectsRepository>,
+pub struct QueryProjectsByCustomer<P: ProjectsRepository> {
+    projects_repository: Arc<P>,
 }
 
-impl QueryProjectsByCustomer {
-    pub fn new(projects_repository: Arc<dyn ProjectsRepository>) -> Self {
+impl<P> QueryProjectsByCustomer<P>
+where
+    P: ProjectsRepository,
+{
+    pub fn new(projects_repository: Arc<P>) -> Self {
         Self {
             projects_repository,
         }
@@ -52,8 +55,10 @@ impl QueryProjectsByCustomer {
 }
 
 #[async_trait]
-impl UseCase<QueryProjectsByCustomerInput, QueryProjectsForClientResponse>
-    for QueryProjectsByCustomer
+impl<R> UseCase<QueryProjectsByCustomerInput, QueryProjectsForClientResponse>
+    for QueryProjectsByCustomer<R>
+where
+    R: ProjectsRepository,
 {
     async fn execute(
         &self,

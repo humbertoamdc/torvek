@@ -4,18 +4,27 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct QueryOpenOrders {
-    orders_repository: Arc<dyn OrdersRepository>,
+pub struct QueryOpenOrders<O>
+where
+    O: OrdersRepository,
+{
+    orders_repository: Arc<O>,
 }
 
-impl QueryOpenOrders {
-    pub fn new(orders_repository: Arc<dyn OrdersRepository>) -> Self {
+impl<O> QueryOpenOrders<O>
+where
+    O: OrdersRepository,
+{
+    pub fn new(orders_repository: Arc<O>) -> Self {
         Self { orders_repository }
     }
 }
 
 #[async_trait]
-impl UseCase<(), QueryOpenOrdersResponse> for QueryOpenOrders {
+impl<O> UseCase<(), QueryOpenOrdersResponse> for QueryOpenOrders<O>
+where
+    O: OrdersRepository,
+{
     async fn execute(&self, _: ()) -> Result<QueryOpenOrdersResponse> {
         let response = self
             .orders_repository

@@ -7,16 +7,19 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use std::time::Duration;
 
-pub struct GetPart {
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct GetPart<P>
+where
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl GetPart {
-    pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        object_storage: Arc<dyn ObjectStorage>,
-    ) -> Self {
+impl<P> GetPart<P>
+where
+    P: PartsRepository,
+{
+    pub fn new(parts_repository: Arc<P>, object_storage: Arc<dyn ObjectStorage>) -> Self {
         Self {
             parts_repository,
             object_storage,
@@ -25,7 +28,10 @@ impl GetPart {
 }
 
 #[async_trait]
-impl UseCase<GetPartInput, Part> for GetPart {
+impl<P> UseCase<GetPartInput, Part> for GetPart<P>
+where
+    P: PartsRepository,
+{
     async fn execute(&self, input: GetPartInput) -> Result<Part> {
         let mut part = self
             .parts_repository

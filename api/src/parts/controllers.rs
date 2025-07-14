@@ -24,6 +24,8 @@ use axum::response::IntoResponse;
 use axum::Json;
 use http::StatusCode;
 use serde_derive::{Deserialize, Serialize};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use url::Url;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -80,7 +82,11 @@ pub async fn admin_create_part_quotes(
     AdminSession(_): AdminSession,
     Json(request): Json<CreatePartQuotesInput>,
 ) -> impl IntoResponse {
-    let usecase = CreatePartQuotes::new(app_state.parts.part_quotes_creation);
+    let usecase = CreatePartQuotes::new(
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        Arc::new(Mutex::new(app_state.payments.transaction)),
+    );
     let result = usecase.execute(request).await;
 
     match result {
@@ -102,10 +108,8 @@ pub async fn admin_query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase = AdminQueryPartsForQuotation::new(
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
-    );
+    let usecase =
+        AdminQueryPartsForQuotation::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
     let result = usecase.execute(input).await;
 
     match result {
@@ -125,10 +129,7 @@ pub async fn get_part(
         quotation_id,
         part_id,
     };
-    let get_part_usecase = GetPart::new(
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
-    );
+    let get_part_usecase = GetPart::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
     let response = get_part_usecase.execute(input).await;
 
     match response {
@@ -149,9 +150,9 @@ pub async fn create_parts(
         file_names: request.file_names,
     };
     let usecase = CreateParts::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
-        app_state.parts.object_storage,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
         app_state.payments.stripe_client,
     );
     let result = usecase.execute(input).await;
@@ -176,10 +177,7 @@ pub async fn query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase = QueryPartsByQuotation::new(
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
-    );
+    let usecase = QueryPartsByQuotation::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
     let result = usecase.execute(input).await;
 
     match result {
@@ -204,8 +202,8 @@ pub async fn update_part(
         quantity: request.quantity,
     };
     let usecase = UpdatePart::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
     );
     let result = usecase.execute(input).await;
 
@@ -226,7 +224,7 @@ pub async fn update_selected_part_quote(
         part_id: request.part_id,
         selected_part_quote_id: request.selected_part_quote_id,
     };
-    let usecase = UpdateSelectedPartQuote::new(app_state.parts.parts_repository);
+    let usecase = UpdateSelectedPartQuote::new(app_state.parts.dynamodb_parts);
     let result = usecase.execute(input).await;
 
     match result {
@@ -247,9 +245,9 @@ pub async fn create_model_file_upload_url(
         part_id: request.part_id,
     };
     let usecase = ModelUploadUrl::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
-        app_state.parts.object_storage,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 
@@ -273,9 +271,9 @@ pub async fn create_drawing_upload_url(
         file_url: request.file_url,
     };
     let usecase = CreateDrawingUploadUrl::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
-        app_state.parts.object_storage,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 
@@ -297,9 +295,9 @@ pub async fn delete_part(
         part_id,
     };
     let usecase = DeletePart::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
-        app_state.parts.object_storage,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 

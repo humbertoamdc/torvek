@@ -6,16 +6,19 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct CreateCheckoutSession {
+pub struct CreateCheckoutSession<P>
+where
+    P: PartsRepository,
+{
     stripe_client: Arc<dyn StripeClient>,
-    parts_repository: Arc<dyn PartsRepository>,
+    parts_repository: Arc<P>,
 }
 
-impl CreateCheckoutSession {
-    pub const fn new(
-        stripe_client: Arc<dyn StripeClient>,
-        parts_repository: Arc<dyn PartsRepository>,
-    ) -> Self {
+impl<P> CreateCheckoutSession<P>
+where
+    P: PartsRepository,
+{
+    pub const fn new(stripe_client: Arc<dyn StripeClient>, parts_repository: Arc<P>) -> Self {
         Self {
             stripe_client,
             parts_repository,
@@ -24,7 +27,11 @@ impl CreateCheckoutSession {
 }
 
 #[async_trait]
-impl UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse> for CreateCheckoutSession {
+impl<P> UseCase<CreateCheckoutSessionInput, CreateCheckoutSessionResponse>
+    for CreateCheckoutSession<P>
+where
+    P: PartsRepository,
+{
     async fn execute(
         &self,
         input: CreateCheckoutSessionInput,

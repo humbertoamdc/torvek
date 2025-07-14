@@ -1,12 +1,13 @@
 use crate::parts::models::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
-use crate::parts::models::part::Part;
+use crate::parts::models::part::{Part, PartQuote};
 use crate::repositories::parts::{DynamodbPart, PartsRepository};
 use crate::shared::error::Error;
-use crate::shared::{CustomerId, PartId, QueryResponse, QuoteId, Result};
+use crate::shared::{CustomerId, PartId, PartQuoteId, QueryResponse, QuoteId, Result};
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::types::{
-    AttributeValue, DeleteRequest, KeysAndAttributes, PutRequest, ReturnValue, WriteRequest,
+    AttributeValue, DeleteRequest, KeysAndAttributes, PutRequest, ReturnValue, TransactWriteItem,
+    Update, WriteRequest,
 };
 use chrono::Utc;
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
@@ -34,6 +35,8 @@ impl DynamodbParts {
 
 #[async_trait]
 impl PartsRepository for DynamodbParts {
+    type TransactionItem = TransactWriteItem;
+
     async fn delete(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part> {
         let response = self
             .client
@@ -361,5 +364,48 @@ impl PartsRepository for DynamodbParts {
                 Err(Error::UnknownError)
             }
         }
+    }
+
+    fn transaction_create_part_quotes(
+        &self,
+        customer_id: CustomerId,
+        part_id: PartId,
+        selected_part_quote_id: PartQuoteId,
+        part_quotes: Vec<PartQuote>,
+    ) -> TransactWriteItem {
+        let part_quote_items = part_quotes
+            .into_iter()
+            .map(|part_quote| {
+                let item = serde_dynamo::aws_sdk_dynamodb_1::to_item(part_quote)
+                    .expect("error converting to dynamodb item");
+                AttributeValue::M(item)
+            })
+            .collect();
+
+        TransactWriteItem::builder()
+            .update(
+                Update::builder()
+                    .key("pk", AttributeValue::S(customer_id.clone()))
+                    .key("sk", AttributeValue::S(part_id))
+                    .table_name(&self.table)
+                    .set_expression_attribute_values(Some(
+                        [
+                            (
+                                String::from(":part_quotes"),
+                                AttributeValue::L(part_quote_items),
+                            ),
+                            (
+                                String::from(":selected_part_quote_id"),
+                                AttributeValue::S(selected_part_quote_id),
+                            ),
+                        ]
+                            .into_iter()
+                            .collect::<HashMap<String, AttributeValue>>(),
+                    ))
+                    .update_expression("SET part_quotes = :part_quotes, selected_part_quote_id = :selected_part_quote_id")
+                    .build()
+                    .unwrap(),
+            )
+            .build()
     }
 }

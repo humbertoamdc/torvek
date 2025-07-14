@@ -9,16 +9,21 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct GetQuotationSubtotal {
-    parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotesRepository>,
+pub struct GetQuotationSubtotal<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
+    quotations_repository: Arc<Q>,
 }
 
-impl GetQuotationSubtotal {
-    pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotesRepository>,
-    ) -> Self {
+impl<Q, P> GetQuotationSubtotal<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    pub fn new(parts_repository: Arc<P>, quotations_repository: Arc<Q>) -> Self {
         Self {
             parts_repository,
             quotations_repository,
@@ -27,7 +32,12 @@ impl GetQuotationSubtotal {
 }
 
 #[async_trait]
-impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuotationSubtotal {
+impl<Q, P> UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse>
+    for GetQuotationSubtotal<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn execute(
         &self,
         input: GetQuotationSubtotalInput,
@@ -54,7 +64,11 @@ impl UseCase<GetQuotationSubtotalInput, GetQuotationSubtotalResponse> for GetQuo
     }
 }
 
-impl GetQuotationSubtotal {
+impl<Q, P> GetQuotationSubtotal<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub fn calculate_quotation_subtotal(&self, parts: Vec<Part>) -> Money {
         let selected_part_quotes = parts
             .into_iter()

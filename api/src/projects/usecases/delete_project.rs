@@ -12,18 +12,28 @@ use crate::shared::{CustomerId, ProjectId, QuoteId, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct DeleteProject {
-    projects_repository: Arc<dyn ProjectsRepository>,
-    quotations_repository: Arc<dyn QuotesRepository>,
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct DeleteProject<Pro, Quo, Par>
+where
+    Pro: ProjectsRepository,
+    Quo: QuotesRepository,
+    Par: PartsRepository,
+{
+    projects_repository: Arc<Pro>,
+    quotations_repository: Arc<Quo>,
+    parts_repository: Arc<Par>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl DeleteProject {
+impl<Pro, Quo, Par> DeleteProject<Pro, Quo, Par>
+where
+    Pro: ProjectsRepository,
+    Quo: QuotesRepository,
+    Par: PartsRepository,
+{
     pub fn new(
-        projects_repository: Arc<dyn ProjectsRepository>,
-        quotations_repository: Arc<dyn QuotesRepository>,
-        parts_repository: Arc<dyn PartsRepository>,
+        projects_repository: Arc<Pro>,
+        quotations_repository: Arc<Quo>,
+        parts_repository: Arc<Par>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -36,7 +46,12 @@ impl DeleteProject {
 }
 
 #[async_trait]
-impl UseCase<DeleteProjectInput, ()> for DeleteProject {
+impl<Pro, Quo, Par> UseCase<DeleteProjectInput, ()> for DeleteProject<Pro, Quo, Par>
+where
+    Pro: ProjectsRepository,
+    Quo: QuotesRepository,
+    Par: PartsRepository,
+{
     async fn execute(&self, input: DeleteProjectInput) -> crate::shared::Result<()> {
         let _ = self
             .projects_repository
@@ -50,7 +65,12 @@ impl UseCase<DeleteProjectInput, ()> for DeleteProject {
     }
 }
 
-impl DeleteProject {
+impl<Pro, Quo, Par> DeleteProject<Pro, Quo, Par>
+where
+    Pro: ProjectsRepository,
+    Quo: QuotesRepository,
+    Par: PartsRepository,
+{
     async fn cascade_delete_quotations_for_project(
         &self,
         customer_id: CustomerId,

@@ -5,9 +5,9 @@ use crate::shared::{CustomerId, OrderId, PartId, ProjectId, QueryResponse, Quote
 use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::query::builders::QueryFluentBuilder;
-use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_dynamodb::types::{AttributeValue, Put, TransactWriteItem};
 use chrono::{DateTime, Utc};
-use serde_dynamo::from_items;
+use serde_dynamo::{from_items, to_item};
 use serde_enum_str::Serialize_enum_str;
 use std::collections::HashMap;
 
@@ -37,6 +37,8 @@ impl DynamodbOrders {
 
 #[async_trait]
 impl OrdersRepository for DynamodbOrders {
+    type TransactionItem = TransactWriteItem;
+
     async fn query(
         &self,
         customer_id: Option<CustomerId>,
@@ -105,6 +107,22 @@ impl OrdersRepository for DynamodbOrders {
 
     async fn update(&self, _customer_id: CustomerId, _order_id: OrderId) -> Result<()> {
         todo!("Not implemented")
+    }
+
+    fn transaction_create(&self, order: Order) -> TransactWriteItem {
+        let dynamodb_order = DynamodbOrder::from(order);
+
+        TransactWriteItem::builder()
+            .put(
+                Put::builder()
+                    .set_item(Some(
+                        to_item(dynamodb_order).expect("error converting to dynamodb item"),
+                    ))
+                    .table_name(&self.table)
+                    .build()
+                    .unwrap(),
+            )
+            .build()
     }
 }
 

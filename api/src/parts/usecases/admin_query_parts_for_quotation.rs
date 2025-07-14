@@ -12,16 +12,19 @@ use std::time::Duration;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct AdminQueryPartsForQuotation {
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct AdminQueryPartsForQuotation<P>
+where
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl AdminQueryPartsForQuotation {
-    pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        object_storage: Arc<dyn ObjectStorage>,
-    ) -> Self {
+impl<P> AdminQueryPartsForQuotation<P>
+where
+    P: PartsRepository,
+{
+    pub fn new(parts_repository: Arc<P>, object_storage: Arc<dyn ObjectStorage>) -> Self {
         Self {
             parts_repository,
             object_storage,
@@ -30,8 +33,10 @@ impl AdminQueryPartsForQuotation {
 }
 
 #[async_trait]
-impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
-    for AdminQueryPartsForQuotation
+impl<P> UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
+    for AdminQueryPartsForQuotation<P>
+where
+    P: PartsRepository,
 {
     async fn execute(
         &self,
@@ -70,7 +75,10 @@ impl UseCase<AdminQueryPartsForQuotationInput, QueryPartsForQuotationResponse>
     }
 }
 
-impl AdminQueryPartsForQuotation {
+impl<P> AdminQueryPartsForQuotation<P>
+where
+    P: PartsRepository,
+{
     async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
         for part in parts.iter_mut() {
             let presigned_url = self

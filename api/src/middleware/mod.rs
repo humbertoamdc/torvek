@@ -1,6 +1,7 @@
 use crate::app_state::AppState;
 use crate::auth;
 use crate::auth::controllers::{ADMIN_SESSION_TOKEN, CUSTOMER_SESSION_TOKEN};
+use crate::services::identity_manager::IdentityManager;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use axum::response::{IntoResponse, Response};
 use http::{header, HeaderMap, HeaderValue, Request};
@@ -90,7 +91,7 @@ where
 
         Box::pin(async move {
             for token in session_tokens {
-                if let Ok(session) = state.auth.identity_manager.get_session(token).await {
+                if let Ok(session) = state.auth.ory_kratos.get_session(token).await {
                     match session.clone().identity.metadata_public.role {
                         auth::models::session::Role::Admin => {
                             req.extensions_mut().insert(AdminSession(session));

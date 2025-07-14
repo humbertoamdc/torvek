@@ -25,7 +25,7 @@ impl TestUser {
 
         let app_state = get_app_state().await;
         let register_client_usecase = Register::new(
-            app_state.auth.identity_manager.clone(),
+            app_state.auth.ory_kratos.clone(),
             app_state.payments.stripe_client.clone(),
         );
         let session_with_token = register_client_usecase

@@ -7,7 +7,9 @@ use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
 use aws_sdk_dynamodb::operation::query::builders::QueryFluentBuilder;
-use aws_sdk_dynamodb::types::{AttributeValue, DeleteRequest, ReturnValue, WriteRequest};
+use aws_sdk_dynamodb::types::{
+    AttributeValue, DeleteRequest, ReturnValue, TransactWriteItem, Update, WriteRequest,
+};
 use chrono::{DateTime, Utc};
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
@@ -38,6 +40,8 @@ impl DynamodbQuotes {
 
 #[async_trait]
 impl QuotesRepository for DynamodbQuotes {
+    type TransactionItem = TransactWriteItem;
+
     async fn create(&self, quotation: Quotation) -> Result<()> {
         let dynamodb_quotation = DynamodbQuote::from(quotation);
         let item = to_item(dynamodb_quotation).expect("error converting to dynamodb item");
@@ -297,6 +301,48 @@ impl QuotesRepository for DynamodbQuotes {
                 Err(Error::UnknownError)
             }
         }
+    }
+
+    fn transaction_update(
+        &self,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+        quote_id: QuoteId,
+        old_status: QuoteStatus,
+        new_status: QuoteStatus,
+    ) -> TransactWriteItem {
+        let gsi1_sk = format!(
+            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
+            new_status, project_id, quote_id
+        );
+
+        TransactWriteItem::builder()
+            .update(
+                Update::builder()
+                    .table_name(&self.table)
+                    .set_key(Some(HashMap::from([
+                        (String::from("pk"), AttributeValue::S(customer_id)),
+                        (String::from("sk"), AttributeValue::S(quote_id)),
+                    ])))
+                    .condition_expression(" begins_with(gsi1_sk, :old_status)")
+                    .update_expression(
+                        "SET gsi1_sk = :gsi1_sk, updated_at = :updated_at REMOVE gsi2_pk",
+                    )
+                    .set_expression_attribute_values(Some(HashMap::from([
+                        (String::from(":gsi1_sk"), AttributeValue::S(gsi1_sk)),
+                        (
+                            String::from(":old_status"),
+                            AttributeValue::S(old_status.to_string()),
+                        ),
+                        (
+                            String::from(":updated_at"),
+                            AttributeValue::S(chrono::Utc::now().to_rfc3339()),
+                        ),
+                    ])))
+                    .build()
+                    .unwrap(),
+            )
+            .build()
     }
 }
 

@@ -19,17 +19,25 @@ static ORIGINAL_FILES_BASE_FILE_PATH: &str = "parts/originals";
 static RENDER_FILES_BASE_FILE_PATH: &str = "parts/web_ready";
 static RENDER_FILE_FORMAT: &str = ".stl";
 
-pub struct CreateParts {
-    parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotesRepository>,
+pub struct CreateParts<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
+    quotations_repository: Arc<Q>,
     object_storage: Arc<dyn ObjectStorage>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl CreateParts {
+impl<Q, P> CreateParts<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotesRepository>,
+        parts_repository: Arc<P>,
+        quotations_repository: Arc<Q>,
         object_storage: Arc<dyn ObjectStorage>,
         stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
@@ -43,7 +51,11 @@ impl CreateParts {
 }
 
 #[async_trait]
-impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
+impl<Q, P> UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn execute(&self, input: CreatePartsInput) -> Result<CreatePartsResponse> {
         let file_ids = (0..input.file_names.len())
             .map(|_| {
@@ -129,7 +141,11 @@ impl UseCase<CreatePartsInput, CreatePartsResponse> for CreateParts {
     }
 }
 
-impl CreateParts {
+impl<Q, P> CreateParts<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn generate_presigned_urls(
         &self,
         file_names: &Vec<String>,

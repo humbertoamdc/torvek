@@ -11,6 +11,7 @@ pub const ATTRIBUTES_SEPARATOR: &str = "&";
 
 #[async_trait]
 pub trait ProjectsRepository: Send + Sync + 'static {
+    type TransactionItem;
     async fn create(&self, project: Project) -> Result<()>;
     /// Delete project ONLY if it is not in `LOCKED` status.
     async fn delete(&self, customer_id: CustomerId, project_id: ProjectId) -> Result<()>;
@@ -24,6 +25,11 @@ pub trait ProjectsRepository: Send + Sync + 'static {
         cursor: Option<String>,
         limit: i32,
     ) -> Result<QueryResponse<Vec<Project>, String>>;
+    fn transaction_update(
+        &self,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+    ) -> Self::TransactionItem;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -8,7 +8,7 @@ use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatus;
 use crate::quotations::usecases::create_quotation::CreateQuotation;
 use crate::quotations::usecases::delete_quotation::DeleteQuotation;
-use crate::quotations::usecases::download_quote_pdf::DowanloadQuotePdf;
+use crate::quotations::usecases::download_quote_pdf::DownloadQuotePdf;
 use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotal;
 use crate::quotations::usecases::query_quotations_by_project::QueryQuotationsByProject;
@@ -49,7 +49,7 @@ pub async fn create_quotation(
         project_id,
         quotation_name: request.quotation_name,
     };
-    let usecase = CreateQuotation::new(app_state.quotes.quotes_repository);
+    let usecase = CreateQuotation::new(app_state.quotes.dynamodb_quotes);
     let result = usecase.execute(input).await;
 
     match result {
@@ -67,7 +67,7 @@ pub async fn query_quotations_for_project(
         identity: session.identity,
         project_id,
     };
-    let usecase = QueryQuotationsByProject::new(app_state.quotes.quotes_repository);
+    let usecase = QueryQuotationsByProject::new(app_state.quotes.dynamodb_quotes);
     let result = usecase.execute(input).await;
 
     match result {
@@ -85,7 +85,7 @@ pub async fn get_quotation_by_id(
         identity: session.identity,
         quotation_id,
     };
-    let usecase = GetQuotation::new(app_state.quotes.quotes_repository);
+    let usecase = GetQuotation::new(app_state.quotes.dynamodb_quotes);
     let result = usecase.execute(input).await;
 
     match result {
@@ -104,8 +104,8 @@ pub async fn get_quotation_subtotal(
         quotation_id,
     };
     let usecase = GetQuotationSubtotal::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
     );
     let result = usecase.execute(input).await;
 
@@ -125,9 +125,9 @@ pub async fn delete_quotation(
         quotation_id,
     };
     let usecase = DeleteQuotation::new(
-        app_state.quotes.quotes_repository,
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.dynamodb_parts,
+        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 
@@ -147,7 +147,7 @@ pub async fn send_quotation_for_review(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = UpdateQuotation::new(app_state.quotes.quotes_repository);
+    let usecase = UpdateQuotation::new(app_state.quotes.dynamodb_quotes);
     let result = usecase.execute(input).await;
 
     match result {
@@ -165,9 +165,9 @@ pub async fn download_pdf_quote(
         identity: session.identity,
         quotation_id,
     };
-    let usecase = DowanloadQuotePdf::new(
-        app_state.parts.parts_repository,
-        app_state.quotes.quotes_repository,
+    let usecase = DownloadQuotePdf::new(
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
         app_state.payments.stripe_client,
     );
     let result = usecase.execute(input).await;
@@ -203,7 +203,7 @@ pub async fn admin_query_quotations_by_status(
     let input = AdminQueryQuotationsByStatusInput {
         status: params.status,
     };
-    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotes.quotes_repository);
+    let usecase = AdminQueryQuotationsByStatus::new(app_state.quotes.dynamodb_quotes);
     let result = usecase.execute(input).await;
 
     match result {

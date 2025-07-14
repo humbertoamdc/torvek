@@ -13,7 +13,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use serde_derive::{Deserialize, Serialize};
+use std::sync::Arc;
 use stripe::{EventObject, EventType};
+use tokio::sync::Mutex;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateCheckoutSessionRequest {
@@ -33,7 +35,7 @@ pub async fn create_checkout_session(
     };
     let usecase = CreateCheckoutSession::new(
         app_state.payments.stripe_client,
-        app_state.parts.parts_repository,
+        app_state.parts.dynamodb_parts,
     );
     let result = usecase.execute(input).await;
 
@@ -52,8 +54,11 @@ pub async fn complete_checkout_session_webhook(
             if let EventObject::CheckoutSession(session) = event.data.object {
                 if let Ok(request) = CompleteCheckoutSessionWebhookRequest::try_from(session) {
                     let usecase = CreateOrdersAndConfirmQuotationPayment::new(
-                        app_state.payments.orders_creation_service,
-                        app_state.parts.parts_repository,
+                        app_state.projects.dynamodb_projects,
+                        app_state.quotes.dynamodb_quotes,
+                        app_state.orders.dynamodb_orders,
+                        app_state.parts.dynamodb_parts,
+                        Arc::new(Mutex::new(app_state.payments.transaction)),
                     );
 
                     let result = usecase.execute(request).await;

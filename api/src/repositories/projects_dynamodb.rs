@@ -6,7 +6,7 @@ use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
 use aws_sdk_dynamodb::operation::query::builders::QueryFluentBuilder;
-use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_dynamodb::types::{AttributeValue, TransactWriteItem, Update};
 use chrono::{DateTime, Utc};
 use serde_dynamo::aws_sdk_dynamodb_1::from_item;
 use serde_dynamo::{from_items, to_item};
@@ -35,6 +35,8 @@ impl DynamodbProjects {
 
 #[async_trait]
 impl ProjectsRepository for DynamodbProjects {
+    type TransactionItem = TransactWriteItem;
+
     async fn create(&self, project: Project) -> Result<()> {
         let dynamodb_project = DynamodbProject::from(project);
         let item = to_item(dynamodb_project).expect("error converting to dynamodb item");
@@ -171,6 +173,33 @@ impl ProjectsRepository for DynamodbProjects {
                 Err(Error::UnknownError)
             }
         }
+    }
+
+    fn transaction_update(
+        &self,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+    ) -> TransactWriteItem {
+        TransactWriteItem::builder()
+            .update(
+                Update::builder()
+                    .table_name(&self.table)
+                    .set_key(Some(HashMap::from([
+                        (String::from("pk"), AttributeValue::S(customer_id)),
+                        (String::from("sk"), AttributeValue::S(project_id)),
+                    ])))
+                    .update_expression("SET is_locked = :is_locked, updated_at = :updated_at")
+                    .set_expression_attribute_values(Some(HashMap::from([
+                        (String::from(":is_locked"), AttributeValue::Bool(true)),
+                        (
+                            String::from(":updated_at"),
+                            AttributeValue::S(chrono::Utc::now().to_rfc3339()),
+                        ),
+                    ])))
+                    .build()
+                    .unwrap(),
+            )
+            .build()
     }
 }
 
