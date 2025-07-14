@@ -15,35 +15,35 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-pub struct CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+pub struct CreateOrdersAndConfirmQuotationPayment<Pro, Quo, Ord, Par, Tx, TxItem>
 where
-    Proj: ProjectsRepository<TransactionItem = TxItem>,
-    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Pro: ProjectsRepository<TransactionItem = TxItem>,
+    Quo: QuotesRepository<TransactionItem = TxItem>,
     Ord: OrdersRepository<TransactionItem = TxItem>,
-    Part: PartsRepository<TransactionItem = TxItem>,
+    Par: PartsRepository<TransactionItem = TxItem>,
     Tx: Transaction<TransactionItem = TxItem>,
 {
-    projects_repository: Arc<Proj>,
-    quotes_repository: Arc<Quot>,
+    projects_repository: Arc<Pro>,
+    quotes_repository: Arc<Quo>,
     orders_repository: Arc<Ord>,
-    parts_repository: Arc<Part>,
+    parts_repository: Arc<Par>,
     transaction: Arc<Mutex<Tx>>,
 }
 
-impl<Proj, Quot, Ord, Part, Tx, TxItem>
-    CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+impl<Pro, Quo, Ord, Par, Tx, TxItem>
+    CreateOrdersAndConfirmQuotationPayment<Pro, Quo, Ord, Par, Tx, TxItem>
 where
-    Proj: ProjectsRepository<TransactionItem = TxItem>,
-    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Pro: ProjectsRepository<TransactionItem = TxItem>,
+    Quo: QuotesRepository<TransactionItem = TxItem>,
     Ord: OrdersRepository<TransactionItem = TxItem>,
-    Part: PartsRepository<TransactionItem = TxItem>,
+    Par: PartsRepository<TransactionItem = TxItem>,
     Tx: Transaction<TransactionItem = TxItem>,
 {
     pub fn new(
-        projects_repository: Arc<Proj>,
-        quotes_repository: Arc<Quot>,
+        projects_repository: Arc<Pro>,
+        quotes_repository: Arc<Quo>,
         orders_repository: Arc<Ord>,
-        parts_repository: Arc<Part>,
+        parts_repository: Arc<Par>,
         transaction: Arc<Mutex<Tx>>,
     ) -> Self {
         Self {
@@ -57,13 +57,13 @@ where
 }
 
 #[async_trait]
-impl<Proj, Quot, Ord, Part, Tx, TxItem> UseCase<CompleteCheckoutSessionWebhookRequest, ()>
-    for CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+impl<Pro, Quo, Ord, Par, Tx, TxItem> UseCase<CompleteCheckoutSessionWebhookRequest, ()>
+    for CreateOrdersAndConfirmQuotationPayment<Pro, Quo, Ord, Par, Tx, TxItem>
 where
-    Proj: ProjectsRepository<TransactionItem = TxItem>,
-    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Pro: ProjectsRepository<TransactionItem = TxItem>,
+    Quo: QuotesRepository<TransactionItem = TxItem>,
     Ord: OrdersRepository<TransactionItem = TxItem>,
-    Part: PartsRepository<TransactionItem = TxItem>,
+    Par: PartsRepository<TransactionItem = TxItem>,
     Tx: Transaction<TransactionItem = TxItem>,
     TxItem: Send,
 {
