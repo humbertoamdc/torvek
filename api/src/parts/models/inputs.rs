@@ -85,7 +85,6 @@ pub struct CreatePartQuotesInputData {
     pub unit_price: Money,
     pub sub_total: Money,
     pub workdays_to_complete: u64,
-    pub quantity: u64,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

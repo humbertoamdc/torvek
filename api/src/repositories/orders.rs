@@ -18,6 +18,7 @@ pub enum QueryBy {
 
 #[async_trait]
 pub trait OrdersRepository: Send + Sync + 'static {
+    type TransactionItem;
     async fn query(
         &self,
         customer_id: Option<CustomerId>,
@@ -32,6 +33,7 @@ pub trait OrdersRepository: Send + Sync + 'static {
         limit: i32,
     ) -> Result<QueryResponse<Vec<Order>, String>>;
     async fn update(&self, customer_id: CustomerId, order_id: OrderId) -> Result<()>;
+    fn transaction_create(&self, order: Order) -> Self::TransactionItem;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

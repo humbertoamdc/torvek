@@ -41,7 +41,7 @@ pub async fn create_project(
         identity: session.identity,
         project_name: request.project_name,
     };
-    let usecase = CreateProject::new(app_state.projects.projects_repository);
+    let usecase = CreateProject::new(app_state.projects.dynamodb_projects);
     let result = usecase.execute(input).await;
 
     match result {
@@ -63,7 +63,7 @@ pub async fn query_projects_by_customer(
         query.cursor,
         query.limit,
     );
-    let usecase = QueryProjectsByCustomer::new(app_state.projects.projects_repository);
+    let usecase = QueryProjectsByCustomer::new(app_state.projects.dynamodb_projects);
     let result = usecase.execute(input).await;
 
     match result {
@@ -81,7 +81,7 @@ pub async fn get_project_by_id(
         identity: session.identity,
         project_id,
     };
-    let usecase = GetProject::new(app_state.projects.projects_repository);
+    let usecase = GetProject::new(app_state.projects.dynamodb_projects);
     let result = usecase.execute(input).await;
 
     match result {
@@ -100,10 +100,10 @@ pub async fn delete_project(
         project_id,
     };
     let usecase = DeleteProject::new(
-        app_state.projects.projects_repository,
-        app_state.quotes.quotes_repository,
-        app_state.parts.parts_repository,
-        app_state.parts.object_storage,
+        app_state.projects.dynamodb_projects,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.dynamodb_parts,
+        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 

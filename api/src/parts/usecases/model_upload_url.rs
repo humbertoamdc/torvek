@@ -13,16 +13,24 @@ use url::Url;
 
 static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
-pub struct ModelUploadUrl {
-    parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotesRepository>,
+pub struct ModelUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
+    quotations_repository: Arc<Q>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl ModelUploadUrl {
+impl<Q, P> ModelUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotesRepository>,
+        parts_repository: Arc<P>,
+        quotations_repository: Arc<Q>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -34,7 +42,11 @@ impl ModelUploadUrl {
 }
 
 #[async_trait]
-impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelUploadUrl {
+impl<Q, P> UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn execute(
         &self,
         input: CreateModelUploadUrlInput,
@@ -64,7 +76,11 @@ impl UseCase<CreateModelUploadUrlInput, CreateModelUploadUrlResponse> for ModelU
     }
 }
 
-impl ModelUploadUrl {
+impl<Q, P> ModelUploadUrl<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn quotation_is_payed(&self, input: &CreateModelUploadUrlInput) -> Result<bool> {
         let quotation = self
             .quotations_repository

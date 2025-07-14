@@ -9,16 +9,24 @@ use crate::shared::{CustomerId, QuoteId, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct DeleteQuotation {
-    quotations_repository: Arc<dyn QuotesRepository>,
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct DeleteQuotation<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    quotations_repository: Arc<Q>,
+    parts_repository: Arc<P>,
     object_storage: Arc<dyn ObjectStorage>,
 }
 
-impl DeleteQuotation {
+impl<Q, P> DeleteQuotation<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub fn new(
-        quotations_repository: Arc<dyn QuotesRepository>,
-        parts_repository: Arc<dyn PartsRepository>,
+        quotations_repository: Arc<Q>,
+        parts_repository: Arc<P>,
         object_storage: Arc<dyn ObjectStorage>,
     ) -> Self {
         Self {
@@ -30,7 +38,11 @@ impl DeleteQuotation {
 }
 
 #[async_trait]
-impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
+impl<Q, P> UseCase<DeleteQuotationInput, ()> for DeleteQuotation<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn execute(&self, input: DeleteQuotationInput) -> crate::shared::Result<()> {
         self.quotations_repository
             .delete(input.identity.id.clone(), input.quotation_id.clone())
@@ -43,7 +55,11 @@ impl UseCase<DeleteQuotationInput, ()> for DeleteQuotation {
     }
 }
 
-impl DeleteQuotation {
+impl<Q, P> DeleteQuotation<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn cascade_delete_parts_for_quotation(
         &self,
         customer_id: CustomerId,

@@ -1,34 +1,72 @@
 use crate::orders::models::order::{Order, OrderStatus};
 use crate::parts::models::part::PartQuote;
 use crate::payments::models::inputs::CompleteCheckoutSessionWebhookRequest;
-use crate::payments::services::orders_creation::OrdersCreationService;
+use crate::quotations::models::quotation::QuoteStatus;
+use crate::repositories::orders::OrdersRepository;
 use crate::repositories::parts::PartsRepository;
+use crate::repositories::projects::ProjectsRepository;
+use crate::repositories::quotes::QuotesRepository;
+use crate::repositories::transaction::Transaction;
 use crate::shared::{Result, UseCase};
 use crate::utils::workdays::Workdays;
 use async_trait::async_trait;
 use chrono::Utc;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
-pub struct CreateOrdersAndConfirmQuotationPayment {
-    orders_creation_service: Arc<dyn OrdersCreationService>,
-    parts_repository: Arc<dyn PartsRepository>,
+pub struct CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+where
+    Proj: ProjectsRepository<TransactionItem = TxItem>,
+    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Ord: OrdersRepository<TransactionItem = TxItem>,
+    Part: PartsRepository<TransactionItem = TxItem>,
+    Tx: Transaction<TransactionItem = TxItem>,
+{
+    projects_repository: Arc<Proj>,
+    quotes_repository: Arc<Quot>,
+    orders_repository: Arc<Ord>,
+    parts_repository: Arc<Part>,
+    transaction: Arc<Mutex<Tx>>,
 }
 
-impl CreateOrdersAndConfirmQuotationPayment {
+impl<Proj, Quot, Ord, Part, Tx, TxItem>
+    CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+where
+    Proj: ProjectsRepository<TransactionItem = TxItem>,
+    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Ord: OrdersRepository<TransactionItem = TxItem>,
+    Part: PartsRepository<TransactionItem = TxItem>,
+    Tx: Transaction<TransactionItem = TxItem>,
+{
     pub fn new(
-        orders_creation_service: Arc<dyn OrdersCreationService>,
-        parts_repository: Arc<dyn PartsRepository>,
+        projects_repository: Arc<Proj>,
+        quotes_repository: Arc<Quot>,
+        orders_repository: Arc<Ord>,
+        parts_repository: Arc<Part>,
+        transaction: Arc<Mutex<Tx>>,
     ) -> Self {
         Self {
-            orders_creation_service,
+            projects_repository,
+            quotes_repository,
+            orders_repository,
             parts_repository,
+            transaction,
         }
     }
 }
 
 #[async_trait]
-impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfirmQuotationPayment {
+impl<Proj, Quot, Ord, Part, Tx, TxItem> UseCase<CompleteCheckoutSessionWebhookRequest, ()>
+    for CreateOrdersAndConfirmQuotationPayment<Proj, Quot, Ord, Part, Tx, TxItem>
+where
+    Proj: ProjectsRepository<TransactionItem = TxItem>,
+    Quot: QuotesRepository<TransactionItem = TxItem>,
+    Ord: OrdersRepository<TransactionItem = TxItem>,
+    Part: PartsRepository<TransactionItem = TxItem>,
+    Tx: Transaction<TransactionItem = TxItem>,
+    TxItem: Send,
+{
     async fn execute(&self, request: CompleteCheckoutSessionWebhookRequest) -> Result<()> {
         let query_parts_for_quotation_response = self
             .parts_repository
@@ -59,7 +97,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfi
             })
             .collect::<HashMap<String, PartQuote>>();
 
-        let orders = query_parts_for_quotation_response
+        let orders: Vec<Order> = query_parts_for_quotation_response
             .data
             .into_iter()
             .map(|part| {
@@ -71,7 +109,7 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfi
                     part.project_id,
                     part.quotation_id,
                     part.id.clone(),
-                    selected_part_quote_for_part[&part.id].id.clone(),
+                    part_quote.id,
                     deadline,
                     OrderStatus::Open,
                     request.shipping_recipient_name.clone(),
@@ -80,13 +118,28 @@ impl UseCase<CompleteCheckoutSessionWebhookRequest, ()> for CreateOrdersAndConfi
             })
             .collect();
 
-        self.orders_creation_service
-            .create_orders_and_update_quotation_status(
-                request.customer_id,
-                request.project_id,
-                request.quotation_id,
-                orders,
-            )
-            .await
+        let project_transaction = self
+            .projects_repository
+            .transaction_update(request.customer_id.clone(), request.project_id.clone());
+        let quote_transaction = self.quotes_repository.transaction_update(
+            request.customer_id.clone(),
+            request.project_id.clone(),
+            request.quotation_id.clone(),
+            QuoteStatus::PendingPayment,
+            QuoteStatus::Payed,
+        );
+        let orders_transactions: Vec<_> = orders
+            .into_iter()
+            .map(|order| self.orders_repository.transaction_create(order))
+            .collect();
+        {
+            let mut transaction = self.transaction.lock().await;
+            transaction.add_item(project_transaction);
+            transaction.add_item(quote_transaction);
+            transaction.add_items(orders_transactions);
+            transaction.execute().await?;
+        }
+
+        Ok(())
     }
 }

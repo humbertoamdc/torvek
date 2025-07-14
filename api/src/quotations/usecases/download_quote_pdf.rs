@@ -12,16 +12,24 @@ use iso_currency::Currency;
 use shared::Result;
 use std::sync::Arc;
 
-pub struct DowanloadQuotePdf {
-    parts_repository: Arc<dyn PartsRepository>,
-    quotations_repository: Arc<dyn QuotesRepository>,
+pub struct DownloadQuotePdf<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
+    parts_repository: Arc<P>,
+    quotations_repository: Arc<Q>,
     stripe_client: Arc<dyn StripeClient>,
 }
 
-impl DowanloadQuotePdf {
+impl<Q, P> DownloadQuotePdf<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     pub fn new(
-        parts_repository: Arc<dyn PartsRepository>,
-        quotations_repository: Arc<dyn QuotesRepository>,
+        parts_repository: Arc<P>,
+        quotations_repository: Arc<Q>,
         stripe_client: Arc<dyn StripeClient>,
     ) -> Self {
         Self {
@@ -33,7 +41,11 @@ impl DowanloadQuotePdf {
 }
 
 #[async_trait]
-impl UseCase<DownloadQuotePdfInput, Bytes> for DowanloadQuotePdf {
+impl<Q, P> UseCase<DownloadQuotePdfInput, Bytes> for DownloadQuotePdf<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn execute(&self, input: DownloadQuotePdfInput) -> crate::shared::Result<Bytes> {
         let quote = self
             .quotations_repository
@@ -67,7 +79,11 @@ impl UseCase<DownloadQuotePdfInput, Bytes> for DowanloadQuotePdf {
     }
 }
 
-impl DowanloadQuotePdf {
+impl<Q, P> DownloadQuotePdf<Q, P>
+where
+    Q: QuotesRepository,
+    P: PartsRepository,
+{
     async fn is_valid_quote_status(&self, quote: Quotation) -> bool {
         quote.status == QuoteStatus::PendingPayment || quote.status == QuoteStatus::Payed
     }

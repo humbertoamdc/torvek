@@ -44,10 +44,7 @@ pub async fn register_customer(
         password: request.password,
         role: Role::Customer,
     };
-    let usecase = Register::new(
-        app_state.auth.identity_manager,
-        app_state.payments.stripe_client,
-    );
+    let usecase = Register::new(app_state.auth.ory_kratos, app_state.payments.stripe_client);
     let result = usecase.execute(input).await;
 
     match result {
@@ -77,7 +74,7 @@ pub async fn login(
         password: request.password,
         role: Role::Customer,
     };
-    let usecases = Login::new(app_state.auth.identity_manager);
+    let usecases = Login::new(app_state.auth.ory_kratos);
     let result = usecases.execute(input).await;
 
     match result {
@@ -101,7 +98,7 @@ pub async fn get_session(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = GetSession::new(app_state.auth.identity_manager);
+    let usecase = GetSession::new(app_state.auth.ory_kratos);
     let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -126,7 +123,7 @@ pub async fn get_session(
 }
 
 pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> impl IntoResponse {
-    let usecase = Logout::new(app_state.auth.identity_manager);
+    let usecase = Logout::new(app_state.auth.ory_kratos);
     let session_cookie = cookies.get(CUSTOMER_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -158,7 +155,7 @@ pub async fn admin_login(
         password: request.password,
         role: Role::Admin,
     };
-    let usecases = Login::new(app_state.auth.identity_manager);
+    let usecases = Login::new(app_state.auth.ory_kratos);
     let result = usecases.execute(input).await;
 
     match result {
@@ -182,7 +179,7 @@ pub async fn get_admin_session(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = GetSession::new(app_state.auth.identity_manager);
+    let usecase = GetSession::new(app_state.auth.ory_kratos);
     let session_cookie = cookies.get(ADMIN_SESSION_TOKEN);
 
     let result = match session_cookie {
@@ -210,7 +207,7 @@ pub async fn admin_logout(
     cookies: CookieJar,
     State(app_state): State<AppState>,
 ) -> impl IntoResponse {
-    let usecase = Logout::new(app_state.auth.identity_manager);
+    let usecase = Logout::new(app_state.auth.ory_kratos);
     let session_cookie = cookies.get(ADMIN_SESSION_TOKEN);
 
     let result = match session_cookie {

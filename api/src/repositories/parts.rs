@@ -13,6 +13,7 @@ pub const ATTRIBUTES_SEPARATOR: &str = "&";
 
 #[async_trait]
 pub trait PartsRepository: Send + Sync + 'static {
+    type TransactionItem;
     async fn delete(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part>;
     async fn get(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part>;
     async fn query(
@@ -26,6 +27,13 @@ pub trait PartsRepository: Send + Sync + 'static {
     async fn batch_create(&self, parts: Vec<Part>) -> Result<()>;
     async fn batch_delete(&self, data: Vec<BatchDeletePartObject>) -> Result<()>;
     async fn batch_get(&self, quotation_and_part_ids: Vec<(QuoteId, PartId)>) -> Result<Vec<Part>>;
+    fn transaction_create_part_quotes(
+        &self,
+        customer_id: CustomerId,
+        part_id: PartId,
+        selected_part_quote_id: PartQuoteId,
+        part_quotes: Vec<PartQuote>,
+    ) -> Self::TransactionItem;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

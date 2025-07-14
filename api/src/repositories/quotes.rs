@@ -17,6 +17,7 @@ pub enum QueryBy {
 
 #[async_trait]
 pub trait QuotesRepository: Send + Sync + 'static {
+    type TransactionItem;
     async fn create(&self, quotation: Quotation) -> Result<()>;
     /// Delete quotation ONLY if it is not in `PAYED` status.
     async fn delete(&self, customer_id: CustomerId, quotation_id: QuoteId) -> Result<()>;
@@ -41,6 +42,14 @@ pub trait QuotesRepository: Send + Sync + 'static {
         status: Option<QuoteStatus>,
     ) -> Result<Quotation>;
     async fn batch_delete(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()>;
+    fn transaction_update(
+        &self,
+        customer_id: CustomerId,
+        project_id: ProjectId,
+        quote_id: QuoteId,
+        old_status: QuoteStatus,
+        new_status: QuoteStatus,
+    ) -> Self::TransactionItem;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

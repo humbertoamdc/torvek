@@ -5,12 +5,18 @@ use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
 
-pub struct QueryQuotationsByProject {
-    quotations_repository: Arc<dyn QuotesRepository>,
+pub struct QueryQuotationsByProject<Q>
+where
+    Q: QuotesRepository,
+{
+    quotations_repository: Arc<Q>,
 }
 
-impl QueryQuotationsByProject {
-    pub fn new(quotations_repository: Arc<dyn QuotesRepository>) -> Self {
+impl<Q> QueryQuotationsByProject<Q>
+where
+    Q: QuotesRepository,
+{
+    pub fn new(quotations_repository: Arc<Q>) -> Self {
         Self {
             quotations_repository,
         }
@@ -18,8 +24,10 @@ impl QueryQuotationsByProject {
 }
 
 #[async_trait]
-impl UseCase<QueryQuotationsForProjectInput, QueryQuotationsForProjectResponse>
-    for QueryQuotationsByProject
+impl<Q> UseCase<QueryQuotationsForProjectInput, QueryQuotationsForProjectResponse>
+    for QueryQuotationsByProject<Q>
+where
+    Q: QuotesRepository,
 {
     async fn execute(
         &self,
