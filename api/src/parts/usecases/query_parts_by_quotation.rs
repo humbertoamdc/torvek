@@ -52,7 +52,7 @@ where
             )
             .await?;
 
-        self.sign_part_render_urls(&mut response.data).await?;
+        // self.sign_part_render_urls(&mut response.data).await?;
 
         let quotation_subtotal: Option<Money> = {
             match input.with_quotation_subtotal {

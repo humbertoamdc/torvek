@@ -185,9 +185,10 @@ impl AppStateParts {
             dynamodb_client.clone(),
             config.parts.parts_table.clone(),
         ));
-        let object_storage = Arc::new(crate::services::object_storage_s3::S3ObjectStorage::new(
+        let object_storage = Arc::new(S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
+            shared_s3_config,
         ));
 
         Self {

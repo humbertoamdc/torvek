@@ -1,5 +1,6 @@
 use crate::shared::Result;
 use async_trait::async_trait;
+use aws_config::SdkConfig;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::types::builders::DeleteBuilder;
 use aws_sdk_s3::types::ObjectIdentifier;
@@ -13,16 +14,25 @@ use crate::shared::error::Error;
 pub struct S3ObjectStorage {
     client: aws_sdk_s3::Client,
     bucket: String,
+    config: SdkConfig,
 }
 
 impl S3ObjectStorage {
-    pub fn new(client: aws_sdk_s3::Client, bucket: String) -> Self {
-        Self { client, bucket }
+    pub fn new(client: aws_sdk_s3::Client, bucket: String, config: SdkConfig) -> Self {
+        Self {
+            client,
+            bucket,
+            config,
+        }
     }
 }
 
 #[async_trait]
 impl ObjectStorage for S3ObjectStorage {
+    fn endpoint_url(&self) -> String {
+        self.config.endpoint_url().unwrap().to_string()
+    }
+
     async fn put_object_presigned_url(
         &self,
         filepath: &str,

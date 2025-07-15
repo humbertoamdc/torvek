@@ -77,6 +77,11 @@ pub struct CreateDrawingUploadUrlRequest {
     pub file_url: Option<Url>,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GeneratePresignedUrlRequest {
+    pub url: Url,
+}
+
 pub async fn admin_create_part_quotes(
     State(app_state): State<AppState>,
     AdminSession(_): AdminSession,
@@ -305,4 +310,10 @@ pub async fn delete_part(
         Ok(_) => Ok(StatusCode::NO_CONTENT),
         Err(err) => Err(err.into_error_response()),
     }
+}
+
+pub async fn generate_presigned_url(
+    State(app_state): State<AppState>,
+    CustomerSession(session): CustomerSession,
+) -> impl IntoResponse {
 }

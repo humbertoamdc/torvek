@@ -4,6 +4,7 @@ use std::time::Duration;
 
 #[async_trait]
 pub trait ObjectStorage: Send + Sync + 'static {
+    fn endpoint_url(&self) -> String;
     async fn put_object_presigned_url(
         &self,
         filepath: &str,

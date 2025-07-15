@@ -4,6 +4,7 @@ import time
 import json
 import sys
 import trimesh
+import boto3
 
 sys.path.append("/usr/lib/freecad/lib")
 
@@ -20,7 +21,13 @@ base_tmp_storage_path = '/tmp/'
 
 s3 = session.client('s3')
 sqs = session.client('sqs')
+dynamodb_resource = boto3.resource(
+    'dynamodb',
+    endpoint_url='http://localstack:4566',
+    region_name='us-east-1' # or any region
+)
 
+parts_table = dynamodb_resource.Table('Parts')
 
 def fetch_messages_from_sqs():
     while True:
@@ -43,12 +50,15 @@ def fetch_messages_from_sqs():
                 file_data = body['Records'][0]['s3']
                 s3_key = file_data['object']['key']
 
+                print("Processing: ", s3_key)
+
                 file_parts = s3_key.split('/')
-                user_id = file_parts[-2]
+                user_id = file_parts[-3]
+                part_id = file_parts[-2]
                 file_name_with_format = file_parts[-1]
                 file_name, file_format = file_name_with_format.split('.')
-                tmp_storage_path = base_tmp_storage_path + user_id + '/'
-                s3_file_path = s3_web_ready_path + user_id + '/'
+                tmp_storage_path = base_tmp_storage_path + user_id + '/' + part_id + '/'
+                s3_file_path = s3_web_ready_path + user_id + '/' + part_id + '/'
 
                 os.makedirs(tmp_storage_path, exist_ok=True)
 
@@ -60,6 +70,17 @@ def fetch_messages_from_sqs():
 
                 # write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.glb')
                 write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.stl')
+
+                stl_file_name = file_name + '.stl'
+                s3_render_url = f"https://{s3_bucket}.s3.amazonaws.com/{s3_file_path}{stl_file_name}"
+
+                file_metadata = {
+                    "name": stl_file_name,
+                    "url": s3_render_url,
+                    "presigned_url": None  # You can set this later if needed
+                }
+                update_dynamodb_render_file(user_id, part_id, file_metadata)
+
 
                 sqs.delete_message(
                     QueueUrl=queue_url,
@@ -144,6 +165,24 @@ def write_file_to_s3(local_path, s3_path, file):
         s3.upload_file(local_path + file, s3_bucket, s3_path + file)
     except Exception as e:
         print(f"Something went wrong while saving file to S3: {e}")
+
+def update_dynamodb_render_file(customer_id, part_id, file_metadata):
+    print("Customer id: ", customer_id)
+    print("Part id: ", part_id)
+    try:
+        parts_table.update_item(
+            Key={
+                'pk': customer_id,
+                'sk': part_id
+            },
+            UpdateExpression="SET render_file = :file",
+            ExpressionAttributeValues={
+                ":file": file_metadata
+            }
+        )
+        print(f"Updated render_file for part {part_id}")
+    except Exception as e:
+        print(f"Error updating DynamoDB: {e}")
 
 
 if __name__ == "__main__":

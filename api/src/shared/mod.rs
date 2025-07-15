@@ -26,3 +26,4 @@ pub type QuoteId = String;
 pub type PartId = String;
 pub type PartQuoteId = String;
 pub type OrderId = String;
+pub type FileId = String;
