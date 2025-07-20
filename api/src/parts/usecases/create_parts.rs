@@ -73,22 +73,21 @@ where
 
             let file_id = Self::generate_file_id();
             let file_extension = file_name.split(".").last().unwrap().to_string();
-            let file_path = self.file_path(
+            let file_key = self.file_key(
                 ORIGINAL_FILES_BASE_FILE_PATH,
                 input.identity.id.clone(),
                 part.id.clone(),
                 file_id,
                 file_extension,
             );
-            let file_url = format!("{}/{}", self.object_storage.endpoint_url(), file_path);
 
             part.model_file.name = file_name;
-            part.model_file.url = file_url.clone();
+            part.model_file.key = file_key.clone();
 
             let presigned_url = self
                 .object_storage
                 .put_object_presigned_url(
-                    &file_path,
+                    &file_key,
                     Duration::from_secs(PRESIGNED_URLS_PUT_DURATION_SECONDS),
                 )
                 .await?;
@@ -124,7 +123,7 @@ where
     Q: QuotesRepository,
     P: PartsRepository,
 {
-    fn file_path(
+    fn file_key(
         &self,
         file_path: &str,
         customer_id: CustomerId,
@@ -132,11 +131,7 @@ where
         file_id: FileId,
         file_extension: String,
     ) -> String {
-        format!(
-            "{}/{}/{}/{}.{}",
-            file_path, customer_id, part_id, file_id, file_extension
-        )
-        .to_string()
+        format!("{file_path}/{customer_id}/{part_id}/{file_id}.{file_extension}").to_string()
     }
 
     fn generate_file_id() -> String {

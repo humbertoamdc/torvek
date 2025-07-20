@@ -62,14 +62,14 @@ where
 
         let _ = self
             .object_storage
-            .delete_object(&part.model_file.url)
+            .delete_object(&part.model_file.key)
             .await;
         let _ = self
             .object_storage
-            .delete_object(&part.render_file.url)
+            .delete_object(&part.render_file.key)
             .await;
         if let Some(drawing_file) = part.drawing_file {
-            let _ = self.object_storage.delete_object(&drawing_file.url).await;
+            let _ = self.object_storage.delete_object(&drawing_file.key).await;
         }
 
         Ok(())

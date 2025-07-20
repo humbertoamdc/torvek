@@ -10,11 +10,15 @@ use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
 use crate::parts::usecases::create_parts::CreateParts;
 use crate::parts::usecases::delete_part::DeletePart;
 use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrl;
+use crate::parts::usecases::generate_presigned_url::{
+    GeneratePresignedUrl, GeneratePresignedUrlInput,
+};
 use crate::parts::usecases::get_part::GetPart;
 use crate::parts::usecases::model_upload_url::ModelUploadUrl;
 use crate::parts::usecases::query_parts_by_quotation::QueryPartsByQuotation;
 use crate::parts::usecases::update_part::UpdatePart;
 use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuote;
+use crate::services::object_storage::ObjectStorageOperation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::file::File;
 use crate::shared::into_error_response::IntoError;
@@ -79,7 +83,8 @@ pub struct CreateDrawingUploadUrlRequest {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GeneratePresignedUrlRequest {
-    pub url: Url,
+    pub key: String,
+    pub operation: ObjectStorageOperation,
 }
 
 pub async fn admin_create_part_quotes(
@@ -315,5 +320,18 @@ pub async fn delete_part(
 pub async fn generate_presigned_url(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
+    Json(request): Json<GeneratePresignedUrlRequest>,
 ) -> impl IntoResponse {
+    let input = GeneratePresignedUrlInput {
+        identity: session.identity,
+        key: request.key,
+        operation: request.operation,
+    };
+    let usecase = GeneratePresignedUrl::new(app_state.parts.s3);
+    let result = usecase.execute(input).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
 }

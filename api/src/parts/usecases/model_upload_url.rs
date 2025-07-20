@@ -60,13 +60,10 @@ where
             .get(input.identity.id, input.part_id)
             .await?;
 
-        let url = part.model_file.url.parse::<Url>().unwrap();
-        let filepath = url.path().strip_prefix("/").unwrap();
-
         let presigned_url = self
             .object_storage
             .put_object_presigned_url(
-                filepath,
+                &part.model_file.key,
                 Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
             )
             .await?;
@@ -84,7 +81,7 @@ where
     async fn quotation_is_payed(&self, input: &CreateModelUploadUrlInput) -> Result<bool> {
         let quotation = self
             .quotations_repository
-            .get(input.project_id.clone(), input.quotation_id.clone())
+            .get(input.identity.id.clone(), input.quotation_id.clone())
             .await?;
 
         Ok(quotation.status == QuoteStatus::Payed)

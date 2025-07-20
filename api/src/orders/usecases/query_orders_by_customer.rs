@@ -79,17 +79,6 @@ where
 
             let mut parts = self.parts_repository.batch_get(order_and_part_ids).await?;
 
-            for part in parts.iter_mut() {
-                part.render_file.presigned_url = Some(
-                    self.object_storage
-                        .get_object_presigned_url(
-                            &part.render_file.url,
-                            Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
-                        )
-                        .await?,
-                );
-            }
-
             parts_map = parts
                 .into_iter()
                 .map(|part| (part.id.clone(), part))

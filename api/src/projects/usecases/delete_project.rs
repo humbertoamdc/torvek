@@ -201,7 +201,7 @@ where
                     Option::from(&part.drawing_file),
                 ]
             })
-            .filter_map(|file| file.map(|f| f.url.as_ref()))
+            .filter_map(|file| file.map(|f| f.key.as_ref()))
             .collect();
 
         let _ = self.object_storage.bulk_delete_objects(urls).await;

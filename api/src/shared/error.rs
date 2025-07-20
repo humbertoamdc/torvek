@@ -28,6 +28,8 @@ pub enum Error {
     NoPdfQuoteAvailable,
     #[error("`{0}` is required")]
     MissingRequiredParameter(String),
+    #[error("operation forbidden")]
+    Forbidden,
     #[error("an unexpected error occurred")]
     UnknownError,
 }

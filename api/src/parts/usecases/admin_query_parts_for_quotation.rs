@@ -52,8 +52,6 @@ where
             )
             .await?;
 
-        self.sign_part_render_urls(&mut response.data).await?;
-
         let quotation_subtotal: Option<Money> = {
             match input.with_quotation_subtotal {
                 true => match self.get_quotation_subtotal(&response.data).await {
@@ -79,22 +77,6 @@ impl<P> AdminQueryPartsForQuotation<P>
 where
     P: PartsRepository,
 {
-    async fn sign_part_render_urls(&self, parts: &mut Vec<Part>) -> Result<()> {
-        for part in parts.iter_mut() {
-            let presigned_url = self
-                .object_storage
-                .get_object_presigned_url(
-                    &part.render_file.url,
-                    Duration::from_secs(PRESIGNED_URLS_GET_DURATION_SECONDS),
-                )
-                .await?;
-
-            part.render_file.presigned_url = Some(presigned_url);
-        }
-
-        Ok(())
-    }
-
     async fn get_quotation_subtotal(&self, parts: &Vec<Part>) -> Result<Money> {
         // TODO: Query quotation and only get the subtotal is quotations is in the right status.
         match parts
