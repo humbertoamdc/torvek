@@ -19,8 +19,14 @@ s3_web_ready_path = 'parts/web_ready/'
 
 base_tmp_storage_path = '/tmp/'
 
-s3 = session.client('s3')
 sqs = session.client('sqs')
+s3 = boto3.client(
+    's3',
+    endpoint_url='http://localstack:4566',
+    region_name='us-east-1',
+    aws_access_key_id='test',
+    aws_secret_access_key='test'
+)
 dynamodb_resource = boto3.resource(
     'dynamodb',
     endpoint_url='http://localstack:4566',
@@ -72,12 +78,12 @@ def fetch_messages_from_sqs():
                 write_file_to_s3(tmp_storage_path, s3_file_path, file_name + '.stl')
 
                 stl_file_name = file_name + '.stl'
-                s3_render_url = f"https://{s3_bucket}.s3.amazonaws.com/{s3_file_path}{stl_file_name}"
+                s3_render_key = f"{s3_file_path}{stl_file_name}"
+
 
                 file_metadata = {
                     "name": stl_file_name,
-                    "url": s3_render_url,
-                    "presigned_url": None  # You can set this later if needed
+                    "key": s3_render_key,
                 }
                 update_dynamodb_render_file(user_id, part_id, file_metadata)
 
