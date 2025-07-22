@@ -188,7 +188,6 @@ impl AppStateParts {
         let object_storage = Arc::new(S3ObjectStorage::new(
             s3_client,
             config.parts.s3_bucket.clone(),
-            shared_s3_config,
         ));
 
         Self {
