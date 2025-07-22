@@ -16,8 +16,6 @@ use crate::shared::{CustomerId, FileId, PartId, Result, UseCase};
 
 static PRESIGNED_URLS_PUT_DURATION_SECONDS: u64 = 300;
 static ORIGINAL_FILES_BASE_FILE_PATH: &str = "parts/originals";
-static RENDER_FILES_BASE_FILE_PATH: &str = "parts/web_ready";
-static RENDER_FILE_FORMAT: &str = ".stl";
 
 pub struct CreateParts<Q, P>
 where

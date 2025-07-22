@@ -55,24 +55,6 @@ pub struct UpdatePartInput {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateDrawingUploadUrlInput {
-    pub identity: Identity,
-    pub project_id: ProjectId,
-    pub quotation_id: QuoteId,
-    pub part_id: PartId,
-    pub file_name: String,
-    pub file_url: Option<Url>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateModelUploadUrlInput {
-    pub identity: Identity,
-    pub project_id: ProjectId,
-    pub quotation_id: QuoteId,
-    pub part_id: PartId,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartQuotesInput {
     pub customer_id: CustomerId,
     pub project_id: ProjectId,

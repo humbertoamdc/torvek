@@ -1,4 +1,5 @@
 use crate::parts::models::part::Part;
+use crate::shared::file::File;
 use crate::shared::money::Money;
 use serde_derive::{Deserialize, Serialize};
 
@@ -13,28 +14,16 @@ impl CreatePartsResponse {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct UploadDrawingResponse {
+    pub upload_url: String,
+    pub file: File,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct QueryPartsForQuotationResponse {
     pub parts: Vec<Part>,
     pub quotation_subtotal: Option<Money>,
     pub cursor: Option<String>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateDrawingUploadUrlResponse {
-    pub url: String,
-    pub presigned_url: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateModelUploadUrlResponse {
-    pub url: String,
-    pub presigned_url: String,
-}
-
-impl CreateDrawingUploadUrlResponse {
-    pub const fn new(url: String, presigned_url: String) -> Self {
-        Self { url, presigned_url }
-    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
