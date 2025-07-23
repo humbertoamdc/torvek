@@ -3,18 +3,11 @@ import sys
 import os
 import boto3
 
-# import trimesh
-
 sys.path.append('/usr/lib/freecad/lib')
 
 import FreeCAD
 import Part
 import Mesh
-
-# import Part
-# import Mesh
-
-# FILE_PATH = "/tmp/"
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +15,9 @@ base_tmp_storage_path = '/tmp/'
 s3_web_ready_path = 'parts/web_ready/'
 
 s3 = boto3.client("s3")
+dynamodb_resource = boto3.resource('dynamodb')
 
+parts_table = dynamodb_resource.Table('Parts')
 
 def lambda_handler(event, context):
     logging.basicConfig(level=logging.INFO)
@@ -37,11 +32,12 @@ def lambda_handler(event, context):
         s3_key = record["s3"]["object"]["key"]
 
         file_parts = s3_key.split('/')
-        user_id = file_parts[-2]
+        user_id = file_parts[-3]
+        part_id = file_parts[-2]
         file_name_with_format = file_parts[-1]
         file_name, file_format = file_name_with_format.split('.')
-        tmp_storage_path = base_tmp_storage_path + user_id + '/'
-        s3_file_path = s3_web_ready_path + user_id + '/'
+        tmp_storage_path = base_tmp_storage_path + user_id + '/' + part_id + '/'
+        s3_file_path = s3_web_ready_path + user_id + '/' + part_id + '/'
 
         os.makedirs(tmp_storage_path, exist_ok=True)
 
@@ -50,6 +46,15 @@ def lambda_handler(event, context):
         convert_step_to_stl(tmp_storage_path + file_name_with_format, tmp_storage_path + file_name + '.stl')
 
         write_file_to_s3(tmp_storage_path, s3_bucket, s3_file_path, file_name + '.stl')
+
+        # Update dynamodb part model
+        stl_file_name = file_name + '.stl'
+        s3_render_key = f"{s3_file_path}{stl_file_name}"
+        file_metadata = {
+            "name": stl_file_name,
+            "key": s3_render_key,
+        }
+        update_dynamodb_render_file(user_id, part_id, file_metadata)
 
     body = {
         "message": "Success"
@@ -91,68 +96,19 @@ def write_file_to_s3(local_path, s3_bucket, s3_path, file):
     except Exception as e:
         print(f"Something went wrong while saving file to S3: {e}")
 
-# def convert_step_to_obj(input_file, output_file):
-#     # Load the STEP file
-#     doc = App.newDocument()
-#     Part.insert(input_file, doc.Name)
-#
-#     # Export to OBJ
-#     objs = FreeCAD.ActiveDocument.Objects
-#     Mesh.export(objs, output_file)
-#
-#     # Name for the MTL file (same base name as the OBJ file)
-#     mtl_file = output_file.replace('.obj', '.mtl')
-#
-#     # Create and write the MTL file
-#     with open(mtl_file, 'w') as mtl:
-#         mtl.write("newmtl WhiteMaterial\n")
-#         mtl.write("Ka 1.0 0.5 1.0\n")  # Ambient color
-#         mtl.write("Kd 1.0 0.5 1.0\n")  # Diffuse color
-#         mtl.write("Ks 0.5 0.5 0.5\n")  # Specular color
-#         mtl.write("Ns 10.0\n")  # Specular exponent
-#         mtl.write("d 1.0\n")  # Transparency
-#         mtl.write("illum 2\n")  # Illumination model
-#
-#     # Ensure the OBJ file references the MTL file and uses the material
-#     with open(output_file, 'r') as obj_file:
-#         obj_content = obj_file.read()
-#
-#     with open(output_file, 'w') as obj_file:
-#         # Write MTL file reference
-#         obj_file.write(f"mtllib {mtl_file.split('/')[-1]}\n")
-#         # Write usemtl statement before the rest of the content
-#         obj_file.write("usemtl WhiteMaterial\n")
-#         obj_file.write(obj_content)
-#
 
-# def convert_obj_to_glb(input_file, output_file):
-#     # Load the OBJ file (Trimesh should automatically load the associated MTL file if present)
-#     tmesh = trimesh.load(input_file, force='mesh')
-#
-#     # Check if materials were loaded
-#     if hasattr(tmesh.visual, 'material'):
-#         print("Material properties found and will be included in the GLTF.")
-#     else:
-#         print("No material properties found. Ensure the MTL file exists and is correctly referenced in the OBJ file.")
-#
-#     # Directly use Trimesh to export the mesh to GLTF, handling binary data correctly
-#     tmesh.export(output_file, file_type='glb')  # Export as GLB (binary GLTF) for simplicity
-#
-#     print(f"Conversion complete: '{output_file}'")
-#
-# model_file = "io1"
-# input_stp = FILE_PATH + model_file + '.stp'
-# intermediary_obj = FILE_PATH + model_file + '.obj'
-# output_gltf = FILE_PATH + model_file + '.glb'
-#
-# # Convert from STP to OBJ
-# convert_step_to_obj(input_stp, intermediary_obj)
-#
-# # intermediary_obj = "./suzanne.obj"
-# # output_gltf = './suzanne.glb'
-#
-# # Convert from OBJ to GLTF
-# convert_obj_to_glb(intermediary_obj, output_gltf)
-#
-# # Clean up
-# os.system(f"rm -rf /tmp/{model_file}*")
+def update_dynamodb_render_file(customer_id, part_id, file_metadata):
+    try:
+        parts_table.update_item(
+            Key={
+                'pk': customer_id,
+                'sk': part_id
+            },
+            UpdateExpression="SET render_file = :file",
+            ExpressionAttributeValues={
+                ":file": file_metadata
+            }
+        )
+    except Exception as e:
+        print(f"Error updating DynamoDB: {e} for customer {customer_id} and part: {part_id}")
+
