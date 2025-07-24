@@ -30,6 +30,8 @@ pub enum Error {
     MissingRequiredParameter(String),
     #[error("operation forbidden")]
     Forbidden,
+    #[error("unauthorized")]
+    Unauthorized,
     #[error("an unexpected error occurred")]
     UnknownError,
 }
@@ -117,6 +119,22 @@ impl IntoError for Error {
                     message: Error::NoPdfQuoteAvailable.to_string(),
                 },
             ),
+            Error::Forbidden => (
+                StatusCode::FORBIDDEN,
+                ApiError {
+                    status_code: StatusCode::FORBIDDEN.as_u16(),
+                    code: ErrorCode::NotAllowed,
+                    message: Error::Forbidden.to_string(),
+                },
+            ),
+            Error::Unauthorized => (
+                StatusCode::UNAUTHORIZED,
+                ApiError {
+                    status_code: StatusCode::UNAUTHORIZED.as_u16(),
+                    code: ErrorCode::Unauthorized,
+                    message: Error::Unauthorized.to_string(),
+                },
+            ),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ApiError::default()),
         };
 
@@ -129,6 +147,7 @@ impl IntoError for Error {
 pub enum ErrorCode {
     #[default]
     UnknownError,
+    Unauthorized,
     ItemNotFound,
     MissingUserInput,
     NotAllowed,
