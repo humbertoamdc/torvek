@@ -1,11 +1,9 @@
 use crate::auth::models::session::Identity;
 use crate::parts::models::part::{PartAttributes, PartProcess};
-use crate::services::object_storage::ObjectStorageOperation;
 use crate::shared::file::File;
 use crate::shared::money::Money;
 use crate::shared::{CustomerId, PartId, PartQuoteId, ProjectId, QuoteId};
 use serde_derive::{Deserialize, Serialize};
-use url::Url;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreatePartsInput {

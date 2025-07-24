@@ -5,14 +5,10 @@ use crate::orders::models::responses::{
 use crate::parts::models::part::Part;
 use crate::repositories::orders::{OrdersRepository, QueryBy};
 use crate::repositories::parts::PartsRepository;
-use crate::services::object_storage::ObjectStorage;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Duration;
-
-static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
 pub struct QueryOrdersByCustomer<O, P>
 where
@@ -21,7 +17,6 @@ where
 {
     orders_repository: Arc<O>,
     parts_repository: Arc<P>,
-    object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl<O, P> QueryOrdersByCustomer<O, P>
@@ -29,15 +24,10 @@ where
     O: OrdersRepository,
     P: PartsRepository,
 {
-    pub fn new(
-        orders_repository: Arc<O>,
-        parts_repository: Arc<P>,
-        object_storage: Arc<dyn ObjectStorage>,
-    ) -> Self {
+    pub fn new(orders_repository: Arc<O>, parts_repository: Arc<P>) -> Self {
         Self {
             orders_repository,
             parts_repository,
-            object_storage,
         }
     }
 }
@@ -77,7 +67,7 @@ where
                 .map(|order| (order.customer_id.clone(), order.part_id.clone()))
                 .collect();
 
-            let mut parts = self.parts_repository.batch_get(order_and_part_ids).await?;
+            let parts = self.parts_repository.batch_get(order_and_part_ids).await?;
 
             parts_map = parts
                 .into_iter()

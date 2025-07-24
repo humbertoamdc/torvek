@@ -121,8 +121,7 @@ pub async fn admin_query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase =
-        AdminQueryPartsForQuotation::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
+    let usecase = AdminQueryPartsForQuotation::new(app_state.parts.dynamodb_parts);
     let result = usecase.execute(input).await;
 
     match result {
@@ -142,7 +141,7 @@ pub async fn get_part(
         quotation_id,
         part_id,
     };
-    let get_part_usecase = GetPart::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
+    let get_part_usecase = GetPart::new(app_state.parts.dynamodb_parts);
     let response = get_part_usecase.execute(input).await;
 
     match response {
@@ -210,7 +209,7 @@ pub async fn query_parts_for_quotation(
         cursor: params.cursor,
         limit: params.limit.unwrap_or(10),
     };
-    let usecase = QueryPartsByQuotation::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
+    let usecase = QueryPartsByQuotation::new(app_state.parts.dynamodb_parts);
     let result = usecase.execute(input).await;
 
     match result {

@@ -15,7 +15,6 @@ use axum::response::IntoResponse;
 use axum::Json;
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
-use lambda_http::lambda_runtime::IntoFunctionResponse;
 use serde_derive::{Deserialize, Serialize};
 use time::OffsetDateTime;
 

@@ -2,33 +2,25 @@ use crate::parts::models::inputs::AdminQueryPartsForQuotationInput;
 use crate::parts::models::part::{Part, PartQuote};
 use crate::parts::models::responses::QueryPartsForQuotationResponse;
 use crate::repositories::parts::PartsRepository;
-use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 use crate::shared::money::Money;
 use crate::shared::{Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
-use std::time::Duration;
-
-static PRESIGNED_URLS_GET_DURATION_SECONDS: u64 = 3600;
 
 pub struct AdminQueryPartsForQuotation<P>
 where
     P: PartsRepository,
 {
     parts_repository: Arc<P>,
-    object_storage: Arc<dyn ObjectStorage>,
 }
 
 impl<P> AdminQueryPartsForQuotation<P>
 where
     P: PartsRepository,
 {
-    pub fn new(parts_repository: Arc<P>, object_storage: Arc<dyn ObjectStorage>) -> Self {
-        Self {
-            parts_repository,
-            object_storage,
-        }
+    pub fn new(parts_repository: Arc<P>) -> Self {
+        Self { parts_repository }
     }
 }
 
@@ -42,7 +34,7 @@ where
         &self,
         input: AdminQueryPartsForQuotationInput,
     ) -> Result<QueryPartsForQuotationResponse> {
-        let mut response = self
+        let response = self
             .parts_repository
             .query(
                 input.customer_id,

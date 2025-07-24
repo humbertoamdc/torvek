@@ -4,9 +4,8 @@ use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::types::builders::DeleteBuilder;
 use aws_sdk_s3::types::ObjectIdentifier;
 use std::time::Duration;
-use url::Url;
 
-use crate::services::object_storage::{ObjectStorage, ObjectStorageOperation};
+use crate::services::object_storage::ObjectStorage;
 use crate::shared::error::Error;
 
 #[derive(Clone)]
@@ -96,21 +95,6 @@ impl ObjectStorage for S3ObjectStorage {
 
         match result {
             Ok(_) => Ok(()),
-            Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
-            }
-        }
-    }
-}
-
-impl S3ObjectStorage {
-    fn filepath(&self, url: &str) -> Result<String> {
-        match Url::parse(url) {
-            Ok(parsed_url) => match parsed_url.path().strip_prefix("/") {
-                Some(filepath) => Ok(filepath.to_string()),
-                None => Err(Error::UnknownError),
-            },
             Err(err) => {
                 tracing::error!("{err:?}");
                 Err(Error::UnknownError)

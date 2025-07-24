@@ -31,7 +31,6 @@ pub async fn query_orders_for_customer(
     let usecase = QueryOrdersByCustomer::new(
         app_state.orders.dynamodb_orders,
         app_state.parts.dynamodb_parts,
-        app_state.parts.s3,
     );
     let result = usecase.execute(input).await;
 

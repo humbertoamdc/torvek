@@ -3,7 +3,6 @@ use crate::services::object_storage::{ObjectStorage, ObjectStorageOperation};
 use crate::shared::error::Error;
 use crate::shared::UseCase;
 use async_trait::async_trait;
-use http::Uri;
 use serde_derive::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;

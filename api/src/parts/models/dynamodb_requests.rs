@@ -1,7 +1,7 @@
 use crate::parts::models::inputs::UpdatePartInput;
 use crate::parts::models::part::{PartAttributes, PartProcess};
 use crate::shared::file::File;
-use crate::shared::{CustomerId, PartId, PartQuoteId, QuoteId};
+use crate::shared::{CustomerId, PartId, PartQuoteId};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
