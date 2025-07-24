@@ -7,6 +7,7 @@ use crate::auth::usecases::login::Login;
 use crate::auth::usecases::logout::Logout;
 use crate::auth::usecases::register::Register;
 use crate::shared::error::Error;
+use crate::shared::into_error_response::IntoError;
 use crate::shared::UseCase;
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -14,6 +15,7 @@ use axum::response::IntoResponse;
 use axum::Json;
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
+use lambda_http::lambda_runtime::IntoFunctionResponse;
 use serde_derive::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
@@ -48,7 +50,7 @@ pub async fn register_customer(
     let result = usecase.execute(input).await;
 
     match result {
-        Ok(auth_session) => (
+        Ok(auth_session) => Ok((
             StatusCode::NO_CONTENT,
             cookies.add(
                 auth_session
@@ -59,8 +61,8 @@ pub async fn register_customer(
                     )
                     .into_owned(),
             ),
-        ),
-        Err(_) => (StatusCode::BAD_REQUEST, cookies),
+        )),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -78,7 +80,7 @@ pub async fn login(
     let result = usecases.execute(input).await;
 
     match result {
-        Ok(auth_session) => (
+        Ok(auth_session) => Ok((
             StatusCode::OK,
             cookies.add(
                 auth_session
@@ -89,8 +91,8 @@ pub async fn login(
                     )
                     .into_owned(),
             ),
-        ),
-        Err(_) => (StatusCode::BAD_REQUEST, cookies),
+        )),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -107,18 +109,15 @@ pub async fn get_session(
     };
 
     match result {
-        Ok(session_information) => http::Response::builder()
+        Ok(session_information) => Ok(http::Response::builder()
             .status(StatusCode::OK)
             .body(
                 serde_json::to_string(&GetSessionResponseMapper::to_api(session_information))
                     .unwrap(),
             )
-            .unwrap(),
+            .unwrap()),
         // TODO: Handle error.
-        Err(_) => http::Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body("".to_string())
-            .unwrap(),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -139,9 +138,9 @@ pub async fn logout(cookies: CookieJar, State(app_state): State<AppState>) -> im
                 .expires(OffsetDateTime::now_utc())
                 .build();
 
-            (StatusCode::NO_CONTENT, cookies.add(cookie))
+            Ok((StatusCode::NO_CONTENT, cookies.add(cookie)))
         }
-        Err(_) => (StatusCode::UNAUTHORIZED, CookieJar::new()),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -159,7 +158,7 @@ pub async fn admin_login(
     let result = usecases.execute(input).await;
 
     match result {
-        Ok(auth_session) => (
+        Ok(auth_session) => Ok((
             StatusCode::OK,
             cookies.add(
                 auth_session
@@ -170,8 +169,8 @@ pub async fn admin_login(
                     )
                     .into_owned(),
             ),
-        ),
-        Err(_) => (StatusCode::BAD_REQUEST, cookies),
+        )),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -188,18 +187,15 @@ pub async fn get_admin_session(
     };
 
     match result {
-        Ok(session_information) => http::Response::builder()
+        Ok(session_information) => Ok(http::Response::builder()
             .status(StatusCode::OK)
             .body(
                 serde_json::to_string(&GetSessionResponseMapper::to_api(session_information))
                     .unwrap(),
             )
-            .unwrap(),
+            .unwrap()),
         // TODO: Handle error.
-        Err(_) => http::Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body("".to_string())
-            .unwrap(),
+        Err(err) => Err(err.into_error_response()),
     }
 }
 
@@ -223,8 +219,8 @@ pub async fn admin_logout(
                 .expires(OffsetDateTime::now_utc())
                 .build();
 
-            (StatusCode::NO_CONTENT, cookies.add(cookie))
+            Ok((StatusCode::NO_CONTENT, cookies.add(cookie)))
         }
-        Err(_) => (StatusCode::BAD_REQUEST, CookieJar::new()),
+        Err(err) => Err(err.into_error_response()),
     }
 }

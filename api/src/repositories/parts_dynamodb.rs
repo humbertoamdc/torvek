@@ -71,10 +71,8 @@ impl PartsRepository for DynamodbParts {
             .client
             .get_item()
             .table_name(&self.table)
-            .set_key(Some(HashMap::from([
-                (String::from("pk"), AttributeValue::S(customer_id)),
-                (String::from("sk"), AttributeValue::S(part_id)),
-            ])))
+            .key(String::from("pk"), AttributeValue::S(customer_id))
+            .key(String::from("sk"), AttributeValue::S(part_id))
             .send()
             .await;
 

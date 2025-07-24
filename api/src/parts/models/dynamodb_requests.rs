@@ -8,7 +8,6 @@ use serde_derive::{Deserialize, Serialize};
 pub struct UpdatablePart {
     pub id: PartId,
     pub customer_id: CustomerId,
-    pub quotation_id: QuoteId,
     pub drawing_file: Option<File>,
     pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
@@ -19,10 +18,11 @@ pub struct UpdatablePart {
 
 impl UpdatablePart {
     pub fn partial_new(customer_id: CustomerId, part_id: PartId) -> Self {
-        let mut updatable_part = Self::default();
-        updatable_part.customer_id = customer_id;
-        updatable_part.id = part_id;
-        updatable_part
+        UpdatablePart {
+            customer_id,
+            id: part_id,
+            ..Default::default()
+        }
     }
 }
 
@@ -31,7 +31,6 @@ impl From<&UpdatePartInput> for UpdatablePart {
         Self {
             id: input.part_id.clone(),
             customer_id: input.identity.id.clone(),
-            quotation_id: input.quotation_id.clone(),
             drawing_file: input.drawing_file.clone(),
             process: input.process.clone(),
             attributes: input.attributes.clone(),

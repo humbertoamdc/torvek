@@ -16,7 +16,7 @@ pub struct Part {
     pub project_id: ProjectId,
     pub quotation_id: QuoteId,
     pub model_file: File,
-    pub render_file: File,
+    pub render_file: Option<File>,
     pub drawing_file: Option<File>,
     pub process: PartProcess,
     pub attributes: PartAttributes,
@@ -35,7 +35,6 @@ impl Part {
         process: PartProcess,
         attributes: PartAttributes,
         model_file: File,
-        render_file: File,
     ) -> Self {
         let now = Utc::now();
         let id = Uuid::new_v7(Timestamp::now(ContextV7::new()));
@@ -47,7 +46,7 @@ impl Part {
             project_id,
             quotation_id,
             model_file,
-            render_file,
+            render_file: None,
             drawing_file: None,
             process,
             attributes,

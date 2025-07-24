@@ -13,6 +13,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - PERSISTENCE=1
+      - DATA_DIR=${LOCALSTACK_VOLUME_DIR:-/tmp/localstack/data}
     volumes:
       - "./scripts/localstack:/etc/localstack/init/ready.d"
       # Logs, cache and generated data by AWS services live here.
@@ -23,6 +24,9 @@ services:
     container_name: file_converter
     build: ./scripts/local_file_converter
     environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
       - AWS_ENDPOINT_URL=http://host.docker.internal:4566
       - QUEUE_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/file-converter-queue
     depends_on:

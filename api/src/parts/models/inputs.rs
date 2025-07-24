@@ -1,5 +1,6 @@
 use crate::auth::models::session::Identity;
 use crate::parts::models::part::{PartAttributes, PartProcess};
+use crate::services::object_storage::ObjectStorageOperation;
 use crate::shared::file::File;
 use crate::shared::money::Money;
 use crate::shared::{CustomerId, PartId, PartQuoteId, ProjectId, QuoteId};
@@ -51,24 +52,6 @@ pub struct UpdatePartInput {
     pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateDrawingUploadUrlInput {
-    pub identity: Identity,
-    pub project_id: ProjectId,
-    pub quotation_id: QuoteId,
-    pub part_id: PartId,
-    pub file_name: String,
-    pub file_url: Option<Url>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CreateModelUploadUrlInput {
-    pub identity: Identity,
-    pub project_id: ProjectId,
-    pub quotation_id: QuoteId,
-    pub part_id: PartId,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

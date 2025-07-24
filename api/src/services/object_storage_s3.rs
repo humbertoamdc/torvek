@@ -6,7 +6,7 @@ use aws_sdk_s3::types::ObjectIdentifier;
 use std::time::Duration;
 use url::Url;
 
-use crate::services::object_storage::ObjectStorage;
+use crate::services::object_storage::{ObjectStorage, ObjectStorageOperation};
 use crate::shared::error::Error;
 
 #[derive(Clone)]
@@ -23,16 +23,12 @@ impl S3ObjectStorage {
 
 #[async_trait]
 impl ObjectStorage for S3ObjectStorage {
-    async fn put_object_presigned_url(
-        &self,
-        filepath: &str,
-        expires_in: Duration,
-    ) -> Result<String> {
+    async fn put_object_presigned_url(&self, key: &str, expires_in: Duration) -> Result<String> {
         let result = self
             .client
             .put_object()
             .bucket(self.bucket.clone())
-            .key(filepath)
+            .key(key)
             .presigned(PresigningConfig::expires_in(expires_in).unwrap())
             .await;
 
@@ -42,12 +38,12 @@ impl ObjectStorage for S3ObjectStorage {
         }
     }
 
-    async fn get_object_presigned_url(&self, url: &str, expires_in: Duration) -> Result<String> {
+    async fn get_object_presigned_url(&self, key: &str, expires_in: Duration) -> Result<String> {
         let result = self
             .client
             .get_object()
             .bucket(self.bucket.clone())
-            .key(self.filepath(url)?)
+            .key(key)
             .presigned(PresigningConfig::expires_in(expires_in).unwrap())
             .await;
 
@@ -57,12 +53,12 @@ impl ObjectStorage for S3ObjectStorage {
         }
     }
 
-    async fn delete_object(&self, url: &str) -> Result<()> {
+    async fn delete_object(&self, key: &str) -> Result<()> {
         let result = self
             .client
             .delete_object()
             .bucket(&self.bucket)
-            .key(&self.filepath(url)?)
+            .key(key)
             .send()
             .await;
 
@@ -75,15 +71,10 @@ impl ObjectStorage for S3ObjectStorage {
         }
     }
 
-    async fn bulk_delete_objects(&self, urls: Vec<&str>) -> Result<()> {
-        let object_identifiers = urls
+    async fn bulk_delete_objects(&self, keys: Vec<&str>) -> Result<()> {
+        let object_identifiers = keys
             .into_iter()
-            .map(|url| {
-                ObjectIdentifier::builder()
-                    .key(self.filepath(url).unwrap())
-                    .build()
-                    .unwrap()
-            })
+            .map(|key| ObjectIdentifier::builder().key(key).build().unwrap())
             .collect::<Vec<ObjectIdentifier>>();
 
         if object_identifiers.is_empty() {

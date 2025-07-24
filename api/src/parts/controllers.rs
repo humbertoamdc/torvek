@@ -1,20 +1,22 @@
 use crate::app_state::AppState;
 use crate::parts::models::inputs::{
-    AdminQueryPartsForQuotationInput, CreateDrawingUploadUrlInput, CreateModelUploadUrlInput,
-    CreatePartQuotesInput, CreatePartsInput, DeletePartInput, GetPartInput,
-    QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
+    AdminQueryPartsForQuotationInput, CreatePartQuotesInput, CreatePartsInput, DeletePartInput,
+    GetPartInput, QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
 use crate::parts::models::part::{PartAttributes, PartProcess};
 use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotation;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
 use crate::parts::usecases::create_parts::CreateParts;
 use crate::parts::usecases::delete_part::DeletePart;
-use crate::parts::usecases::drawing_upload_url::CreateDrawingUploadUrl;
+use crate::parts::usecases::generate_presigned_url::{
+    GeneratePresignedUrl, GeneratePresignedUrlInput,
+};
 use crate::parts::usecases::get_part::GetPart;
-use crate::parts::usecases::model_upload_url::ModelUploadUrl;
 use crate::parts::usecases::query_parts_by_quotation::QueryPartsByQuotation;
 use crate::parts::usecases::update_part::UpdatePart;
 use crate::parts::usecases::update_selected_part_quote::UpdateSelectedPartQuote;
+use crate::parts::usecases::upload_drawing::{UploadDrawing, UploadDrawingInput};
+use crate::services::object_storage::ObjectStorageOperation;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::file::File;
 use crate::shared::into_error_response::IntoError;
@@ -33,6 +35,11 @@ pub struct CreatePartsRequest {
     pub project_id: ProjectId,
     pub quotation_id: QuoteId,
     pub file_names: Vec<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UploadDrawingRequest {
+    pub file_name: String,
 }
 
 #[derive(Deserialize)]
@@ -75,6 +82,12 @@ pub struct CreateDrawingUploadUrlRequest {
     pub part_id: PartId,
     pub file_name: String,
     pub file_url: Option<Url>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GeneratePresignedUrlRequest {
+    pub key: String,
+    pub operation: ObjectStorageOperation,
 }
 
 pub async fn admin_create_part_quotes(
@@ -163,6 +176,26 @@ pub async fn create_parts(
     }
 }
 
+pub async fn upload_part_drawing(
+    State(app_state): State<AppState>,
+    CustomerSession(session): CustomerSession,
+    Path(part_id): Path<PartId>,
+    Json(request): Json<UploadDrawingRequest>,
+) -> impl IntoResponse {
+    let input = UploadDrawingInput {
+        customer: session.identity,
+        part_id,
+        file_name: request.file_name,
+    };
+    let usecase = UploadDrawing::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
+    let result = usecase.execute(input).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
 pub async fn query_parts_for_quotation(
     State(app_state): State<AppState>,
     Path((project_id, quotation_id)): Path<(String, String)>,
@@ -233,56 +266,6 @@ pub async fn update_selected_part_quote(
     }
 }
 
-pub async fn create_model_file_upload_url(
-    State(app_state): State<AppState>,
-    CustomerSession(session): CustomerSession,
-    Json(request): Json<CreateModelUploadUrlRequest>,
-) -> impl IntoResponse {
-    let input = CreateModelUploadUrlInput {
-        identity: session.identity,
-        project_id: request.project_id,
-        quotation_id: request.quotation_id,
-        part_id: request.part_id,
-    };
-    let usecase = ModelUploadUrl::new(
-        app_state.parts.dynamodb_parts,
-        app_state.quotes.dynamodb_quotes,
-        app_state.parts.s3,
-    );
-    let result = usecase.execute(input).await;
-
-    match result {
-        Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(err.into_error_response()),
-    }
-}
-
-pub async fn create_drawing_upload_url(
-    State(app_state): State<AppState>,
-    CustomerSession(session): CustomerSession,
-    Json(request): Json<CreateDrawingUploadUrlRequest>,
-) -> impl IntoResponse {
-    let input = CreateDrawingUploadUrlInput {
-        identity: session.identity,
-        project_id: request.project_id,
-        quotation_id: request.quotation_id,
-        part_id: request.part_id,
-        file_name: request.file_name,
-        file_url: request.file_url,
-    };
-    let usecase = CreateDrawingUploadUrl::new(
-        app_state.parts.dynamodb_parts,
-        app_state.quotes.dynamodb_quotes,
-        app_state.parts.s3,
-    );
-    let result = usecase.execute(input).await;
-
-    match result {
-        Ok(response) => Ok((StatusCode::OK, Json(response))),
-        Err(err) => Err(err.into_error_response()),
-    }
-}
-
 pub async fn delete_part(
     State(app_state): State<AppState>,
     Path((project_id, quotation_id, part_id)): Path<(String, String, String)>,
@@ -303,6 +286,25 @@ pub async fn delete_part(
 
     match result {
         Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn generate_presigned_url(
+    State(app_state): State<AppState>,
+    CustomerSession(session): CustomerSession,
+    Json(request): Json<GeneratePresignedUrlRequest>,
+) -> impl IntoResponse {
+    let input = GeneratePresignedUrlInput {
+        identity: session.identity,
+        key: request.key,
+        operation: request.operation,
+    };
+    let usecase = GeneratePresignedUrl::new(app_state.parts.s3);
+    let result = usecase.execute(input).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
         Err(err) => Err(err.into_error_response()),
     }
 }

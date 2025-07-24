@@ -113,7 +113,7 @@ impl IdentityManager for OryIdentityManager {
             // TODO: Handle error.
             Err(err) => {
                 tracing::error!("Failed to get session. {err:?}");
-                Err(Error::UnknownError)
+                Err(Error::Unauthorized)
             }
         }
     }
