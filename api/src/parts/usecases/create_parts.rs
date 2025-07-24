@@ -65,8 +65,7 @@ where
                 input.quotation_id.clone(),
                 PartProcess::CNC,
                 PartAttributes::CNC(CNCAttributes::default()),
-                File::default(), // Original
-                File::default(), // Render
+                File::default(),
             );
 
             let file_id = Self::generate_file_id();

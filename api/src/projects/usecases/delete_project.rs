@@ -197,7 +197,7 @@ where
             .flat_map(|part| {
                 vec![
                     Some(&part.model_file),
-                    Some(&part.render_file),
+                    Option::from(&part.render_file),
                     Option::from(&part.drawing_file),
                 ]
             })

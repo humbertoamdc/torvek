@@ -44,7 +44,7 @@ pub struct DynamodbPart {
     pub lsi1_sk: String,
     pub project_id: ProjectId,
     pub model_file: File,
-    pub render_file: File,
+    pub render_file: Option<File>,
     pub drawing_file: Option<File>,
     pub process: PartProcess,
     pub attributes: PartAttributes,
