@@ -4,7 +4,8 @@ use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 use crate::parts::models::inputs::CreatePartsInput;
-use crate::parts::models::part::{CNCAttributes, Part, PartAttributes, PartProcess};
+use crate::parts::models::part::{Part, PartAttributes, PartProcess};
+use crate::parts::models::part_attributes::CNCAttributes;
 use crate::parts::models::responses::CreatePartsResponse;
 use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
@@ -101,7 +102,7 @@ where
         }
 
         self.quotations_repository
-            .update(
+            .update_status(
                 input.identity.id,
                 input.project_id,
                 input.quotation_id,

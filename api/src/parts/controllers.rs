@@ -119,7 +119,7 @@ pub async fn admin_query_parts_for_quotation(
         quotation_id,
         with_quotation_subtotal: params.with_quotation_subtotal.unwrap_or(false),
         cursor: params.cursor,
-        limit: params.limit.unwrap_or(10),
+        limit: params.limit.unwrap_or(100),
     };
     let usecase = AdminQueryPartsForQuotation::new(app_state.parts.dynamodb_parts);
     let result = usecase.execute(input).await;
@@ -132,13 +132,11 @@ pub async fn admin_query_parts_for_quotation(
 
 pub async fn get_part(
     State(app_state): State<AppState>,
-    Path((project_id, quotation_id, part_id)): Path<(String, String, String)>,
+    Path(part_id): Path<PartId>,
     CustomerSession(session): CustomerSession,
 ) -> impl IntoResponse {
     let input = GetPartInput {
         identity: session.identity,
-        project_id,
-        quotation_id,
         part_id,
     };
     let get_part_usecase = GetPart::new(app_state.parts.dynamodb_parts);
@@ -178,15 +176,21 @@ pub async fn create_parts(
 pub async fn upload_part_drawing(
     State(app_state): State<AppState>,
     CustomerSession(session): CustomerSession,
-    Path(part_id): Path<PartId>,
+    Path((project_id, quote_id, part_id)): Path<(ProjectId, QuoteId, PartId)>,
     Json(request): Json<UploadDrawingRequest>,
 ) -> impl IntoResponse {
     let input = UploadDrawingInput {
         customer: session.identity,
+        project_id,
+        quote_id,
         part_id,
         file_name: request.file_name,
     };
-    let usecase = UploadDrawing::new(app_state.parts.dynamodb_parts, app_state.parts.s3);
+    let usecase = UploadDrawing::new(
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
+    );
     let result = usecase.execute(input).await;
 
     match result {
@@ -240,7 +244,7 @@ pub async fn update_part(
     let result = usecase.execute(input).await;
 
     match result {
-        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Ok(part) => Ok((StatusCode::OK, Json(part))),
         Err(err) => Err(err.into_error_response()),
     }
 }

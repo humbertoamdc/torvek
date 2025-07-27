@@ -1,5 +1,6 @@
 use crate::parts::models::dynamodb_requests::{BatchDeletePartObject, UpdatablePart};
-use crate::parts::models::part::{Part, PartAttributes, PartProcess, PartQuote};
+use crate::parts::models::part::{Part, PartProcess, PartQuote};
+use crate::parts::models::part_attributes::PartAttributes;
 use crate::shared::error::Error;
 use crate::shared::error::Error::UnknownError;
 use crate::shared::file::File;

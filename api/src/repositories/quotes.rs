@@ -34,7 +34,7 @@ pub trait QuotesRepository: Send + Sync + 'static {
         cursor: Option<String>,
     ) -> Result<QueryResponse<Vec<Quotation>, String>>;
 
-    async fn update(
+    async fn update_status(
         &self,
         customer_id: CustomerId,
         project_id: ProjectId,

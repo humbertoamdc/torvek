@@ -1,10 +1,12 @@
+pub(crate) use crate::parts::models::part_attributes::PartAttributes;
+use crate::parts::models::part_attributes::Tolerance;
+use crate::shared::error::Error;
 use crate::shared::file::File;
 use crate::shared::money::Money;
 use crate::shared::{CustomerId, PartId, PartQuoteId, ProjectId, QuoteId};
 use chrono::{DateTime, Days, Utc};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
-use std::fmt::{Display, Formatter};
 use uuid::{ContextV7, Timestamp, Uuid};
 
 static PART_QUOTE_VALID_DAYS: u64 = 30;
@@ -57,76 +59,25 @@ impl Part {
             updated_at: now,
         }
     }
+
+    pub fn validate(&self) -> Result<(), Error> {
+        match &self.attributes {
+            PartAttributes::CNC(attributes) => {
+                if attributes.tolerance == Tolerance::Other && self.drawing_file.is_none() {
+                    return Err(Error::InvalidPartAttributes(String::from(
+                        "A drawing file is required when selecting 'Other' tolerance",
+                    )));
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
 pub enum PartProcess {
     CNC,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum PartAttributes {
-    CNC(CNCAttributes),
-}
-
-impl Default for PartAttributes {
-    fn default() -> Self {
-        Self::CNC(CNCAttributes::default())
-    }
-}
-
-impl Serialize for PartAttributes {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            PartAttributes::CNC(attrs) => attrs.serialize(serializer),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for PartAttributes {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let attrs = CNCAttributes::deserialize(deserializer)?;
-        Ok(PartAttributes::CNC(attrs))
-    }
-}
-
-impl Display for PartAttributes {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PartAttributes::CNC(attr) => write!(f, "{}", attr),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub struct CNCAttributes {
-    pub material: String,
-    pub tolerance: String,
-}
-
-impl Default for CNCAttributes {
-    fn default() -> Self {
-        Self {
-            material: String::from("Aluminum 6061-T6"),
-            tolerance: String::from("+/- .005\" (+/- 0.13mm)"),
-        }
-    }
-}
-
-impl Display for CNCAttributes {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Process: CNC, Material: {}, Tolerance: {})",
-            self.material, self.tolerance
-        )
-    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

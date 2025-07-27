@@ -16,8 +16,6 @@ pub struct CreatePartsInput {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GetPartInput {
     pub identity: Identity,
-    pub project_id: ProjectId,
-    pub quotation_id: QuoteId,
     pub part_id: PartId,
 }
 

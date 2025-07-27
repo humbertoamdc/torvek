@@ -1,32 +1,6 @@
-use crate::models::file::File;
-use crate::models::money::Money;
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use std::fmt::{Display, Formatter};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Part {
-    pub id: String,
-    pub customer_id: String,
-    pub project_id: String,
-    pub quotation_id: String,
-    pub model_file: File,
-    pub render_file: File,
-    pub drawing_file: Option<File>,
-    pub process: PartProcess,
-    pub attributes: PartAttributes,
-    pub quantity: u64,
-    pub selected_part_quote_id: Option<String>,
-    pub part_quotes: Option<Vec<PartQuote>>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
-pub enum PartProcess {
-    CNC,
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PartAttributes {
@@ -71,14 +45,14 @@ impl Display for PartAttributes {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct CNCAttributes {
     pub material: String,
-    pub tolerance: String,
+    pub tolerance: Tolerance,
 }
 
 impl Default for CNCAttributes {
     fn default() -> Self {
         Self {
             material: String::from("Aluminum 6061-T6"),
-            tolerance: String::from("+/- .005\" (+/- 0.13mm)"),
+            tolerance: Tolerance::PlusMinus005Inch013mm,
         }
     }
 }
@@ -93,13 +67,9 @@ impl Display for CNCAttributes {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct PartQuote {
-    pub id: String,
-    pub unit_price: Money,
-    pub sub_total: Money,
-    pub workdays_to_complete: u64,
-    pub valid_until: DateTime<Utc>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+#[derive(Serialize_enum_str, Deserialize_enum_str, Clone, Debug, PartialEq)]
+pub enum Tolerance {
+    #[serde(rename = "+/- .005\" (+/- 0.13mm)")]
+    PlusMinus005Inch013mm,
+    Other,
 }

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use leptos::html::Div;
+use leptos::leptos_dom::logging::console_log;
 use leptos::*;
 use leptos_use::use_element_visibility;
 use thaw::{Button, ButtonSize};
@@ -10,6 +11,8 @@ use crate::components::parts::part_quotes_table_row::PartQuotesTableRow;
 use crate::models::money::Money;
 use crate::models::part::Part;
 use crate::models::quotation::Quotation;
+
+const ENV: &str = env!("ENV");
 
 #[component]
 pub fn PartQuotesTable(
@@ -141,16 +144,27 @@ pub fn PartQuotesTable(
                 each=move || parts.get().into_iter().enumerate()
                 key=|(_, part)| part.id.clone()
                 children=move |(_, part)| {
-                    let price_options = vec![
+                    let mut price_options = vec![
                         create_rw_signal(None::<Money>),
                         create_rw_signal(None::<Money>),
                         create_rw_signal(None::<Money>),
                     ];
-                    let workdays_to_complete_options = vec![
+                    let mut workdays_to_complete_options = vec![
                         create_rw_signal(0_u64),
                         create_rw_signal(0_u64),
                         create_rw_signal(0_u64),
                     ];
+
+                    if ENV == "local" || ENV == "staging" {
+                        price_options[0].set(Some(Money::new(7_500_00, iso_currency::Currency::MXN)));
+                        price_options[1].set(Some(Money::new(6_100_00, iso_currency::Currency::MXN)));
+                        price_options[2].set(Some(Money::new(4_200_00, iso_currency::Currency::MXN)));
+
+                        workdays_to_complete_options[0].set(5);
+                        workdays_to_complete_options[1].set(8);
+                        workdays_to_complete_options[2].set(11);
+                    }
+
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
                     workdays_to_complete_list
                         .update(|workdays_to_complete| {
@@ -166,15 +180,16 @@ pub fn PartQuotesTable(
                 }
             />
 
-            <Button
-                class="mt-4 self-end"
-                size=ButtonSize::Large
-                disabled=submit_is_disabled
-                on_click=move |_| create_part_quotes.dispatch(())
-            >
-
-                "Submit"
-            </Button>
+            <div class="self-end">
+                <Button
+                    class="mt-4 self-end"
+                    size=ButtonSize::Large
+                    disabled=submit_is_disabled
+                    on_click=move |_| create_part_quotes.dispatch(())
+                >
+                    "Submit"
+                </Button>
+            </div>
         </div>
     }
 }

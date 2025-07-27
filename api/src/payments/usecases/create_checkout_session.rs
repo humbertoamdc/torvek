@@ -46,6 +46,11 @@ where
             )
             .await?;
 
+        query_response
+            .data
+            .iter()
+            .try_for_each(|part| part.validate())?;
+
         let url = self
             .stripe_client
             .create_checkout_session(

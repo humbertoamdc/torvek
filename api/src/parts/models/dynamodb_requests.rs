@@ -36,7 +36,7 @@ impl From<&UpdatePartInput> for UpdatablePart {
             attributes: input.attributes.clone(),
             quantity: input.quantity,
             selected_part_quote_id: None,
-            clear_part_quotes: Some(true),
+            clear_part_quotes: None,
         }
     }
 }

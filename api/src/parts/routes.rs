@@ -20,16 +20,16 @@ pub fn create_router() -> Router<AppState> {
             "/projects/:project_id/quotations/:quotation_id/parts",
             get(query_parts_for_quotation),
         )
-        .route(
-            "/projects/:project_id/quotations/:quotation_id/parts/:part_id",
-            get(get_part),
-        )
+        .route("/parts/:part_id", get(get_part))
         .route("/parts", patch(update_part))
         .route(
             "/parts/select_part_quote",
             patch(update_selected_part_quote),
         )
-        .route("/parts/:part_id/files/drawing", post(upload_part_drawing))
+        .route(
+            "/projects/:project_id/quotations/:quotation_id/parts/:part_id/files/drawing",
+            post(upload_part_drawing),
+        )
         .route(
             "/projects/:project_id/quotations/:quotation_id/parts/:part_id",
             delete(delete_part),
