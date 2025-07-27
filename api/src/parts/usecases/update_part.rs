@@ -49,7 +49,7 @@ where
             QuoteStatus::PendingReview | QuoteStatus::PendingPayment => {
                 let _ = self
                     .quotations_repository
-                    .update(
+                    .update_status(
                         input.identity.id.clone(),
                         input.project_id.clone(),
                         input.quotation_id.clone(),
@@ -60,7 +60,8 @@ where
             QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
         }
 
-        let updatable_part = UpdatablePart::from(&input);
+        let mut updatable_part = UpdatablePart::from(&input);
+        updatable_part.clear_part_quotes = Some(true);
 
         self.parts_repository.update(updatable_part).await
     }

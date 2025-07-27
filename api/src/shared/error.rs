@@ -6,33 +6,35 @@ use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("email is already in use")]
+    #[error("Email is already in use")]
     EmailTakenRegistrationError,
-    #[error("invalid credentials")]
+    #[error("Invalid credentials")]
     InvalidCredentialsLoginError,
-    #[error("password has been found in data breaches")]
+    #[error("Password has been found in data breaches")]
     BreachedPasswordRegistrationError,
-    #[error("the request item doesn't exist")]
+    #[error("The request item doesn't exist")]
     ItemNotFoundError,
-    #[error("no quote selected for part with id `{0}`")]
+    #[error("No quote selected for part with id `{0}`")]
     NoSelectedQuoteAvailableForPart(String),
-    #[error("cannot update parts after paying the quotation")]
+    #[error("Cannot update parts after paying the quotation")]
     UpdatePartAfterPayingQuotation,
-    #[error("invalid url couldn't be parsed")]
+    #[error("Invalid url couldn't be parsed")]
     InvalidUrl,
-    #[error("cannot delete a project contains payed quotes")]
+    #[error("Cannot delete a project contains payed quotes")]
     DeleteLockedProject,
-    #[error("cannot delete a quote that has been paid for")]
+    #[error("Cannot delete a quote that has been paid for")]
     DeletePayedQuotation,
-    #[error("a pdf quote can't be generated because parts haven't been quoted yet")]
+    #[error("A pdf quote can't be generated because parts haven't been quoted yet")]
     NoPdfQuoteAvailable,
     #[error("`{0}` is required")]
     MissingRequiredParameter(String),
-    #[error("operation forbidden")]
+    #[error("Operation forbidden")]
     Forbidden,
-    #[error("unauthorized")]
+    #[error("Unauthorized")]
     Unauthorized,
-    #[error("an unexpected error occurred")]
+    #[error("Invalid part attributes: {0}")]
+    InvalidPartAttributes(String),
+    #[error("An unexpected error occurred")]
     UnknownError,
 }
 
@@ -133,6 +135,14 @@ impl IntoError for Error {
                     status_code: StatusCode::UNAUTHORIZED.as_u16(),
                     code: ErrorCode::Unauthorized,
                     message: Error::Unauthorized.to_string(),
+                },
+            ),
+            Error::InvalidPartAttributes(message) => (
+                StatusCode::BAD_REQUEST,
+                ApiError {
+                    status_code: StatusCode::BAD_REQUEST.as_u16(),
+                    code: ErrorCode::MissingUserInput,
+                    message,
                 },
             ),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ApiError::default()),

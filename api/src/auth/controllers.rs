@@ -104,7 +104,7 @@ pub async fn get_session(
 
     let result = match session_cookie {
         Some(session_cookie) => usecase.execute(session_cookie.value().to_string()).await,
-        None => Err(Error::UnknownError),
+        None => Err(Error::Unauthorized),
     };
 
     match result {

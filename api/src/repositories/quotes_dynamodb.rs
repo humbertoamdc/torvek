@@ -192,7 +192,7 @@ impl QuotesRepository for DynamodbQuotes {
         }
     }
 
-    async fn update(
+    async fn update_status(
         &self,
         customer_id: CustomerId,
         project_id: ProjectId,
@@ -229,6 +229,8 @@ impl QuotesRepository for DynamodbQuotes {
                     String::from(":is_pending_review"),
                     AttributeValue::S(String::from("true")),
                 );
+            } else {
+                update_expression.push_str(" REMOVE gsi2_pk");
             }
         }
 
@@ -312,8 +314,7 @@ impl QuotesRepository for DynamodbQuotes {
         new_status: QuoteStatus,
     ) -> TransactWriteItem {
         let gsi1_sk = format!(
-            "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
-            new_status, project_id, quote_id
+            "{new_status}{ATTRIBUTES_SEPARATOR}{project_id}{ATTRIBUTES_SEPARATOR}{quote_id}",
         );
 
         TransactWriteItem::builder()
@@ -324,7 +325,7 @@ impl QuotesRepository for DynamodbQuotes {
                         (String::from("pk"), AttributeValue::S(customer_id)),
                         (String::from("sk"), AttributeValue::S(quote_id)),
                     ])))
-                    .condition_expression(" begins_with(gsi1_sk, :old_status)")
+                    .condition_expression("begins_with(gsi1_sk, :old_status)")
                     .update_expression(
                         "SET gsi1_sk = :gsi1_sk, updated_at = :updated_at REMOVE gsi2_pk",
                     )

@@ -9,7 +9,12 @@ pub fn PartQuoteCard(
 ) -> impl IntoView {
     // -- signals -- //
 
-    let price = create_rw_signal(String::default());
+    let price = create_rw_signal({
+        match price_option.get_untracked() {
+            Some(money) => (money.amount / 100).to_string(),
+            None => String::default(),
+        }
+    });
 
     // -- callbacks -- //
 

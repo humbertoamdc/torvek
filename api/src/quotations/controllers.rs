@@ -147,7 +147,10 @@ pub async fn send_quotation_for_review(
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = UpdateQuotation::new(app_state.quotes.dynamodb_quotes);
+    let usecase = UpdateQuotation::new(
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.dynamodb_parts,
+    );
     let result = usecase.execute(input).await;
 
     match result {
