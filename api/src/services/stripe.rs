@@ -1,3 +1,4 @@
+use crate::config::PaymentsTaxIds;
 use crate::parts::models::part::Part;
 use crate::services::stripe_client::{Quote, QuoteLineItem, StripeClient, StripeQuote};
 use crate::shared;
@@ -15,23 +16,30 @@ use stripe::{
     Customer, Product,
 };
 
-const CUSTOMER_ID: &'static str = "customer_id";
-const PROJECT_ID: &'static str = "project_id";
-const QUOTATION_ID: &'static str = "quotation_id";
+const CUSTOMER_ID: &str = "customer_id";
+const PROJECT_ID: &str = "project_id";
+const QUOTATION_ID: &str = "quotation_id";
 
 #[derive(Clone)]
 pub struct Stripe {
     client: Client,
     files_client: reqwest::Client,
     success_url: String,
+    tax_ids: PaymentsTaxIds,
 }
 
 impl Stripe {
-    pub fn new(client: Client, files_client: reqwest::Client, success_url: String) -> Self {
+    pub fn new(
+        client: Client,
+        files_client: reqwest::Client,
+        success_url: String,
+        tax_ids: PaymentsTaxIds,
+    ) -> Self {
         Self {
             client,
             files_client,
             success_url,
+            tax_ids,
         }
     }
 }
@@ -43,7 +51,8 @@ impl StripeClient for Stripe {
         create_customer.name = Some(&name);
         create_customer.email = Some(&email);
 
-        let result = Customer::create(&self.client, create_customer).await;
+        let client = self.client.clone();
+        let result = Customer::create(&client, create_customer).await;
 
         match result {
             Ok(customer) => Ok(customer),
@@ -58,7 +67,8 @@ impl StripeClient for Stripe {
         let mut create_product = CreateProduct::new(&name);
         create_product.id = Some(&id);
 
-        let result = Product::create(&self.client, create_product).await;
+        let client = self.client.clone();
+        let result = Product::create(&client, create_product).await;
 
         match result {
             Ok(_) => Ok(()),
@@ -79,8 +89,8 @@ impl StripeClient for Stripe {
             line_items,
         };
 
-        let response = self
-            .client
+        let client = self.client.clone();
+        let response = client
             .post_form::<StripeQuote, Quote>("/quotes", quote)
             .await;
 
@@ -94,8 +104,9 @@ impl StripeClient for Stripe {
     }
 
     async fn finalize_quote(&self, stripe_quote_id: String) -> Result<()> {
+        let client = self.client.clone();
         let path = format!("quotes/{stripe_quote_id}/finalize");
-        let response = self.client.post::<StripeQuote>(&path).await;
+        let response = client.post::<StripeQuote>(&path).await;
 
         match response {
             Ok(_) => Ok(()),
@@ -132,7 +143,7 @@ impl StripeClient for Stripe {
         quotation_id: String,
         parts: Vec<Part>,
     ) -> Result<String> {
-        let line_items = Self::line_items_from_parts_data(&parts);
+        let line_items = self.line_items_from_parts_data(&parts);
         let success_url = format!("{}/orders", self.success_url,);
 
         let mut params = CreateCheckoutSession::new();
@@ -143,8 +154,10 @@ impl StripeClient for Stripe {
         params.shipping_address_collection = Some(CreateCheckoutSessionShippingAddressCollection {
             allowed_countries: vec![
                 CreateCheckoutSessionShippingAddressCollectionAllowedCountries::Mx,
+                CreateCheckoutSessionShippingAddressCollectionAllowedCountries::Us,
             ],
         });
+
         let metadata = stripe::Metadata::from([
             (String::from(CUSTOMER_ID), customer_id),
             (String::from(PROJECT_ID), project_id),
@@ -152,7 +165,8 @@ impl StripeClient for Stripe {
         ]);
         params.metadata = Some(metadata);
 
-        let result = CheckoutSession::create(&self.client, params).await;
+        let client = self.client.clone();
+        let result = CheckoutSession::create(&client, params).await;
 
         match result {
             Ok(checkout_session) => Ok(checkout_session.url.unwrap()),
@@ -165,7 +179,7 @@ impl StripeClient for Stripe {
 }
 
 impl Stripe {
-    fn line_items_from_parts_data(parts: &Vec<Part>) -> Vec<CreateCheckoutSessionLineItems> {
+    fn line_items_from_parts_data(&self, parts: &Vec<Part>) -> Vec<CreateCheckoutSessionLineItems> {
         parts
             .iter()
             .map(|part| {
@@ -203,7 +217,7 @@ impl Stripe {
                         unit_amount_decimal: None,
                     }),
                     quantity: Some(part.quantity),
-                    tax_rates: None,
+                    tax_rates: Some(self.tax_ids.mexico.clone()),
                 }
             })
             .collect()

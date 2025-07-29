@@ -52,6 +52,12 @@ pub struct ConfigPayments {
     pub secret_key: String,
     pub webhook_secret: String,
     pub success_url: String,
+    pub tax_ids: PaymentsTaxIds,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PaymentsTaxIds {
+    pub mexico: Vec<String>,
 }
 
 impl From<&str> for Config {

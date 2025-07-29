@@ -221,6 +221,7 @@ impl AppStatePayments {
             client,
             files_client,
             config.payments.success_url.clone(),
+            config.payments.tax_ids.clone(),
         ));
 
         let transaction = DynamodbTransaction::new(dynamodb_client);

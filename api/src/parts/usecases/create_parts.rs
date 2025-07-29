@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use futures::future::try_join_all;
 use std::sync::Arc;
 use std::time::Duration;
 use uuid::{ContextV7, Timestamp, Uuid};
@@ -94,12 +95,12 @@ where
             presigned_urls.push(presigned_url);
         }
 
-        for part in parts.iter_mut() {
-            // Create stripe product.
+        let create_products_futures = parts.iter().map(|part| {
             self.stripe_client
                 .create_product(part.model_file.name.clone(), part.id.clone())
-                .await?;
-        }
+        });
+
+        try_join_all(create_products_futures).await?;
 
         self.quotations_repository
             .update_status(
