@@ -50,9 +50,8 @@ where
             .await?;
 
         // Check that the quotation is in an updatable status.
-        match quotation.status {
-            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
-            _ => (),
+        if quotation.status == QuoteStatus::Payed {
+            return Err(Error::QuoteIsInPayedStatus);
         }
 
         let part = self

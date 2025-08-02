@@ -16,6 +16,7 @@ pub const ATTRIBUTES_SEPARATOR: &str = "&";
 pub trait PartsRepository: Send + Sync + 'static {
     type TransactionItem;
     async fn delete(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part>;
+    async fn delete_drawing_file(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part>;
     async fn get(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part>;
     async fn query(
         &self,

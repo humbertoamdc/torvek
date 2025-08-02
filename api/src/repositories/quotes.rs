@@ -34,12 +34,13 @@ pub trait QuotesRepository: Send + Sync + 'static {
         cursor: Option<String>,
     ) -> Result<QueryResponse<Vec<Quotation>, String>>;
 
+    /// Update quotation ONLY if it is not in `PAYED` status.
     async fn update_status(
         &self,
         customer_id: CustomerId,
         project_id: ProjectId,
         quotation_id: QuoteId,
-        status: Option<QuoteStatus>,
+        status: QuoteStatus,
     ) -> Result<Quotation>;
     async fn batch_delete(&self, data: Vec<BatchDeleteQuotationObject>) -> Result<()>;
     fn transaction_update(

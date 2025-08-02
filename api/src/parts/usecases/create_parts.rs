@@ -107,7 +107,7 @@ where
                 input.identity.id,
                 input.project_id,
                 input.quotation_id,
-                Some(QuoteStatus::Created),
+                QuoteStatus::Created,
             )
             .await?;
 

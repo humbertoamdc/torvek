@@ -7,6 +7,7 @@ use crate::parts::models::part::{PartAttributes, PartProcess};
 use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotation;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
 use crate::parts::usecases::create_parts::CreateParts;
+use crate::parts::usecases::delete_drawing_file::{DeleteDrawingFile, DeleteDrawingFileInput};
 use crate::parts::usecases::delete_part::DeletePart;
 use crate::parts::usecases::generate_presigned_url::{
     GeneratePresignedUrl, GeneratePresignedUrlInput,
@@ -304,6 +305,30 @@ pub async fn generate_presigned_url(
         operation: request.operation,
     };
     let usecase = GeneratePresignedUrl::new(app_state.parts.s3);
+    let result = usecase.execute(input).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn delete_drawing_file(
+    State(app_state): State<AppState>,
+    Path((project_id, quote_id, part_id)): Path<(ProjectId, QuoteId, PartId)>,
+    CustomerSession(session): CustomerSession,
+) -> impl IntoResponse {
+    let input = DeleteDrawingFileInput {
+        customer: session.identity,
+        project_id,
+        quote_id,
+        part_id,
+    };
+    let usecase = DeleteDrawingFile::new(
+        app_state.parts.dynamodb_parts,
+        app_state.quotes.dynamodb_quotes,
+        app_state.parts.s3,
+    );
     let result = usecase.execute(input).await;
 
     match result {

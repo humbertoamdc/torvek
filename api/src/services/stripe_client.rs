@@ -36,6 +36,7 @@ pub struct Quote {
     /// Stipe's customer id.
     pub customer: String,
     pub line_items: Vec<QuoteLineItem>,
+    pub default_tax_rates: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
