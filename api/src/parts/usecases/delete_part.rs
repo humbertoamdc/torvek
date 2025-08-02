@@ -51,7 +51,7 @@ where
 
         // Check that the quotation is in an updatable status.
         if quotation.status == QuoteStatus::Payed {
-            return Err(Error::UpdatePartAfterPayingQuotation);
+            return Err(Error::QuoteIsInPayedStatus);
         }
 
         let part = self

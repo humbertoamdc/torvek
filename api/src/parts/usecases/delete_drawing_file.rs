@@ -4,7 +4,6 @@ use crate::quotations::models::quotation::QuoteStatus;
 use crate::repositories::parts::PartsRepository;
 use crate::repositories::quotes::QuotesRepository;
 use crate::services::object_storage::ObjectStorage;
-use crate::shared::error::Error;
 use crate::shared::{PartId, ProjectId, QuoteId, Result, UseCase};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -51,27 +50,14 @@ where
     Q: QuotesRepository,
 {
     async fn execute(&self, input: DeleteDrawingFileInput) -> Result<Part> {
-        let quotation = self
-            .quotes_repository
-            .get(input.customer.id.clone(), input.quote_id.clone())
+        self.quotes_repository
+            .update_status(
+                input.customer.id.clone(),
+                input.project_id.clone(),
+                input.quote_id.clone(),
+                QuoteStatus::Created,
+            )
             .await?;
-
-        // Check that the quotation is in an updatable status and change status to created after making an update.
-        match quotation.status {
-            QuoteStatus::Created => (),
-            QuoteStatus::PendingReview | QuoteStatus::PendingPayment => {
-                let _ = self
-                    .quotes_repository
-                    .update_status(
-                        input.customer.id.clone(),
-                        input.project_id.clone(),
-                        input.quote_id.clone(),
-                        Some(QuoteStatus::Created),
-                    )
-                    .await?;
-            }
-            QuoteStatus::Payed => return Err(Error::UpdatePartAfterPayingQuotation),
-        }
 
         let part = self
             .parts_repository

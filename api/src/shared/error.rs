@@ -16,8 +16,8 @@ pub enum Error {
     ItemNotFoundError,
     #[error("No quote selected for part with id `{0}`")]
     NoSelectedQuoteAvailableForPart(String),
-    #[error("Cannot update parts after paying the quotation")]
-    UpdatePartAfterPayingQuotation,
+    #[error("Cannot update the quote after paying it")]
+    QuoteIsInPayedStatus,
     #[error("Invalid url couldn't be parsed")]
     InvalidUrl,
     #[error("Cannot delete a project contains payed quotes")]
@@ -81,12 +81,12 @@ impl IntoError for Error {
                     message,
                 },
             ),
-            Error::UpdatePartAfterPayingQuotation => (
+            Error::QuoteIsInPayedStatus => (
                 StatusCode::UNPROCESSABLE_ENTITY,
                 ApiError {
                     status_code: StatusCode::UNPROCESSABLE_ENTITY.as_u16(),
                     code: ErrorCode::NotAllowed,
-                    message: Error::UpdatePartAfterPayingQuotation.to_string(),
+                    message: Error::QuoteIsInPayedStatus.to_string(),
                 },
             ),
             Error::InvalidUrl => (

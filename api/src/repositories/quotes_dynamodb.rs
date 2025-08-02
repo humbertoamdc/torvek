@@ -7,6 +7,7 @@ use crate::utils::dynamodb_key_codec::DynamodbKeyCodec;
 use async_trait::async_trait;
 use aws_sdk_dynamodb::operation::delete_item::DeleteItemError;
 use aws_sdk_dynamodb::operation::query::builders::QueryFluentBuilder;
+use aws_sdk_dynamodb::operation::update_item::UpdateItemError;
 use aws_sdk_dynamodb::types::{
     AttributeValue, DeleteRequest, ReturnValue, TransactWriteItem, Update, WriteRequest,
 };
@@ -197,9 +198,14 @@ impl QuotesRepository for DynamodbQuotes {
         customer_id: CustomerId,
         project_id: ProjectId,
         quotation_id: QuoteId,
-        status: Option<QuoteStatus>,
+        status: QuoteStatus,
     ) -> Result<Quotation> {
-        let mut update_expression = String::from("SET updated_at = :updated_at");
+        let gsi1_sk = format!(
+            "{status}{ATTRIBUTES_SEPARATOR}{project_id}{ATTRIBUTES_SEPARATOR}{quotation_id}",
+        );
+
+        let mut update_expression =
+            String::from("SET gsi1_sk = :gsi1_sk, updated_at = :updated_at");
         let mut expression_attribute_values: HashMap<String, AttributeValue> = [
             (
                 String::from(":updated_at"),
@@ -209,29 +215,19 @@ impl QuotesRepository for DynamodbQuotes {
                 String::from(":payedStatus"),
                 AttributeValue::S(QuoteStatus::Payed.to_string()),
             ),
+            (String::from(":gsi1_sk"), AttributeValue::S(gsi1_sk)),
         ]
         .into_iter()
         .collect();
 
-        if let Some(status) = status {
-            let gsi1_sk = format!(
-                "{}{ATTRIBUTES_SEPARATOR}{}{ATTRIBUTES_SEPARATOR}{}",
-                status, project_id, quotation_id,
+        if status == QuoteStatus::PendingReview {
+            update_expression.push_str(", gsi2_pk = :is_pending_review");
+            expression_attribute_values.insert(
+                String::from(":is_pending_review"),
+                AttributeValue::S(String::from("true")),
             );
-
-            update_expression.push_str(", gsi1_sk = :gsi1_sk");
-            expression_attribute_values
-                .insert(String::from(":gsi1_sk"), AttributeValue::S(gsi1_sk));
-
-            if status == QuoteStatus::PendingReview {
-                update_expression.push_str(", gsi2_pk = :is_pending_review");
-                expression_attribute_values.insert(
-                    String::from(":is_pending_review"),
-                    AttributeValue::S(String::from("true")),
-                );
-            } else {
-                update_expression.push_str(" REMOVE gsi2_pk");
-            }
+        } else {
+            update_expression.push_str(" REMOVE gsi2_pk");
         }
 
         let response = self
@@ -259,8 +255,16 @@ impl QuotesRepository for DynamodbQuotes {
                 None => Err(Error::ItemNotFoundError),
             },
             Err(err) => {
-                tracing::error!("{err:?}");
-                Err(Error::UnknownError)
+                let err_str = format!("{err:?}");
+                match err.into_service_error() {
+                    UpdateItemError::ConditionalCheckFailedException(_) => {
+                        Err(Error::QuoteIsInPayedStatus)
+                    }
+                    _ => {
+                        tracing::error!("{err_str}");
+                        Err(Error::UnknownError)
+                    }
+                }
             }
         }
     }
