@@ -66,6 +66,36 @@ impl PartsRepository for DynamodbParts {
         }
     }
 
+    async fn delete_drawing_file(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part> {
+        let response = self
+            .client
+            .update_item()
+            .table_name(&self.table)
+            .key("pk", AttributeValue::S(customer_id))
+            .key("sk", AttributeValue::S(part_id))
+            .update_expression("REMOVE drawing_file, selected_part_quote_id, part_quotes")
+            .return_values(ReturnValue::AllNew)
+            .send()
+            .await;
+
+        match response {
+            Ok(output) => match output.attributes {
+                Some(item) => match from_item::<DynamodbPart>(item) {
+                    Ok(dynamodb_part) => dynamodb_part.try_into(),
+                    Err(err) => {
+                        tracing::error!("{err:?}");
+                        Err(Error::UnknownError)
+                    }
+                },
+                None => Err(Error::ItemNotFoundError),
+            },
+            Err(err) => {
+                tracing::error!("{err:?}");
+                Err(Error::UnknownError)
+            }
+        }
+    }
+
     async fn get(&self, customer_id: CustomerId, part_id: PartId) -> Result<Part> {
         let response = self
             .client

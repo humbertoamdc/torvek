@@ -1,6 +1,7 @@
 pub mod admin_query_parts_for_quotation;
 pub mod create_part_quotes;
 pub mod create_parts;
+pub mod delete_drawing_file;
 pub mod delete_part;
 pub mod generate_presigned_url;
 pub mod get_part;

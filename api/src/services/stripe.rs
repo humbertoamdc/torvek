@@ -87,6 +87,7 @@ impl StripeClient for Stripe {
         let quote = Quote {
             customer: stripe_customer_id,
             line_items,
+            default_tax_rates: self.tax_ids.mexico.clone(),
         };
 
         let client = self.client.clone();
