@@ -13,6 +13,7 @@ use crate::repositories::parts_dynamodb::DynamodbParts;
 use crate::repositories::projects_dynamodb::DynamodbProjects;
 use crate::repositories::quotes_dynamodb::DynamodbQuotes;
 use crate::repositories::transaction_dynamodb::DynamodbTransaction;
+use crate::services::emailer_ses::EmailerSES;
 use crate::services::identity_manager_ory::OryIdentityManager;
 use crate::services::object_storage_s3::S3ObjectStorage;
 use crate::services::stripe::Stripe;
@@ -27,6 +28,7 @@ pub struct AppState {
     pub projects: AppStateProjects,
     pub quotes: AppStateQuotes,
     pub parts: AppStateParts,
+    pub services: AppStateServices,
     pub payments: AppStatePayments,
 }
 
@@ -57,6 +59,16 @@ pub struct AppStateParts {
 }
 
 #[derive(Clone)]
+pub struct AppStateServices {
+    pub emailer: AppStateEmailer,
+}
+
+#[derive(Clone)]
+pub struct AppStateEmailer {
+    pub ses: Arc<EmailerSES>,
+}
+
+#[derive(Clone)]
 pub struct AppStatePayments {
     pub webhook_secret: String,
     pub stripe_client: Arc<dyn StripeClient>,
@@ -73,6 +85,7 @@ impl AppState {
             projects: AppStateProjects::from(config).await,
             quotes: AppStateQuotes::from(config).await,
             parts: AppStateParts::from(config).await,
+            services: AppStateServices::from(config).await,
             payments: AppStatePayments::from(config).await,
         }
     }
@@ -193,6 +206,28 @@ impl AppStateParts {
         Self {
             dynamodb_parts: parts_repository,
             s3: object_storage,
+        }
+    }
+}
+
+impl AppStateServices {
+    async fn from(config: &Config) -> Self {
+        // Configs
+        let shared_config = get_shared_config(config).await;
+        let ses_config = aws_sdk_sesv2::config::Builder::from(&shared_config).build();
+
+        // Clients
+        let ses_client = aws_sdk_sesv2::Client::from_conf(ses_config);
+
+        // Services
+        let ses = Arc::new(EmailerSES::new(
+            ses_client,
+            config.services.emailer.no_reply_email.clone(),
+            config.services.emailer.admin_emails.clone(),
+        ));
+
+        Self {
+            emailer: AppStateEmailer { ses },
         }
     }
 }

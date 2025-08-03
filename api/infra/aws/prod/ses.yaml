@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CF template to create a simple email service (SES)
+Resources:
+  EmailNotificationService:
+    Type: AWS::SES::EmailIdentity
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      DkimAttributes:
+        SigningEnabled: true
+      EmailIdentity: torvek.com
+      MailFromAttributes:
+        MailFromDomain: notifications.torvek.com

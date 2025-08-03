@@ -29,10 +29,12 @@ create-stacks:
 	make create-stack stack=certificate-manager env=$$env
 	make create-stack stack=api-gateway env=$$env
 	make create-stack stack=cloudfront env=$$env
+	make create-stack stack=ses env=$$env
 
 # Parameters
 #	- env:	 string = Environment (staging | prod).
 delete-stacks:
+	make delete-stack stack=ses env=$$env
 	make delete-stack stack=cloudfront env=$env
 	make delete-stack stack=api-gateway env=$$env
 	make delete-stack stack=certificate-manager env=$$env

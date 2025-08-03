@@ -59,6 +59,7 @@ pub async fn complete_checkout_session_webhook(
                         app_state.orders.dynamodb_orders,
                         app_state.parts.dynamodb_parts,
                         Arc::new(Mutex::new(app_state.payments.transaction)),
+                        app_state.services.emailer.ses,
                     );
 
                     let result = usecase.execute(request).await;
