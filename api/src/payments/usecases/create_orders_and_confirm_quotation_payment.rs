@@ -7,6 +7,7 @@ use crate::repositories::parts::PartsRepository;
 use crate::repositories::projects::ProjectsRepository;
 use crate::repositories::quotes::QuotesRepository;
 use crate::repositories::transaction::Transaction;
+use crate::services::emailer::Emailer;
 use crate::shared::{Result, UseCase};
 use crate::utils::workdays::Workdays;
 use async_trait::async_trait;
@@ -28,6 +29,7 @@ where
     orders_repository: Arc<Ord>,
     parts_repository: Arc<Par>,
     transaction: Arc<Mutex<Tx>>,
+    emailer_service: Arc<dyn Emailer>,
 }
 
 impl<Pro, Quo, Ord, Par, Tx, TxItem>
@@ -45,6 +47,7 @@ where
         orders_repository: Arc<Ord>,
         parts_repository: Arc<Par>,
         transaction: Arc<Mutex<Tx>>,
+        emailer_service: Arc<dyn Emailer>,
     ) -> Self {
         Self {
             projects_repository,
@@ -52,6 +55,7 @@ where
             orders_repository,
             parts_repository,
             transaction,
+            emailer_service,
         }
     }
 }
@@ -139,6 +143,17 @@ where
             transaction.add_items(orders_transactions);
             transaction.execute().await?;
         }
+
+        let _ = self
+            .emailer_service
+            .send_email_to_admins(
+                "A quote got payed",
+                &format!(
+                    "Customer with id {} payed for the quote with id {}",
+                    request.customer_id, request.quotation_id
+                ),
+            )
+            .await;
 
         Ok(())
     }

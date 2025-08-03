@@ -1,4 +1,4 @@
-use crate::config::PaymentsTaxIds;
+use crate::config::ConfigPaymentsTaxIds;
 use crate::parts::models::part::Part;
 use crate::services::stripe_client::{Quote, QuoteLineItem, StripeClient, StripeQuote};
 use crate::shared;
@@ -25,7 +25,7 @@ pub struct Stripe {
     client: Client,
     files_client: reqwest::Client,
     success_url: String,
-    tax_ids: PaymentsTaxIds,
+    tax_ids: ConfigPaymentsTaxIds,
 }
 
 impl Stripe {
@@ -33,7 +33,7 @@ impl Stripe {
         client: Client,
         files_client: reqwest::Client,
         success_url: String,
-        tax_ids: PaymentsTaxIds,
+        tax_ids: ConfigPaymentsTaxIds,
     ) -> Self {
         Self {
             client,

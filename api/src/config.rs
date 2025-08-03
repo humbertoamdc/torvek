@@ -9,6 +9,7 @@ pub struct Config {
     pub projects: ConfigProjects,
     pub quotes: ConfigQuotes,
     pub parts: ConfigParts,
+    pub services: ConfigServices,
     pub payments: ConfigPayments,
 }
 
@@ -52,11 +53,22 @@ pub struct ConfigPayments {
     pub secret_key: String,
     pub webhook_secret: String,
     pub success_url: String,
-    pub tax_ids: PaymentsTaxIds,
+    pub tax_ids: ConfigPaymentsTaxIds,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConfigServices {
+    pub emailer: ConfigEmailer,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConfigEmailer {
+    pub no_reply_email: String,
+    pub admin_emails: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PaymentsTaxIds {
+pub struct ConfigPaymentsTaxIds {
     pub mexico: Vec<String>,
 }
 

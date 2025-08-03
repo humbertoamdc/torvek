@@ -2,7 +2,7 @@ use crate::app_state::AppState;
 use crate::quotations::models::inputs::{
     AdminQueryQuotationsByStatusInput, CreateQuotationInput, DeleteQuotationInput,
     DownloadQuotePdfInput, GetQuotationByIdInput, GetQuotationSubtotalInput,
-    QueryQuotationsForProjectInput, UpdateQuotationInput,
+    QueryQuotationsForProjectInput, SendForReviewInput,
 };
 use crate::quotations::models::quotation::QuoteStatus;
 use crate::quotations::usecases::admin_query_quotations_by_status::AdminQueryQuotationsByStatus;
@@ -12,7 +12,7 @@ use crate::quotations::usecases::download_quote_pdf::DownloadQuotePdf;
 use crate::quotations::usecases::get_quotation::GetQuotation;
 use crate::quotations::usecases::get_quotation_subtotal::GetQuotationSubtotal;
 use crate::quotations::usecases::query_quotations_by_project::QueryQuotationsByProject;
-use crate::quotations::usecases::update_quotation::UpdateQuotation;
+use crate::quotations::usecases::send_for_review::SendForReview;
 use crate::shared::extractors::session::{AdminSession, CustomerSession};
 use crate::shared::into_error_response::IntoError;
 use crate::shared::{ProjectId, QuoteId, UseCase};
@@ -142,14 +142,15 @@ pub async fn send_quotation_for_review(
     CustomerSession(session): CustomerSession,
     Json(request): Json<SendQuotationForReviewRequest>,
 ) -> impl IntoResponse {
-    let input = UpdateQuotationInput {
+    let input = SendForReviewInput {
         identity: session.identity,
         project_id: request.project_id,
         quotation_id: request.quotation_id,
     };
-    let usecase = UpdateQuotation::new(
+    let usecase = SendForReview::new(
         app_state.quotes.dynamodb_quotes,
         app_state.parts.dynamodb_parts,
+        app_state.services.emailer.ses,
     );
     let result = usecase.execute(input).await;
 

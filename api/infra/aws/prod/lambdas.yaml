@@ -81,6 +81,16 @@ Resources:
                   - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Parts/*'
                   - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Orders'
                   - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Orders/*'
+        - PolicyName: SESAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                Resource:
+                  - !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/torvek.com'
+                  - !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/humberto@torvek.com'
+                  - !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/juanluis@torvek.com'
       RoleName: ApiLambdaRole
 
   FileConverterLambdaExecutionRole:
