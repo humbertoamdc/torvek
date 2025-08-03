@@ -1,3 +1,3 @@
 #!/bin/bash
 
-awslocal ses verify-email-identity --email-address no-reply@pinvex.com
+awslocal ses verify-email-identity --email-address no-reply@torvek.com
