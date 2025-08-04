@@ -1,5 +1,5 @@
-use crate::auth::models::session::Identity;
 use crate::services::object_storage::{ObjectStorage, ObjectStorageOperation};
+use crate::shared::error::Error;
 use crate::shared::UseCase;
 use async_trait::async_trait;
 use serde_derive::{Deserialize, Serialize};
@@ -46,14 +46,7 @@ impl UseCase<AdminGeneratePresignedUrlInput, AdminGeneratePresignedUrlResponse>
                     )
                     .await
             }
-            ObjectStorageOperation::Put => {
-                self.object_storage
-                    .put_object_presigned_url(
-                        &input.key,
-                        Duration::from_secs(PRESIGNED_URL_DURATION_SECONDS),
-                    )
-                    .await
-            }
+            ObjectStorageOperation::Put => Err(Error::Forbidden),
         }?;
 
         Ok(AdminGeneratePresignedUrlResponse { presigned_url })
