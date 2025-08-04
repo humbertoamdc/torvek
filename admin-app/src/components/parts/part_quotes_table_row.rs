@@ -1,8 +1,11 @@
-use leptos::*;
-
+use crate::clients::parts::{GeneratePresignedUrlRequest, PartsClient};
 use crate::components::parts::part_quote_card::PartQuoteCard;
+use crate::models::file::File;
 use crate::models::money::Money;
 use crate::models::part::{Part, PartAttributes};
+use leptos::*;
+use thaw::Button;
+use thaw::ButtonColor::Error;
 
 #[component]
 pub fn PartQuotesTableRow(
@@ -10,7 +13,39 @@ pub fn PartQuotesTableRow(
     #[prop(into)] price_options: Vec<RwSignal<Option<Money>>>,
     #[prop(into)] workdays_to_complete_options: Vec<RwSignal<u64>>,
 ) -> impl IntoView {
-    // -- signals -- //
+    // -- variables -- //
+
+    let model_file = part.model_file.clone();
+    let drawing_file = part.drawing_file.clone();
+
+    // -- clients -- //
+
+    let parts_client = use_context::<PartsClient>().unwrap();
+
+    // actions
+
+    let get_file = create_action(move |file: &File| {
+        let file_key = file.key.clone();
+        let request = GeneratePresignedUrlRequest {
+            key: file_key,
+            operation: "Get".to_string(),
+        };
+
+        async move {
+            let result = parts_client.admin_generate_presigned_url(request).await;
+
+            match result {
+                Ok(response) => {
+                    web_sys::window()
+                        .unwrap()
+                        .open_with_url(&response.presigned_url)
+                        .expect("Unable to open the file");
+                }
+                Err(_) => (),
+            }
+        }
+    });
+
     view! {
         <div class="flex shadow bg-white text-sm my-2 h-80 rounded-xl overflow-hidden p-4 space-x-2">
             <div class="flex flex-col items-center">
@@ -26,49 +61,43 @@ pub fn PartQuotesTableRow(
             <div class="flex-col grow">
                 <div class="flex space-x-2">
                     <label for=format!("model-file-{}", part.model_file.name.clone())>
-                        <input
-                            id=format!("model-file-{}", part.model_file.name.clone())
-                            type="file"
-                            class="hidden"
-                            accept=".stp,.step"
-                            on:change=move |_| {}
-                        />
+                        <Button
+                            class="inline-flex items-center rounded-xl bg-gray-100 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-gray-600 ring-inset hover:ring-gray-600 cursor-pointer"
+                            round=true
+                            on_click=move |_| { get_file.dispatch(model_file.clone()) }
+                        >
 
-                        <span class="inline-flex items-center rounded-xl bg-gray-100 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-gray-600 ring-1 ring-inset hover:ring-gray-600 cursor-pointer ">
                             <img
                                 style="width: 18px; height: 18px;"
                                 src="https://icons.veryicon.com/png/o/construction-tools/cloud-device/spare-part-type-01.png"
                                 alt="User Image"
                             />
-                            <div class="ml-1">{part.model_file.name}</div>
-
-                        </span>
+                            <div>{part.model_file.name}</div>
+                        </Button>
                     </label>
-                    {match part.drawing_file {
-                        Some(drawing_file) => {
+                    {match drawing_file {
+                        Some(file) => {
+                            let file_clone = file.clone();
                             view! {
-                                <label for=format!("drawing-file-{}", drawing_file.name)>
-                                    <input
-                                        id=format!("drawing-file-{}", drawing_file.name)
+                                <div>
+                                    <Button
+                                        class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-inset hover:ring-red-600 cursor-pointer"
+                                        round=true
+                                        color=Error
+                                        on_click=move |_| { get_file.dispatch(file_clone.clone()) }
+                                    >
 
-                                        type="file"
-                                        class="hidden"
-                                        accept=".pdf"
-                                    />
-
-                                    <span class="inline-flex items-center rounded-xl bg-red-50 hover:bg-red-100 px-3 py-1 my-1 text-xs font-medium text-red-600 ring-1 ring-inset hover:ring-red-600 cursor-pointer ">
                                         <img
                                             style="width: 18px; height: 18px;"
                                             src="https://icons.veryicon.com/png/o/transport/traffic-2/pdf-34.png"
                                             alt="User Image"
                                         />
-                                        <div class="ml-1">{drawing_file.name}</div>
-
-                                    </span>
-                                </label>
+                                        <div>{file.name}</div>
+                                    </Button>
+                                </div>
                             }
                         }
-                        None => view! { <label></label> },
+                        None => view! { <div></div> },
                     }}
 
                 </div>

@@ -1,7 +1,6 @@
 use crate::models::api_error::ApiError;
 use gloo_net::http::{Request, Response};
 use http::StatusCode;
-use leptos::leptos_dom::logging::console_log;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 

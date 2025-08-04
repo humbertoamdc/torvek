@@ -3,9 +3,9 @@ use axum::Router;
 
 use crate::app_state::AppState;
 use crate::parts::controllers::{
-    admin_create_part_quotes, admin_query_parts_for_quotation, create_parts, delete_drawing_file,
-    delete_part, generate_presigned_url, get_part, query_parts_for_quotation, update_part,
-    update_selected_part_quote, upload_part_drawing,
+    admin_create_part_quotes, admin_generate_presigned_url, admin_query_parts_for_quotation,
+    create_parts, delete_drawing_file, delete_part, generate_presigned_url, get_part,
+    query_parts_for_quotation, update_part, update_selected_part_quote, upload_part_drawing,
 };
 
 pub fn create_router() -> Router<AppState> {
@@ -15,6 +15,7 @@ pub fn create_router() -> Router<AppState> {
             "/admin/customers/:customer_id/quotations/:quotation_id/parts",
             get(admin_query_parts_for_quotation),
         )
+        .route("/admin/presigned_url", post(admin_generate_presigned_url))
         .route("/parts", post(create_parts))
         .route(
             "/projects/:project_id/quotations/:quotation_id/parts",

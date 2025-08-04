@@ -23,10 +23,21 @@ pub struct CreatePartQuotesRequestData {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct GeneratePresignedUrlRequest {
+    pub key: String,
+    pub operation: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct QueryPartsForQuotationResponse {
     pub parts: Vec<Part>,
     pub quotation_subtotal: Option<Money>,
     pub cursor: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GeneratePresignedUrlResponse {
+    pub presigned_url: String,
 }
 
 #[derive(Copy, Clone)]
@@ -61,6 +72,19 @@ impl PartsClient {
         let request = Request::get(&url)
             .credentials(RequestCredentials::Include)
             .build()
+            .unwrap();
+
+        send(request).await
+    }
+
+    pub async fn admin_generate_presigned_url(
+        &self,
+        request: GeneratePresignedUrlRequest,
+    ) -> Result<GeneratePresignedUrlResponse> {
+        let url = format!("{}/admin/presigned_url", self.url);
+        let request = Request::post(&url)
+            .credentials(RequestCredentials::Include)
+            .json(&request)
             .unwrap();
 
         send(request).await
