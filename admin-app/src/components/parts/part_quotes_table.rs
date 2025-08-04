@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use leptos::html::Div;
-use leptos::leptos_dom::logging::console_log;
 use leptos::*;
 use leptos_use::use_element_visibility;
 use thaw::{Button, ButtonSize};
@@ -144,27 +143,27 @@ pub fn PartQuotesTable(
                 each=move || parts.get().into_iter().enumerate()
                 key=|(_, part)| part.id.clone()
                 children=move |(_, part)| {
-                    let mut price_options = vec![
+                    let price_options = vec![
                         create_rw_signal(None::<Money>),
                         create_rw_signal(None::<Money>),
                         create_rw_signal(None::<Money>),
                     ];
-                    let mut workdays_to_complete_options = vec![
+                    let workdays_to_complete_options = vec![
                         create_rw_signal(0_u64),
                         create_rw_signal(0_u64),
                         create_rw_signal(0_u64),
                     ];
-
                     if ENV == "local" || ENV == "staging" {
-                        price_options[0].set(Some(Money::new(7_500_00, iso_currency::Currency::MXN)));
-                        price_options[1].set(Some(Money::new(6_100_00, iso_currency::Currency::MXN)));
-                        price_options[2].set(Some(Money::new(4_200_00, iso_currency::Currency::MXN)));
-
+                        price_options[0]
+                            .set(Some(Money::new(7_500_00, iso_currency::Currency::MXN)));
+                        price_options[1]
+                            .set(Some(Money::new(6_100_00, iso_currency::Currency::MXN)));
+                        price_options[2]
+                            .set(Some(Money::new(4_200_00, iso_currency::Currency::MXN)));
                         workdays_to_complete_options[0].set(5);
                         workdays_to_complete_options[1].set(8);
                         workdays_to_complete_options[2].set(11);
                     }
-
                     prices_options_list.update(|prices| prices.push(price_options.clone()));
                     workdays_to_complete_list
                         .update(|workdays_to_complete| {

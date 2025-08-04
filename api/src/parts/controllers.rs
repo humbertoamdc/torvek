@@ -4,6 +4,9 @@ use crate::parts::models::inputs::{
     GetPartInput, QueryPartsForQuotationInput, UpdatePartInput, UpdateSelectedPartQuoteInput,
 };
 use crate::parts::models::part::{PartAttributes, PartProcess};
+use crate::parts::usecases::admin_generate_presigned_url::{
+    AdminGeneratePresignedUrl, AdminGeneratePresignedUrlInput,
+};
 use crate::parts::usecases::admin_query_parts_for_quotation::AdminQueryPartsForQuotation;
 use crate::parts::usecases::create_part_quotes::CreatePartQuotes;
 use crate::parts::usecases::create_parts::CreateParts;
@@ -123,6 +126,24 @@ pub async fn admin_query_parts_for_quotation(
         limit: params.limit.unwrap_or(100),
     };
     let usecase = AdminQueryPartsForQuotation::new(app_state.parts.dynamodb_parts);
+    let result = usecase.execute(input).await;
+
+    match result {
+        Ok(response) => Ok((StatusCode::OK, Json(response))),
+        Err(err) => Err(err.into_error_response()),
+    }
+}
+
+pub async fn admin_generate_presigned_url(
+    State(app_state): State<AppState>,
+    AdminSession(_): AdminSession,
+    Json(request): Json<GeneratePresignedUrlRequest>,
+) -> impl IntoResponse {
+    let input = AdminGeneratePresignedUrlInput {
+        key: request.key,
+        operation: request.operation,
+    };
+    let usecase = AdminGeneratePresignedUrl::new(app_state.parts.s3);
     let result = usecase.execute(input).await;
 
     match result {
