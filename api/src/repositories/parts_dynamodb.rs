@@ -218,6 +218,14 @@ impl PartsRepository for DynamodbParts {
             );
         }
 
+        if let Some(additional_notes) = updatable_part.additional_notes {
+            update_expression.push_str(", additional_notes = :additional_notes");
+            expression_attribute_values.insert(
+                String::from(":additional_notes"),
+                AttributeValue::S(additional_notes),
+            );
+        }
+
         update_expression.push_str(", selected_part_quote_id = :selected_part_quote_id");
         expression_attribute_values.insert(
             String::from(":selected_part_quote_id"),

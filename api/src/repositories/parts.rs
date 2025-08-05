@@ -51,6 +51,8 @@ pub struct DynamodbPart {
     pub process: PartProcess,
     pub attributes: PartAttributes,
     pub quantity: u64,
+    #[serde(default)]
+    pub additional_notes: String,
     pub selected_part_quote_id: Option<PartQuoteId>,
     pub part_quotes: Option<Vec<PartQuote>>,
     pub updated_at: DateTime<Utc>,
@@ -90,6 +92,7 @@ impl TryInto<Part> for DynamodbPart {
             process: self.process,
             attributes: self.attributes,
             quantity: self.quantity,
+            additional_notes: self.additional_notes,
             selected_part_quote_id: self.selected_part_quote_id,
             part_quotes: self.part_quotes,
             created_at: created_at.ok_or_else(|| {
@@ -126,6 +129,7 @@ impl From<Part> for DynamodbPart {
             process: value.process,
             attributes: value.attributes,
             quantity: value.quantity,
+            additional_notes: value.additional_notes,
             selected_part_quote_id: value.selected_part_quote_id,
             part_quotes: value.part_quotes,
             updated_at: value.updated_at,
