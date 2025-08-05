@@ -12,6 +12,7 @@ pub struct UpdatablePart {
     pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
+    pub additional_notes: Option<String>,
     pub selected_part_quote_id: Option<PartQuoteId>,
     pub clear_part_quotes: Option<bool>,
 }
@@ -35,6 +36,7 @@ impl From<&UpdatePartInput> for UpdatablePart {
             process: input.process.clone(),
             attributes: input.attributes.clone(),
             quantity: input.quantity,
+            additional_notes: input.additional_notes.clone(),
             selected_part_quote_id: None,
             clear_part_quotes: None,
         }

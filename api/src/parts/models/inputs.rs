@@ -48,6 +48,7 @@ pub struct UpdatePartInput {
     pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
+    pub additional_notes: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

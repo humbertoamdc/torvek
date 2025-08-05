@@ -55,7 +55,6 @@ pub struct QueryPartsForQuotationQueryParameters {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdatePartRequest {
-    pub customer_id: CustomerId,
     pub project_id: ProjectId,
     pub quotation_id: QuoteId,
     pub part_id: PartId,
@@ -63,6 +62,7 @@ pub struct UpdatePartRequest {
     pub process: Option<PartProcess>,
     pub attributes: Option<PartAttributes>,
     pub quantity: Option<u64>,
+    pub additional_notes: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -258,6 +258,7 @@ pub async fn update_part(
         process: request.process,
         attributes: request.attributes,
         quantity: request.quantity,
+        additional_notes: request.additional_notes,
     };
     let usecase = UpdatePart::new(
         app_state.parts.dynamodb_parts,

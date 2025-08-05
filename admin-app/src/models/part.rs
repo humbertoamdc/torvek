@@ -17,6 +17,7 @@ pub struct Part {
     pub process: PartProcess,
     pub attributes: PartAttributes,
     pub quantity: u64,
+    pub additional_notes: String,
     pub selected_part_quote_id: Option<String>,
     pub part_quotes: Option<Vec<PartQuote>>,
     pub created_at: DateTime<Utc>,

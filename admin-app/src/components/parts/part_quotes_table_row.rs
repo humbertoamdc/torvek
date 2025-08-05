@@ -56,7 +56,6 @@ pub fn PartQuotesTableRow(
                         alt="User Image"
                     />
                 </div>
-
             </div>
             <div class="flex-col grow">
                 <div class="flex space-x-2">
@@ -127,6 +126,8 @@ pub fn PartQuotesTableRow(
                     <p class="font-bold text-base pr-2">"Quantity:"</p>
                     <p class="text-md text-gray-900">{part.quantity}</p>
                 </div>
+                <p class="font-bold text-base pr-2">"Additional Notes:"</p>
+                <div class="flex w-96">{part.additional_notes}</div>
             </div>
             <div class="flex flex-col w-96 space-y-2">
                 <PartQuoteCard
