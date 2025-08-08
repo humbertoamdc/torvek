@@ -2,6 +2,7 @@ pub mod app;
 pub mod app_state;
 pub mod auth;
 pub mod config;
+mod landing;
 mod middleware;
 pub mod orders;
 pub mod parts;
