@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::config::Config;
 use crate::middleware::SessionLayer;
-use crate::{auth, orders, parts, payments, projects, quotations};
+use crate::{auth, landing, orders, parts, payments, projects, quotations};
 use aws_config::BehaviorVersion;
 use axum::Router;
 use http::header::{CONTENT_TYPE, ORIGIN};
@@ -32,6 +32,9 @@ pub async fn create_local_app() -> (Router, Config) {
             .parse::<HeaderValue>()
             .unwrap(),
         format!("http://{}:8082", app_config.app.domain)
+            .parse::<HeaderValue>()
+            .unwrap(),
+        format!("http://{}:5173", app_config.app.domain)
             .parse::<HeaderValue>()
             .unwrap(),
     ];
@@ -78,7 +81,9 @@ pub async fn create_app_from_config(config: &Config) -> Router {
 }
 
 fn create_base_router(state: AppState) -> Router<AppState> {
-    let public_router = Router::new().nest("/v1", auth::routes::create_public_router());
+    let public_router = Router::new()
+        .nest("/v1", auth::routes::create_public_router())
+        .nest("/v1", landing::routes::create_router());
 
     let private_router = Router::new()
         .nest("/v1", auth::routes::create_private_router())
